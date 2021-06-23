@@ -127,3 +127,21 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+##################### Project specific additions ###############################
+# just throw anything in a dump-folder to not add to git
+dump
+# simulation output probs too much in github
+*.xtc
+*.trr
+*.log
+*.edr
+*.cpt
+# The folder with all the charmm-gui output
+charmm-gui-[0-9]*
+charmm-gui.tgz
+# equilibration stuff, maybe not so important to have in github
+equilibr
+# No need for all modeller oputput
+5weo_fill.*

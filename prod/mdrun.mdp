@@ -18,7 +18,7 @@ rcoulomb                = 1.2
 ;
 tcoupl                  = Nose-Hoover
 tc_grps                 = SOLU MEMB SOLV
-tau_t                   = 1.0 1.0 1.0
+tau_t                   = 2.0 2.0 2.0
 ref_t                   = 310.15 310.15 310.15
 ;
 pcoupl                  = Parrinello-Rahman

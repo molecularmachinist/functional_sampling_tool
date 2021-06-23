@@ -147,3 +147,5 @@ equilibr
 5weo_fill.*
 # Even the initial structures took as lot of space, so ignoring them
 prod/initial/start[0-9][0-9].gro
+# At least for now ignoring all production run simulation data
+epoch[0-9][0-9]

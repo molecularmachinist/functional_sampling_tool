@@ -142,7 +142,12 @@ dump
 charmm-gui-[0-9]*
 charmm-gui.tgz
 # equilibration stuff, maybe not so important to have in github
-equilibr
+/making/equilibr/rep*
+/making/equilibr/solv/*
+/making/equilibr/charmm_model/*
+# Exclude a few important steps from getting ignored
+!/making/equilibr/solv/*.py
+!/making/equilibr/solv/input.dat
 # No need for all modeller oputput
 5weo_fill.*
 # Even the initial structures took as lot of space, so ignoring them

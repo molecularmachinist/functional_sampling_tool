@@ -1,0 +1,45 @@
+Input_file:			Output_file:
+solv.gro	            solv_removed.gro
+
+res_name:	first_atom:		res_size:
+SOL		OW			3
+
+lipid_name:		lim_atom:
+POPC			N
+
+adjust_low:		adjust_high:
+0			0
+
+topol:
+topol.top
+
+
+##################### EXPLANATIONS #####################
+
+All the parameters can be given in this file [-f] or by command line options.
+Command line options override parameters set in this file.
+
+Input file	[-i]
+
+Output file	[-o]
+
+Parameters file	[-f]	=	The file to read the parameters from i.e. this file.
+
+res_name	[-rn]	=	Name of the residues that are to be removed.
+
+first_atom	[-ra]	=	Name of the first atom of the residue in the .gro file.
+				This atom is used to determine whether the whole residue
+				is inside the membrane or not.
+
+res_size	[-rs]	=	Number of the atoms in that residue.
+
+lipid_name	[-ln]	=	Name of the membrane lipid.
+
+lim_atom	[-la]	=	The atom of the residue lipid_name that is used to calculate
+				the average z component of the upper and the lower leaflets.
+
+adjust_low	[-al]	=	Manual adjusting of lower leaflet. Positive number moves the
+				border closer to the middle of the membrane.
+
+adjust_high	[-ah]	=	Manual adjusting of upper leaflet. Positive number moves the
+				border closer to the middle of the membrane.

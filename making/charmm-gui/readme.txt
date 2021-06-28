@@ -41,8 +41,8 @@ Step 1.3:
 
 Step 2:
 
-- z-length: water thickness 35
-- xy: ratios, with size 200
+- z-length: water thickness 35 (not really important, z-axis changed anyway)
+- xy: ratios, with size 160
 - POPC ratios 1 and 1
 
 Step 3:

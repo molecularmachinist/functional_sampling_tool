@@ -1,4 +1,4 @@
-0. Copy charmm structures and change h-bonds to all-bonds in all mdp files, except minimization
+0. Copy charmm structures and change h-bonds to all-bonds in all mdp files, except minimization (optional: output options from 5000 to 25000 steps)
 
 1. remove water with gmx trjconv
 2. change z-size of box vector manually

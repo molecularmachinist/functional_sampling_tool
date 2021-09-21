@@ -23,7 +23,7 @@ account="project_2004581"
 
 
 ########################### Sampling variables
-# number of simulations per epoch
+# number of simulations per epoch, only affects new epochs
 N = 16
 
 
@@ -70,3 +70,15 @@ def function_val(positions):
     dist2 = np.linalg.norm(np.mean(positions[:,ind2,:], axis=-2)-np.mean(positions[:,ind4,:], axis=-2), axis=-1)
 
     return np.minimum(dist1, dist2)
+
+
+
+
+
+############################## Advanced options ################################
+
+# Histogram building
+# At least this much data in each bin of the histogram
+data_per_bin = 100
+# Maximum amount of bins between boundaries
+maxbins = 100

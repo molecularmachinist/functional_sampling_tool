@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import subprocess as subp
 
-import config as cfg
+from . import config as cfg
 
 def gromacs_command(cmd, *args, input=None, **kwargs):
     """ Call the gromacs subcommand cmd. Both args and keys of kwargs should be without the leading dash.

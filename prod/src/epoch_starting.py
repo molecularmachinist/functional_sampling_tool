@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os, shutil
 
-import config as cfg
+from . import config as cfg
 
 
 

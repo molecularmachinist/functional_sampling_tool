@@ -146,6 +146,7 @@ charmm-gui[0-9].tgz
 /making/equilibr/rep*
 /making/equilibr/solv/*
 /making/equilibr/charmm_model/*
+/making/closed
 # Exclude a few important steps from getting ignored
 !/making/equilibr/solv/*.py
 !/making/equilibr/solv/input.dat

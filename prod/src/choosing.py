@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+import os
 
 
 """
@@ -128,6 +129,8 @@ class FrameChooser():
 
 
         print(f"Chose {len(choices)} bins, {len(np.unique(choices))} unique")
+
+        self.plot_choices(crith,smoothed,choices,nanmask,maxims,minims)
         return choices
 
     def choose_frames(self, chosen_bins):
@@ -167,7 +170,7 @@ class FrameChooser():
 
         return np.array(v), np.array(e), np.array(r), np.array(f)
 
-    def plot_hist():
+    def plot_hist(self):
 
         for i in self.u_epcs:
             _ep_hist, _ = np.histogram(fval[epcs==i], bins=bin_edges)
@@ -178,4 +181,20 @@ class FrameChooser():
         plt.axvline(minval, linestyle="-.", color="C2", label="Boundaries")
         plt.axvline(maxval, linestyle="-.", color="C2")
         plt.legend()
-        plt.savefig("figs/hist_e%02d.py"%(self.u_epcs[-1]))
+        os.makedirs("figs/epoch%02d"%(self.u_epcs[-1]),exist_ok=True)
+        plt.savefig("figs/epoch%02d/hist.png"%(self.u_epcs[-1]))
+        plt.clf()
+
+
+    def plot_choices(self,crith,smoothed,choices,nanmask,maxims,minims):
+        plt.axhline(crith, linestyle="--", c="r", alpha=0.5, label="Max height for choices")
+        plt.plot(self.bin_centers, hist, color="C0", alpha=0.5)
+        plt.plot(self.bin_centers[self.hist_mask], self.hist[self.hist_mask], color="C0", label="data")
+        plt.plot(self.bin_centers, -smoothed, color="C1", label="Smoothed")
+        plt.plot(self.bin_centers[nanmask][minims], -smoothed[nanmask][maxims], "rv", label="Minima")
+        plt.plot(self.bin_centers[nanmask][maxims], -smoothed[nanmask][minims], "bv", label="Maxima")
+        plt.plot(self.bin_centers[choices], self.hist[choices], "g^", label="Choices")
+        plt.legend()
+        os.makedirs("figs/epoch%02d"%(self.u_epcs[-1]),exist_ok=True)
+        plt.savefig("figs/epoch%02d/choices.png"%(self.u_epcs[-1]))
+        plt.clf()

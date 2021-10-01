@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, shutil
 
-from . import config as cfg
 
 
 
@@ -33,7 +32,7 @@ def init_rep(i,d="epoch01"):
         os.chdir(prevdir)
 
 
-def start_epoch(nextepoch, chosen_bins=None):
+def start_epoch(nextepoch, cfg, chosen_bins=None):
     """ Start epoch nextepoch. If it is one, the initial epoch is started,
         otherwise chosen_bins should be supplied.
     """

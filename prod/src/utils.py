@@ -1,7 +1,26 @@
 # -*- coding: utf-8 -*-
 import subprocess as subp
+import math
 
-from . import config as cfg
+
+
+def rolling_mean(data, window=10, center = True, fill=np.nan):
+    if(center):
+        start_offset = math.floor(window/2)
+        end_offset   = -math.ceil(window/2)+1
+        if(end_offset==0): end_offset=None
+    else:
+        start_offset = window-1
+        end_offset   = None
+
+    window-=1
+    if(window==0): window=None
+
+    cumsum = np.nancumsum(data, axis=0, dtype=float)
+    mean   = np.full_like(cumsum, fill)
+    mean[start_offset:end_offset] = (cumsum[window:]-cumsum[:-window])/window
+
+    return mean
 
 def gromacs_command(cmd, *args, input=None, **kwargs):
     """ Call the gromacs subcommand cmd. Both args and keys of kwargs should be without the leading dash.
@@ -32,7 +51,7 @@ def rsync_command(send_from, send_to, excludes=[]):
 
 
 
-def rsync_down():
+def rsync_down(cfg):
     """ Wrapper function for rsync_command, to sync the local dir to the remote,
         ie. "pull down"
     """
@@ -40,7 +59,7 @@ def rsync_down():
     print("Process returned %d"%rc)
 
 
-def rsync_up():
+def rsync_up(cfg):
     """ Wrapper function for rsync_command, to sync the remote dir to the local,
         ie. "push up"
     """

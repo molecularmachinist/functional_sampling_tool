@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
-from . import config as cfg
 
 """
 This module includes a class that holds the loaded data, histograms and some
@@ -10,36 +9,39 @@ methods for choosing frames.
 
 class FrameChooser():
 
-    def __init__(self, reps, fval, epcs, frms):
+    def __init__(self, cfg, reps, fval, epcs, frms):
         self.reps = reps
         self.fval = fval
         self.epcs = epcs
         self.frms = frms
+        self.cfg  = cfg
         # Also get the unique epochs and reps per epoch
         self.u_epcs = np.unique(epcs)
         for e in self.u_epcs:
             self.u_reps = np.unique(reps[self.epcs==e])
+
+        self.make_hist()
 
     def make_hist(self):
         print(f"Making histogram with total {len(self.fval)} data")
         # Get extent of data and boundaries
         largest_val = np.max(self.fval)
         lowest_val  = np.min(self.fval)
-        self.binmax = min(largest_val, cfg.maxval)
-        self.binmin = max(lowest_val,  cfg.minval)
+        self.binmax = min(largest_val, self.cfg.maxval)
+        self.binmin = max(lowest_val,  self.cfg.minval)
         # Calculate binsize
-        maxbins = np.sum((self.fval>cfg.minval)*(self.fval<cfg.maxval))//config.data_per_bin
+        maxbins = np.sum((self.fval>self.cfg.minval)*(self.fval<self.cfg.maxval))//config.data_per_bin
         maxbins = min(maxbins,config.maxbins)
         self.binsize = (self.largest_val-self.lowest_val)/maxbins
         print(f"Calculated maxbins {maxbins}, final maxbins {maxbins}")
-        print(f"data inside boundaries {np.sum((self.fval>cfg.minval)*(self.fval<cfg.maxval))}")
+        print(f"data inside boundaries {np.sum((self.fval>self.cfg.minval)*(self.fval<self.cfg.maxval))}")
         # Make histogram
         self.bin_edges = np.arange(lowest_val,largest_val+self.binsize , self.binsize)
         self.hist, _ = np.histogram(self.fval, bins=self.bin_edges)
         self.bin_centers = (self.bin_edges[:-1]+self.bin_edges[1:])/2
         # Make a mask of which bins have higher edge larger than minval
         # AND lower edge lower than maxval
-        self.hist_mask = (self.bin_edges[1:]>cfg.minval)*(self.bin_edges[:-1]<cfg.maxval)
+        self.hist_mask = (self.bin_edges[1:]>self.cfg.minval)*(self.bin_edges[:-1]<self.cfg.maxval)
 
 
     def plot_hist():

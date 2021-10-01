@@ -32,9 +32,14 @@ def init_rep(i,d="epoch01"):
         os.chdir(prevdir)
 
 
-def start_epoch(nextepoch, cfg, chosen_bins=None):
+def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
     """ Start epoch nextepoch. If it is one, the initial epoch is started,
-        otherwise chosen_bins should be supplied.
+          otherwise the following parameters should be supplied. cfg is the config.
+       "Optional" input parameters:
+            - val : Length N array of the fvals for each new rep
+            - epc : Length N array of the epochs each new rep comes from
+            - rep : Length N array of the rep within the epoch each new rep comes from
+            - frm : Length N array of the frame within the rep each new rep comes from
     """
     if(nextepoch==1):
         # Initial structures and first epoch
@@ -42,15 +47,13 @@ def start_epoch(nextepoch, cfg, chosen_bins=None):
 
         for i in range(1,N+1):
             init_rep(i)
-    elif(chosen_bins is None):
-        raise ValueError("chosen_bins cannot be None if nextepoch!=1")
+    elif(None in [val,epc,rep,frm]):
+        raise ValueError("val, epc, rep or frm cannot be None if nextepoch!=1")
     else:
-        v, e, r, f = choose_frames(chosen_bins)
-        print(v, e, r, f)
 
         os.makedirs("epoch%02d"%(nextepoch))
 
-        for i, (val, epoch, rep, frm) in enumerate(zip(v,e,r,f)):
+        for i, (v, e, r, f) in enumerate(zip(val,epc,rep,frm)):
             next_rep(i+1, nextepoch, epoch, rep, frm, val)
 
     # copy sbatch template

@@ -2,6 +2,7 @@
 import numpy as np
 import os
 
+from . import utils
 
 """
 This module includes a class that holds the loaded data, histograms and some
@@ -71,7 +72,7 @@ class FrameChooser():
         """
         Uses the histogram to choose bins and returns the bin indices of the choices.
         """
-        smoothed = rolling_mean(-hist)
+        smoothed = utils.rolling_mean(-hist)
         nanmask = np.isfinite(smoothed)*self.hist_mask
         maxims,max_crit = scipy.signal.find_peaks(smoothed[nanmask], width=5, distance=10)
         minims,min_crit = scipy.signal.find_peaks(-smoothed[nanmask], width=5, distance=10)

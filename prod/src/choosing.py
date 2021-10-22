@@ -28,7 +28,7 @@ class FrameChooser():
         for e in self.u_epcs:
             self.u_reps = np.unique(reps[self.epcs==e])
 
-        self.make_hist()
+        self._make_hist()
 
     @classmethod
     def fromReadData(cls,cfg):
@@ -55,7 +55,7 @@ class FrameChooser():
         self.make_hist()
 
 
-    def make_hist(self):
+    def _make_hist(self):
         print(f"Making histogram with total {len(self.fval)} data")
         # Get extent of data and boundaries
         largest_val = np.max(self.fval)
@@ -141,7 +141,7 @@ class FrameChooser():
         print(f"Chose {len(choices)} bins, {len(np.unique(choices))} unique")
 
         if(plot):
-            self.plot_choices(crith,smoothed,choices,nanmask,maxims,minims)
+            self._plot_choices(crith,smoothed,choices,nanmask,maxims,minims)
         return choices
 
     def choose_frames(self, chosen_bins):
@@ -197,7 +197,7 @@ class FrameChooser():
         plt.clf()
 
 
-    def plot_choices(self,crith,smoothed,choices,nanmask,maxims,minims):
+    def _plot_choices(self,crith,smoothed,choices,nanmask,maxims,minims):
         plt.axhline(crith, linestyle="--", c="r", alpha=0.5, label="Max height for choices")
         plt.plot(self.bin_centers, hist, color="C0", alpha=0.5)
         plt.plot(self.bin_centers[self.hist_mask], self.hist[self.hist_mask], color="C0", label="data")

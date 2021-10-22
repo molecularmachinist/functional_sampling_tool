@@ -77,7 +77,7 @@ class FrameChooser():
         self.hist_mask = (self.bin_edges[1:]>self.cfg.minval)*(self.bin_edges[:-1]<self.cfg.maxval)
 
 
-    def make_choices(self):
+    def make_choices(self,plot=True):
         """
         Uses the histogram to choose bins and returns the bin indices of the choices.
         """
@@ -140,7 +140,8 @@ class FrameChooser():
 
         print(f"Chose {len(choices)} bins, {len(np.unique(choices))} unique")
 
-        self.plot_choices(crith,smoothed,choices,nanmask,maxims,minims)
+        if(plot):
+            self.plot_choices(crith,smoothed,choices,nanmask,maxims,minims)
         return choices
 
     def choose_frames(self, chosen_bins):

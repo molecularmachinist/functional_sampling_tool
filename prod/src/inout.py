@@ -8,7 +8,10 @@ def check_num(prefix):
     parts = prefix.split("/")
     dir = "/".join(prefix.split("/")[:-1])
     # if dir is not empty, add trailing slash
-    if(dir): dir+="/"
+    if(dir):
+        dir+="/"
+    else:
+        dir="./"
     fprefix = parts[-1]
     files = os.listdir(dir)
     i=0

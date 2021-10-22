@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import subprocess as subp
+import numpy as np
 import math
 
 

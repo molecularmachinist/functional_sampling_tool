@@ -46,7 +46,7 @@ def load_epoch_data(struct, sel, epoch, load_fval=False):
     return np.concatenate(reps), np.concatenate(fval), np.concatenate(frms)
 
 
-def load_data():
+def load_data(struct, sel):
     epochs = check_num("epoch")
     fval = []
     reps = []

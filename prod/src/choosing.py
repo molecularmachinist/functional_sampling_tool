@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-import os
+import matplotlib.pyplot as plt
+import os,math
+from scipy.signal import find_peaks
 
 from . import utils
 from . import inout
@@ -63,9 +65,9 @@ class FrameChooser():
         self.binmax = min(largest_val, self.cfg.maxval)
         self.binmin = max(lowest_val,  self.cfg.minval)
         # Calculate binsize
-        maxbins = np.sum((self.fval>self.cfg.minval)*(self.fval<self.cfg.maxval))//config.data_per_bin
-        maxbins = min(maxbins,config.maxbins)
-        self.binsize = (self.largest_val-self.lowest_val)/maxbins
+        maxbins = np.sum((self.fval>self.cfg.minval)*(self.fval<self.cfg.maxval))//self.cfg.data_per_bin
+        maxbins = min(maxbins,self.cfg.maxbins)
+        self.binsize = (largest_val-lowest_val)/maxbins
         print(f"Calculated maxbins {maxbins}, final maxbins {maxbins}")
         print(f"data inside boundaries {np.sum((self.fval>self.cfg.minval)*(self.fval<self.cfg.maxval))}")
         # Make histogram
@@ -81,16 +83,16 @@ class FrameChooser():
         """
         Uses the histogram to choose bins and returns the bin indices of the choices.
         """
-        smoothed = utils.rolling_mean(-hist)
+        smoothed = utils.rolling_mean(self.hist)
         nanmask = np.isfinite(smoothed)*self.hist_mask
-        maxims,max_crit = scipy.signal.find_peaks(smoothed[nanmask], width=5, distance=10)
-        minims,min_crit = scipy.signal.find_peaks(-smoothed[nanmask], width=5, distance=10)
+        maxims,max_crit = find_peaks(smoothed[nanmask], width=5, distance=10)
+        minims,min_crit = find_peaks(-smoothed[nanmask], width=5, distance=10)
 
 
         maxh = np.max(self.hist[self.hist_mask])
         minh = np.min(self.hist[self.hist_mask])
         # If not ends have sampled been, make sure min height set to zero is
-        if(largest_val<maxval or lowest_val>minval):
+        if(np.max(self.fval)<self.cfg.maxval or np.min(self.fval)>self.cfg.minval):
             minh=0
 
         # The criteria for choices is half way between max and min heights
@@ -98,13 +100,13 @@ class FrameChooser():
 
         choices = []
         # convert from masked indices to unmasked
-        indexes = np.arange(len(hist))[nanmask]
-        for p in peaks:
-            if(hist[nanmask][p]<crith):
+        indexes = np.arange(len(self.hist))[nanmask]
+        for p in minims:
+            if(self.hist[nanmask][p]<crith):
                 choices.append(indexes[p])
 
-        zero_mask = mask*(hist!=0)
-        indexes = np.arange(len(hist))[zero_mask]
+        zero_mask = self.hist_mask*(self.hist!=0)
+        indexes = np.arange(len(self.hist))[zero_mask]
 
         # TODO: refactor below
         #Handle not peaks-edge case
@@ -115,26 +117,26 @@ class FrameChooser():
                 choices.append(indexes[0])
         else:
             # Check if first/last extrema is a maxima -> also include the far end(s)
-            if(minims.size>0 and maxims[-1]<minims[-1] and self.hist[self.hist_mask][-1]<crith):
+            if(minims.size>0 and maxims[-1]>minims[-1] and self.hist[self.hist_mask][-1]<crith):
                 choices.append(indexes[-1])
-            if(minims.size>0 and maxims[0]>minims[0] and self.hist[self.hist_mask][0]<crith):
+            if(minims.size>0 and maxims[0]<minims[0] and self.hist[self.hist_mask][0]<crith):
                 choices.append(indexes[0])
 
-        weights = [(crith-hist[c]) for c in choices]
+        weights = [(crith-self.hist[c]) for c in choices]
         weights /= np.sum(weights)
-        print(choices,(weights*(N-len(choices))))
+        print(choices,(weights*(self.cfg.N-len(choices))))
         srt_ind = np.argsort(-weights)
-        print([choices[i] for i in srt_ind],(weights[srt_ind]*(N-len(choices))))
+        print([choices[i] for i in srt_ind],(weights[srt_ind]*(self.cfg.N-len(choices))))
 
         # Each point has been added once
         len_choice = len(choices)
         # Add more depending on weight. Multiplication is floored, so between 0 and len_choice-1 too few are added
         for i in srt_ind:
-            for j in range(floor(weights[i]*(self.cfg.N-len_choice))):
+            for j in range(math.floor(weights[i]*(self.cfg.N-len_choice))):
                 choices.append(choices[i])
 
         # Fill the rest in sorted order
-        for i in range(N-len(choices)):
+        for i in range(self.cfg.N-len(choices)):
             choices.append(choices[srt_ind[i]])
 
 
@@ -184,13 +186,13 @@ class FrameChooser():
     def plot_hist(self):
 
         for i in self.u_epcs:
-            _ep_hist, _ = np.histogram(fval[epcs==i], bins=bin_edges)
-            plt.plot(bin_centers, _ep_hist, "--", color="C%d"%(i+2), label="Epoch %d"%i)
+            _ep_hist, _ = np.histogram(self.fval[self.epcs==i], bins=self.bin_edges)
+            plt.plot(self.bin_centers, _ep_hist, "--", color="C%d"%(i+2), label="Epoch %d"%i)
         plt.plot(self.bin_centers, self.hist, color="C0", alpha=0.5)
         plt.plot(self.bin_centers[self.hist_mask], self.hist[self.hist_mask], color="C0", label="Total")
-        plt.axvline(startval, linestyle="-.", color="C1", label="Start", alpha=0.5)
-        plt.axvline(minval, linestyle="-.", color="C2", label="Boundaries")
-        plt.axvline(maxval, linestyle="-.", color="C2")
+        plt.axvline(self.cfg.startval, linestyle="-.", color="C1", label="Start", alpha=0.5)
+        plt.axvline(self.cfg.minval, linestyle="-.", color="C2", label="Boundaries")
+        plt.axvline(self.cfg.maxval, linestyle="-.", color="C2")
         plt.legend()
         os.makedirs("figs/epoch%02d"%(self.u_epcs[-1]),exist_ok=True)
         plt.savefig("figs/epoch%02d/hist.png"%(self.u_epcs[-1]))
@@ -199,11 +201,11 @@ class FrameChooser():
 
     def _plot_choices(self,crith,smoothed,choices,nanmask,maxims,minims):
         plt.axhline(crith, linestyle="--", c="r", alpha=0.5, label="Max height for choices")
-        plt.plot(self.bin_centers, hist, color="C0", alpha=0.5)
+        plt.plot(self.bin_centers, self.hist, color="C0", alpha=0.5)
         plt.plot(self.bin_centers[self.hist_mask], self.hist[self.hist_mask], color="C0", label="data")
-        plt.plot(self.bin_centers, -smoothed, color="C1", label="Smoothed")
-        plt.plot(self.bin_centers[nanmask][minims], -smoothed[nanmask][maxims], "rv", label="Minima")
-        plt.plot(self.bin_centers[nanmask][maxims], -smoothed[nanmask][minims], "bv", label="Maxima")
+        plt.plot(self.bin_centers, smoothed, color="C1", label="Smoothed")
+        plt.plot(self.bin_centers[nanmask][minims], smoothed[nanmask][minims], "rv", label="Minima")
+        plt.plot(self.bin_centers[nanmask][maxims], smoothed[nanmask][maxims], "bv", label="Maxima")
         plt.plot(self.bin_centers[choices], self.hist[choices], "g^", label="Choices")
         plt.legend()
         os.makedirs("figs/epoch%02d"%(self.u_epcs[-1]),exist_ok=True)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import numpy as np
 
 def check_num(prefix):
     """
@@ -21,7 +22,7 @@ def check_num(prefix):
             return i-1
 
 def load_epoch_data(struct, sel, epoch, load_fval=False):
-    N = check_num("epoch%02d/rep")
+    N = check_num("epoch%02d/rep"%epoch)
     fval = []
     for i in range(1,N+1):
         d = "epoch%02d/rep%02d/"%(epoch, i)

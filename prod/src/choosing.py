@@ -3,6 +3,7 @@ import numpy as np
 import os
 
 from . import utils
+from . import inout
 
 """
 This module includes a class that holds the loaded data, histograms and some
@@ -28,6 +29,14 @@ class FrameChooser():
             self.u_reps = np.unique(reps[self.epcs==e])
 
         self.make_hist()
+
+    @classmethod
+    def fromReadData(cls,cfg):
+        """
+        Factory method to easily load data and make the object
+        """
+        reps, fval, epcs, frms = inout.load_data()
+        return cls(cfg, reps, fval, epcs, frms)
 
 
     def update(self, reps, fval, epcs, frms):

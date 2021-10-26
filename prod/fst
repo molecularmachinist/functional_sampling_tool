@@ -1,20 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
-from src import choosing
 from src import cmd_line
 
 
-
-def make_choices(cfg):
-    chooser = choosing.FrameChooser.fromReadData(cfg)
-    chooser.plot_hist()
-    choices = chooser.make_choices()
-    return choices, chooser
-
-
 if __name__ == '__main__':
-    cfg = config_load.load_options("config.py")
-    print(cfg)
-    make_choices(cfg)
+    args = cmd_line.argP()
+    args.func(args)

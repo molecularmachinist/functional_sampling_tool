@@ -116,9 +116,9 @@ def argP():
 
     # Push and pull commands
     push_parser = subparsers.add_parser("push", help="rsync from local to remote")
-    push_parser.set_defaults(func=pushpull,pull=False)
+    push_parser.set_defaults(func=pushpull,config_func=import_cfg,pull=False)
     pull_parser = subparsers.add_parser("pull", help="rsync from remote to local")
-    pull_parser.set_defaults(func=pushpull,pull=True)
+    pull_parser.set_defaults(func=pushpull,config_func=import_cfg,pull=True)
 
 
     arguments = parser.parse_args()

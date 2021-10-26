@@ -31,7 +31,6 @@ def gromacs_command(gmx, cmd, *args, input=None, **kwargs):
     for k in kwargs:
         command += ["-"+k, kwargs[k]]
 
-    print(command)
     with open("output_%s.txt"%cmd, "w") as fout:
         compProc = subp.run(command, stdout=fout, stderr=subp.STDOUT, input=input)
 

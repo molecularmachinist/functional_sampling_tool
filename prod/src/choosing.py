@@ -71,7 +71,7 @@ class FrameChooser():
         maxbins = min(maxbins,self.cfg.maxbins)
         self.binsize = (largest_val-lowest_val)/maxbins
         print(f"Calculated maxbins {maxbins}, final maxbins {maxbins}")
-        print(f"data inside boundaries {np.sum((self.fval>self.cfg.minval)*(self.fval<self.cfg.maxval))}")
+        print(f"{np.sum((self.fval>self.cfg.minval)*(self.fval<self.cfg.maxval))} data inside boundaries")
         # Make histogram
         self.bin_edges = np.arange(lowest_val,largest_val+self.binsize , self.binsize)
         self.hist, _ = np.histogram(self.fval, bins=self.bin_edges)
@@ -126,9 +126,7 @@ class FrameChooser():
 
         weights = [(crith-self.hist[c]) for c in choices]
         weights /= np.sum(weights)
-        print(choices,(weights*(self.cfg.N-len(choices))))
         srt_ind = np.argsort(-weights)
-        print([choices[i] for i in srt_ind],(weights[srt_ind]*(self.cfg.N-len(choices))))
 
         # Each point has been added once
         len_choice = len(choices)

@@ -26,7 +26,7 @@ def init_rep(i,cfg,d="epoch01"):
                            p="../../"+cfg.topol, o="mdrun.tpr", maxwarn="1")
 
         print("Process returned %d"%rc)
-
+        assert rc == 0, "Nonzero returncode from grompp, see %s/rep%02d/output_grompp.txt for more detail."%(d,i)
     finally:
         # Whatever happens, we go back to the original working dir
         os.chdir(prevdir)

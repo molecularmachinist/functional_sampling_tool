@@ -30,6 +30,8 @@ class FrameChooser():
         for e in self.u_epcs:
             self.u_reps = np.unique(reps[self.epcs==e])
 
+        self.nextepoch = self.u_epcs[-1]+1
+
         self._make_hist()
 
     @classmethod

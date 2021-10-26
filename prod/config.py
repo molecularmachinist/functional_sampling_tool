@@ -14,7 +14,7 @@ remote_dir="/scratch/project_2004581/functional_sampling_tool/prod"
 # remote name, either "host" or "user@host". Must be setup for passwordless connect.
 remote_name="mahti"
 # Set dirs/files/patterns to exclude from rsync command
-rsync_excludes = ["naive", "initial", "templates", "fval.npy", "*.ipynb", "dump"]
+rsync_excludes = ["naive", "initial", "templates", "fval.npy", "*.ipynb", "dump", "figs"]
 
 
 ########################### sbatch template variables ##########################

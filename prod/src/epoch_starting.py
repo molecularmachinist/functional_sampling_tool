@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, shutil
 
-
+from . import utils
 
 
 def init_rep(i,cfg,d="epoch01"):
@@ -22,7 +22,7 @@ def init_rep(i,cfg,d="epoch01"):
     try:
         os.chdir("%s/rep%02d"%(d,i))
 
-        rc=gromacs_command(cfg.gmx, "grompp", c="start.gro", f="../../"+cfg.mdp, n="../../"+cfg.ndx,
+        rc=utils.gromacs_command(cfg.gmx, "grompp", c="start.gro", f="../../"+cfg.mdp, n="../../"+cfg.ndx,
                            p="../../"+cfg.topol, o="mdrun.tpr", maxwarn="1")
 
         print("Process returned %d"%rc)
@@ -56,7 +56,7 @@ def next_rep(i,cfg,newepoch,oldepoch,rep,frm, val):
         os.chdir("epoch%02d/rep%02d"%(newepoch, i))
 
         # The pdb structure seems to change the atom names, so maxwarn is 2
-        rc=gromacs_command("grompp", c="start.gro", f="../../"+cfg.mdp, n="../../"+cfg.ndx,
+        rc=utils.gromacs_command("grompp", c="start.gro", f="../../"+cfg.mdp, n="../../"+cfg.ndx,
                            p="../../"+cfg.topol, o="mdrun.tpr", maxwarn="2")
 
         print("Process returned %d"%rc)

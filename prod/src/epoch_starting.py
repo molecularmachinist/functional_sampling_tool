@@ -40,7 +40,7 @@ def next_rep(i,cfg,newepoch,oldepoch,rep,frm, val):
 
     print("Reading frame %d of epoch %d, rep %d"%(frm, oldepoch, rep))
     init_struct = mdtraj.load_frame("epoch%02d/rep%02d/mdrun.xtc"%(oldepoch, rep), frm, top=cfg.struct)
-    
+
     init_struct.save_gro("epoch%02d/rep%02d/start.gro"%(newepoch, i))
     print("Wrote structure to epoch%02d/rep%02d/start.gro, starting to grompp..."%(newepoch, i))
 
@@ -56,8 +56,8 @@ def next_rep(i,cfg,newepoch,oldepoch,rep,frm, val):
         os.chdir("epoch%02d/rep%02d"%(newepoch, i))
 
         # The pdb structure seems to change the atom names, so maxwarn is 2
-        rc=gromacs_command("grompp", c="start.gro", f="../../"+mdp, n="../../"+ndx,
-                           p="../../"+topol, o="mdrun.tpr", maxwarn="2")
+        rc=gromacs_command("grompp", c="start.gro", f="../../"+cfg.mdp, n="../../"+cfg.ndx,
+                           p="../../"+cfg.topol, o="mdrun.tpr", maxwarn="2")
 
         print("Process returned %d"%rc)
 

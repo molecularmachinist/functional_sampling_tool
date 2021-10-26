@@ -45,7 +45,7 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
         # Initial structures and first epoch
         os.makedirs("epoch01", exist_ok=True)
 
-        for i in range(1,N+1):
+        for i in range(1,cfg.N+1):
             init_rep(i)
     elif(None in [val,epc,rep,frm]):
         raise ValueError("val, epc, rep or frm cannot be None if nextepoch!=1")

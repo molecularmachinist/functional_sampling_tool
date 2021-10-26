@@ -49,6 +49,8 @@ def load_options(cfgname):
 def init(args):
     print("Initializing first epoch")
     epoch_starting.start_epoch(1, args.cfg)
+    if(args.push):
+        utils.rsync_up(args.cfg)
 
 
 def pushpull(args):

@@ -31,6 +31,7 @@ def gromacs_command(gmx, cmd, *args, input=None, **kwargs):
     for k in kwargs:
         command += ["-"+k, kwargs[k]]
 
+    print(f"Running: {' '.join(command)}")
     with open("output_%s.txt"%cmd, "w") as fout:
         compProc = subp.run(command, stdout=fout, stderr=subp.STDOUT, input=input)
 
@@ -45,6 +46,7 @@ def rsync_command(send_from, send_to, excludes=[]):
         Prints stdout and sterr when program finishes and returns the return code.
     """
     command = ["rsync", "-av", "--partial"]+["--exclude=%s"%e for e in excludes] + [send_from, send_to]
+    print(f"Running: {' '.join(command)}")
     compProc = subp.run(command,capture_output=True,text=True)
     print(compProc.stdout)
     print(compProc.stderr)

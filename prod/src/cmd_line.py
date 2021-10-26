@@ -4,6 +4,7 @@ import mdtraj
 import importlib
 import argparse
 import pathlib
+import sys
 
 from . import inout
 from . import epoch_starting
@@ -16,8 +17,11 @@ def import_cfg(cfgname):
     """
     print("Loading config from %s"%cfgname)
     spec = importlib.util.spec_from_file_location("config", cfgname)
+    writebytecode = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
     cfg = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(cfg)
+    sys.dont_write_bytecode = writebytecode
     return cfg
 
 
@@ -69,7 +73,7 @@ def choose(args):
     choices = chooser.make_choices()
     val, epc, rep, frm =  chooser.choose_frames(choices)
     if(not args.choose_only):
-        epoch_starting.start_epoch(chooser.nextepoch, cfg, val, epc, rep, frm)
+        epoch_starting.start_epoch(chooser.nextepoch, args.cfg, val, epc, rep, frm)
     if(args.push):
         utils.rsync_up(args.cfg)
 
@@ -89,7 +93,7 @@ def argP():
     parser.set_defaults(config_func=load_options)
 
     # A subparser object to make subcommands. A subcommand is required.
-    subparsers = parser.add_subparsers(description="Specify what the program should do. Only one command should be given per run.")
+    subparsers = parser.add_subparsers(description="Specify what the program should do. Only one command should be given per run. 'fst <cmd> -h' to get command specific option.")
     subparsers.required = True
     subparsers.dest = 'command'
 

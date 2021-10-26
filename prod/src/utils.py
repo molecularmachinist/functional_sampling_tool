@@ -23,7 +23,7 @@ def rolling_mean(data, window=10, center = True, fill=np.nan):
 
     return mean
 
-def gromacs_command(cmd, *args, input=None, **kwargs):
+def gromacs_command(gmx, cmd, *args, input=None, **kwargs):
     """ Call the gromacs subcommand cmd. Both args and keys of kwargs should be without the leading dash.
         output is redirected to output_<cmd>.txt. Returns the return code of the command.
     """

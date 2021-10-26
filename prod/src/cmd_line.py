@@ -8,6 +8,7 @@ import pathlib
 from . import inout
 from . import epoch_starting
 from . import choosing
+from . import utils
 
 def import_cfg(cfgname):
     """

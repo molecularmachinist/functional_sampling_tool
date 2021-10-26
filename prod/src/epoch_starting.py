@@ -4,7 +4,7 @@ import os, shutil
 
 
 
-def init_rep(i,d="epoch01"):
+def init_rep(i,cfg,d="epoch01"):
     """ Initializes rep i
     """
     try:
@@ -22,8 +22,8 @@ def init_rep(i,d="epoch01"):
     try:
         os.chdir("%s/rep%02d"%(d,i))
 
-        rc=gromacs_command("grompp", c="start.gro", f="../../"+mdp, n="../../"+ndx,
-                           p="../../"+topol, o="mdrun.tpr", maxwarn="1")
+        rc=gromacs_command(cfg.gmx, "grompp", c="start.gro", f="../../"+cfg.mdp, n="../../"+cfg.ndx,
+                           p="../../"+cfg.topol, o="mdrun.tpr", maxwarn="1")
 
         print("Process returned %d"%rc)
 
@@ -31,6 +31,39 @@ def init_rep(i,d="epoch01"):
         # Whatever happens, we go back to the original working dir
         os.chdir(prevdir)
 
+
+
+def next_rep(i,cfg,newepoch,oldepoch,rep,frm, val):
+    """ Initializes rep i of newepoch, taking the frame frm from rep of oldepoch
+    """
+    os.makedirs("epoch%02d/rep%02d"%(newepoch, i))
+
+    print("Reading frame %d of epoch %d, rep %d"%(frm, oldepoch, rep))
+    init_struct = mdtraj.load_frame("epoch%02d/rep%02d/mdrun.xtc"%(oldepoch, rep), frm, top=cfg.struct)
+    
+    init_struct.save_gro("epoch%02d/rep%02d/start.gro"%(newepoch, i))
+    print("Wrote structure to epoch%02d/rep%02d/start.gro, starting to grompp..."%(newepoch, i))
+
+    # Make a note of the origin
+    with open("epoch%02d/rep%02d/origin.txt"%(newepoch, i), "w") as f:
+        f.write("# Origin of this trajectory:\n")
+        f.write("# epoch rep frame val\n")
+        f.write("%d %d %d %f\n"%(oldepoch,rep,frm, val))
+
+    # Save original working dir to come back to
+    prevdir = os.getcwd()
+    try:
+        os.chdir("epoch%02d/rep%02d"%(newepoch, i))
+
+        # The pdb structure seems to change the atom names, so maxwarn is 2
+        rc=gromacs_command("grompp", c="start.gro", f="../../"+mdp, n="../../"+ndx,
+                           p="../../"+topol, o="mdrun.tpr", maxwarn="2")
+
+        print("Process returned %d"%rc)
+
+    finally:
+        # Whatever happens, we go back to the original working dir
+        os.chdir(prevdir)
 
 def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
     """ Start epoch nextepoch. If it is one, the initial epoch is started,
@@ -46,7 +79,7 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
         os.makedirs("epoch01", exist_ok=True)
 
         for i in range(1,cfg.N+1):
-            init_rep(i)
+            init_rep(i,cfg)
     elif(None in [val,epc,rep,frm]):
         raise ValueError("val, epc, rep or frm cannot be None if nextepoch!=1")
     else:
@@ -54,7 +87,7 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
         os.makedirs("epoch%02d"%(nextepoch))
 
         for i, (v, e, r, f) in enumerate(zip(val,epc,rep,frm)):
-            next_rep(i+1, nextepoch, epoch, rep, frm, val)
+            next_rep(i+1,cfg, nextepoch, epoch, rep, frm, val)
 
     # copy sbatch template
     with open("templates/sbatch_launch.sh") as fin:

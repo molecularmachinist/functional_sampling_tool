@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, shutil
+import numpy as np
+import mdtraj
 
 from . import utils
 
@@ -56,7 +58,7 @@ def next_rep(i,cfg,newepoch,oldepoch,rep,frm, val):
         os.chdir("epoch%02d/rep%02d"%(newepoch, i))
 
         # The pdb structure seems to change the atom names, so maxwarn is 2
-        rc=utils.gromacs_command("grompp", c="start.gro", f="../../"+cfg.mdp, n="../../"+cfg.ndx,
+        rc=utils.gromacs_command(cfg.gmx, "grompp", c="start.gro", f="../../"+cfg.mdp, n="../../"+cfg.ndx,
                            p="../../"+cfg.topol, o="mdrun.tpr", maxwarn="2")
 
         print("Process returned %d"%rc)
@@ -80,14 +82,14 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
 
         for i in range(1,cfg.N+1):
             init_rep(i,cfg)
-    elif(None in [val,epc,rep,frm]):
+    elif(np.any([d is None for d in (val,epc,rep,frm)])):
         raise ValueError("val, epc, rep or frm cannot be None if nextepoch!=1")
     else:
 
         os.makedirs("epoch%02d"%(nextepoch))
 
         for i, (v, e, r, f) in enumerate(zip(val,epc,rep,frm)):
-            next_rep(i+1,cfg, nextepoch, epoch, rep, frm, val)
+            next_rep(i+1,cfg, nextepoch, e, r, f, v)
 
     # copy sbatch template
     with open("templates/sbatch_launch.sh") as fin:

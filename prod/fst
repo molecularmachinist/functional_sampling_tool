@@ -3,7 +3,7 @@
 
 
 from src import choosing
-from src import config_load
+from src import cmd_line
 
 
 

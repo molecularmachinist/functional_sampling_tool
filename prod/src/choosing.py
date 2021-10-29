@@ -107,7 +107,7 @@ class FrameChooser():
             if(self.hist[nanmask][p]<crith):
                 choices.append(indexes[p])
 
-        zero_mask = self.hist_mask*(self.hist!=0)
+        zero_mask = self.hist_mask*(self.hist>2)
         indexes = np.arange(len(self.hist))[zero_mask]
 
         # TODO: refactor below
@@ -174,6 +174,7 @@ class FrameChooser():
         v,e,r,f=[],[],[],[]
         for bi in chosen_bins:
             vals_in_bin = (self.fval >= self.bin_edges[bi])*(self.fval < self.bin_edges[bi+1])
+            print(bi, vals_in_bin)
             ndx = rng.choice(np.sum(vals_in_bin))
 
             v.append(self.fval[vals_in_bin][ndx])

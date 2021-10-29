@@ -114,7 +114,7 @@ def argP():
     # newepoch command
     epochstarter_parser = subparsers.add_parser("newepoch", help="Shorthand for \"choose --pull --push\".")
     epochstarter_parser.set_defaults(func=choose, push=True, pull=True, choose_only=False)
-    choose_parser.add_argument("--reload_fval", action="store_true", help="Recalculate fval even if fval.npy exists (default: %(default)s)")
+    epochstarter_parser.add_argument("--reload_fval", action="store_true", help="Recalculate fval even if fval.npy exists (default: %(default)s)")
 
     # Push and pull commands
     push_parser = subparsers.add_parser("push", help="rsync from local to remote")

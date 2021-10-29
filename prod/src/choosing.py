@@ -107,7 +107,7 @@ class FrameChooser():
             if(self.hist[nanmask][p]<crith):
                 choices.append(indexes[p])
 
-        zero_mask = self.hist_mask*(self.hist>2)
+        zero_mask = self.hist_mask*(self.hist!=0)
         indexes = np.arange(len(self.hist))[zero_mask]
 
         # TODO: refactor below

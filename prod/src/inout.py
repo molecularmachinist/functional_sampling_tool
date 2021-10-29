@@ -22,7 +22,7 @@ def check_num(prefix):
         if("%s%02d"%(fprefix,i) not in files):
             return i-1
 
-def load_epoch_data(struct, sel, epoch, load_fval=False):
+def load_epoch_data(struct, sel,function_val, epoch, load_fval=False):
     N = check_num("epoch%02d/rep"%epoch)
     fval = []
     for i in range(1,N+1):
@@ -48,13 +48,13 @@ def load_epoch_data(struct, sel, epoch, load_fval=False):
     return np.concatenate(reps), np.concatenate(fval), np.concatenate(frms)
 
 
-def load_data(struct, sel):
+def load_data(struct, sel,function_val):
     epochs = check_num("epoch")
     fval = []
     reps = []
     frms = []
     for i in range(1,epochs+1):
-        r,f,fr = load_epoch_data(struct, sel, i, load_fval=False)
+        r,f,fr = load_epoch_data(struct, sel,function_val, i, load_fval=False)
         reps.append(r)
         fval.append(f)
         frms.append(fr)

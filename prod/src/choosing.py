@@ -173,7 +173,7 @@ class FrameChooser():
         # lists for value, rpoch, rep and frame
         v,e,r,f=[],[],[],[]
         for bi in chosen_bins:
-            if(bi<len(self.bin_edges)-1):
+            if(bi<len(self.bin_edges)-2):
                 vals_in_bin = (self.fval >= self.bin_edges[bi])*(self.fval < self.bin_edges[bi+1])
             else:
                 vals_in_bin = (self.fval >= self.bin_edges[bi])*(self.fval <= self.bin_edges[bi+1])

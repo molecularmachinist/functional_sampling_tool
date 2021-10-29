@@ -119,9 +119,9 @@ class FrameChooser():
                 choices.append(indexes[0])
         else:
             # Check if first/last extrema is a maxima -> also include the far end(s)
-            if(minims.size>0 and maxims[-1]>minims[-1] and self.hist[self.hist_mask][-1]<crith):
+            if(minims.size==0 or (maxims[-1]>minims[-1] and self.hist[self.hist_mask][-1]<crith)):
                 choices.append(indexes[-1])
-            if(minims.size>0 and maxims[0]<minims[0] and self.hist[self.hist_mask][0]<crith):
+            if(minims.size==0 and (maxims[0]<minims[0] and self.hist[self.hist_mask][0]<crith)):
                 choices.append(indexes[0])
 
         weights = [(crith-self.hist[c]) for c in choices]

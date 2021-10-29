@@ -173,8 +173,11 @@ class FrameChooser():
         # lists for value, rpoch, rep and frame
         v,e,r,f=[],[],[],[]
         for bi in chosen_bins:
-            vals_in_bin = (self.fval >= self.bin_edges[bi])*(self.fval < self.bin_edges[bi+1])
-            print(bi, vals_in_bin)
+            if(bi<len(self.bin_edges)-1):
+                vals_in_bin = (self.fval >= self.bin_edges[bi])*(self.fval < self.bin_edges[bi+1])
+            else:
+                vals_in_bin = (self.fval >= self.bin_edges[bi])*(self.fval <= self.bin_edges[bi+1])
+
             ndx = rng.choice(np.sum(vals_in_bin))
 
             v.append(self.fval[vals_in_bin][ndx])

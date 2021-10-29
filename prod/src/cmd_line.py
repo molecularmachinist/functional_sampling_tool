@@ -68,7 +68,7 @@ def pushpull(args):
 def choose(args):
     if(args.pull):
         utils.rsync_down(args.cfg)
-    chooser = choosing.FrameChooser.fromReadData(args.cfg)
+    chooser = choosing.FrameChooser.fromReadData(args.cfg, args.reload_fval)
     chooser.plot_hist()
     choices = chooser.make_choices()
     val, epc, rep, frm =  chooser.choose_frames(choices)
@@ -108,11 +108,13 @@ def argP():
     choose_parser.add_argument("--pull", action="store_true", help="push to remote after initialization (default: %(default)s)")
     choose_parser.add_argument("--push", action="store_true", help="push to remote after initialization (default: %(default)s)")
     choose_parser.add_argument("--choose_only", action="store_true", help="Only make the choices and plots, do not initialize next epoch (default: %(default)s)")
+    choose_parser.add_argument("--reload_fval", action="store_true", help="Recalculate fval even if fval.npy exists (default: %(default)s)")
     choose_parser.set_defaults(func=choose)
 
     # newepoch command
     epochstarter_parser = subparsers.add_parser("newepoch", help="Shorthand for \"choose --pull --push\".")
     epochstarter_parser.set_defaults(func=choose, push=True, pull=True, choose_only=False)
+    choose_parser.add_argument("--reload_fval", action="store_true", help="Recalculate fval even if fval.npy exists (default: %(default)s)")
 
     # Push and pull commands
     push_parser = subparsers.add_parser("push", help="rsync from local to remote")

@@ -35,11 +35,11 @@ class FrameChooser():
         self._make_hist()
 
     @classmethod
-    def fromReadData(cls,cfg):
+    def fromReadData(cls,cfg,load_fval):
         """
         Factory method to easily load data and make the object
         """
-        reps, fval, epcs, frms = inout.load_data(cfg.struct,cfg.sel,cfg.function_val)
+        reps, fval, epcs, frms = inout.load_data(cfg.struct,cfg.sel,cfg.function_val,load_fval)
         return cls(cfg, reps, fval, epcs, frms)
 
 

@@ -33,7 +33,7 @@ def load_options(cfgname):
     print("Loading structure")
     cfg.struct = mdtraj.load("initial/start.pdb")
     cfg.sel    = cfg.struct.topology.select(cfg.select_str)
-    print("Selected %d atoms")
+    print("Selected %d atoms"%len(cfg.sel))
     cfg.startval = cfg.function_val(cfg.struct.xyz[:,cfg.sel,:])
     print("Initial function value %g"%cfg.startval)
 

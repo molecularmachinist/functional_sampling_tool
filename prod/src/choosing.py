@@ -27,8 +27,9 @@ class FrameChooser():
         self.frms = frms
         # Also get the unique epochs and reps per epoch
         self.u_epcs = np.unique(epcs)
+        self.u_reps = []
         for e in self.u_epcs:
-            self.u_reps = np.unique(reps[self.epcs==e])
+            self.u_reps.append(np.unique(reps[self.epcs==e]))
 
         self.nextepoch = self.u_epcs[-1]+1
 
@@ -53,8 +54,9 @@ class FrameChooser():
         self.frms = frms
         # Also get the unique epochs and reps per epoch
         self.u_epcs = np.unique(epcs)
+        self.u_reps = []
         for e in self.u_epcs:
-            self.u_reps = np.unique(reps[self.epcs==e])
+            self.u_reps.append(np.unique(reps[self.epcs==e]))
 
         self.make_hist()
 

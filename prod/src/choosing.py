@@ -96,7 +96,7 @@ class FrameChooser():
             )
 
 
-    def make_choices(self,plot=True):
+    def make_choices(self,choices=None,plot=True):
         """
         Uses the histogram to choose bins and returns the bin indices of the choices.
         """
@@ -115,7 +115,8 @@ class FrameChooser():
         # The criteria for choices is half way between max and min heights
         crith = (maxh-minh)/2+minh
 
-        choices = []
+        if(choices is None):
+            choices = []
         # convert from masked indices to unmasked
         indexes = np.arange(len(self.hist))[nanmask]
         for p in minims:
@@ -142,6 +143,8 @@ class FrameChooser():
         weights = [(crith-self.hist[c]) for c in choices]
         weights /= np.sum(weights)
         srt_ind = np.argsort(-weights)
+        #sort choices
+        choices = [choices[i] for i in srt_ind]
 
         # Each point has been added once
         len_choice = len(choices)
@@ -154,7 +157,9 @@ class FrameChooser():
         for i in range(self.cfg.N-len(choices)):
             choices.append(choices[srt_ind[i]])
 
-
+        # Make sure too many were not added
+        # This would either be because more than needed minima found, or the one
+        # bug, I have yet to find
         print(f"Chose {len(choices)} bins, {len(np.unique(choices))} unique")
 
         if(plot):

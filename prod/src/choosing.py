@@ -60,27 +60,40 @@ class FrameChooser():
 
         self.make_hist()
 
-
-    def _make_hist(self):
+    def __make_hist_no_cfg(self,maxbins,data_per_bin,minval,maxval):
+        """
+        The function that actually makes the histogram. Does not read values from,
+        but gets them as parameters. This way different implementations can use
+        different values.
+        """
         print(f"Making histogram with total {len(self.fval)} data")
         # Get extent of data and boundaries
         largest_val = np.max(self.fval)
         lowest_val  = np.min(self.fval)
-        self.binmax = min(largest_val, self.cfg.maxval)
-        self.binmin = max(lowest_val,  self.cfg.minval)
+        self.binmax = min(largest_val, maxval)
+        self.binmin = max(lowest_val,  minval)
         # Calculate binsize
-        maxbins = np.sum((self.fval>self.cfg.minval)*(self.fval<self.cfg.maxval))//self.cfg.data_per_bin
-        maxbins = min(maxbins,self.cfg.maxbins)
+        maxbins_calc = np.sum((self.fval>minval)*(self.fval<maxval))//data_per_bin
+        maxbins = min(maxbins_calc,maxbins)
         self.binsize = (largest_val-lowest_val)/maxbins
-        print(f"Calculated maxbins {maxbins}, final maxbins {maxbins}")
-        print(f"{np.sum((self.fval>self.cfg.minval)*(self.fval<self.cfg.maxval))} data inside boundaries")
+        print(f"Calculated maxbins {maxbins_calc}, final maxbins {maxbins}")
+        print(f"{np.sum((self.fval>minval)*(self.fval<maxval))} data inside boundaries")
         # Make histogram
         self.bin_edges = np.arange(lowest_val,largest_val+self.binsize , self.binsize)
         self.hist, _ = np.histogram(self.fval, bins=self.bin_edges)
         self.bin_centers = (self.bin_edges[:-1]+self.bin_edges[1:])/2
         # Make a mask of which bins have higher edge larger than minval
         # AND lower edge lower than maxval
-        self.hist_mask = (self.bin_edges[1:]>self.cfg.minval)*(self.bin_edges[:-1]<self.cfg.maxval)
+        self.hist_mask = (self.bin_edges[1:]>minval)*(self.bin_edges[:-1]<maxval)
+
+
+    def _make_hist(self):
+        self.__make_hist_no_cfg(
+                self.cfg.maxbins,
+                self.cfg.data_per_bin,
+                self.cfg.minval,
+                self.cfg.maxval
+            )
 
 
     def make_choices(self,plot=True):

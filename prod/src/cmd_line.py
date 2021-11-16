@@ -4,11 +4,11 @@ import mdtraj
 import importlib
 import argparse
 import pathlib
-import sys
+import sys,os
 
 from . import inout
 from . import epoch_starting
-from . import choosing
+from . import clustering
 from . import utils
 
 def import_cfg(cfgname):
@@ -31,8 +31,11 @@ def load_options(cfgname):
     """
     cfg    = import_cfg(cfgname)
     print("Loading structure")
+    if(not os.path.isfile("initial/start.pdb")):
+        util.make_pdb(cfg)
     cfg.struct = mdtraj.load("initial/start.pdb")
     cfg.sel    = cfg.struct.topology.select(cfg.select_str)
+    cfg.sel_clust = cfg.struct.topology.select(cfg.select_str_clust)
     print("Selected %d atoms"%len(cfg.sel))
     cfg.startval = cfg.function_val(cfg.struct.xyz[:,cfg.sel,:])
     print("Initial function value %g"%cfg.startval)
@@ -68,10 +71,10 @@ def pushpull(args):
 def choose(args):
     if(args.pull):
         utils.rsync_down(args.cfg)
-    chooser = choosing.FrameChooser.fromReadData(args.cfg, args.reload_fval)
+    chooser = clustering.ClusterChooser.fromReadData(args.cfg, args.reload_fval)
     chooser.plot_hist()
-    choices = chooser.make_choices()
-    val, epc, rep, frm =  chooser.choose_frames(choices)
+    val, epc, rep, frm = chooser.make_choices()
+    chooser.print_choices(val, epc, rep, frm)
     if(not args.choose_only):
         epoch_starting.start_epoch(chooser.nextepoch, args.cfg, val, epc, rep, frm)
     if(args.push):

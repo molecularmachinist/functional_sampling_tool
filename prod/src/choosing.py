@@ -14,17 +14,17 @@ methods for choosing frames.
 
 class FrameChooser():
 
-    def __init__(self, cfg, reps, fval, epcs, frms):
+    def __init__(self, cfg, fval, frms, reps, epcs):
         """
         Takes the config and data as 4 N-length arrays with the rep, fval, epoch
         and frame number (within teh specific epoch and rep) of each datapoint/frame.
         Saves the data and calculates histogram.
         """
         self.cfg  = cfg
-        self.reps = reps
         self.fval = fval
-        self.epcs = epcs
         self.frms = frms
+        self.reps = reps
+        self.epcs = epcs
         # Also get the unique epochs and reps per epoch
         self.u_epcs = np.unique(epcs)
         self.u_reps = []
@@ -40,8 +40,8 @@ class FrameChooser():
         """
         Factory method to easily load data and make the object
         """
-        reps, fval, epcs, frms = inout.load_data(cfg.struct,cfg.sel,cfg.function_val,load_fval)
-        return cls(cfg, reps, fval, epcs, frms)
+        fval,_,frms,reps,epcs = inout.load_data(cfg.struct,cfg.sel,[],cfg.function_val,load_fval)
+        return cls(cfg, fval, frms, reps, epcs)
 
 
     def update(self, reps, fval, epcs, frms):
@@ -60,7 +60,7 @@ class FrameChooser():
 
         self.make_hist()
 
-    def __make_hist_no_cfg(self,maxbins,data_per_bin,minval,maxval):
+    def _make_hist_no_cfg(self,maxbins,data_per_bin,minval,maxval):
         """
         The function that actually makes the histogram. Does not read values from cfg,
         but gets them as parameters. This way different implementations can use
@@ -88,7 +88,7 @@ class FrameChooser():
 
 
     def _make_hist(self):
-        self.__make_hist_no_cfg(
+        self._make_hist_no_cfg(
                 self.cfg.maxbins,
                 self.cfg.data_per_bin,
                 self.cfg.minval,
@@ -96,9 +96,10 @@ class FrameChooser():
             )
 
 
-    def make_choices(self,choices=None,plot=True):
+    def make_choices(self,prechoices=0,plot=True):
         """
         Uses the histogram to choose bins and returns the bin indices of the choices.
+        prechoices is the number of choices already done.
         """
         smoothed = utils.rolling_mean(self.hist)
         nanmask = np.isfinite(smoothed)*self.hist_mask
@@ -115,8 +116,8 @@ class FrameChooser():
         # The criteria for choices is half way between max and min heights
         crith = (maxh-minh)/2+minh
 
-        if(choices is None):
-            choices = []
+        choices = []
+
         # convert from masked indices to unmasked
         indexes = np.arange(len(self.hist))[nanmask]
         for p in minims:
@@ -150,31 +151,33 @@ class FrameChooser():
         len_choice = len(choices)
         # Add more depending on weight. Multiplication is floored, so between 0 and len_choice-1 too few are added
         for i in srt_ind:
-            for j in range(math.floor(weights[i]*(self.cfg.N-len_choice))):
+            for j in range(math.floor(weights[i]*(self.cfg.N-len_choice-prechoices))):
                 choices.append(choices[i])
 
         # Fill the rest in sorted order
-        for i in range(self.cfg.N-len(choices)):
+        for i in range(self.cfg.N-len(choices)-prechoices):
             choices.append(choices[srt_ind[i]])
 
         # Make sure too many were not added
         # This would either be because more than needed minima found, or the one
         # bug, I have yet to find
+        choices = choices[:(self.cfg.N-prechoices)]
         print(f"Chose {len(choices)} bins, {len(np.unique(choices))} unique")
 
         if(plot):
             self._plot_choices(crith,smoothed,choices,nanmask,maxims,minims)
-        return choices
+        return self.choose_frames(choices)
+
 
     def choose_frames(self, chosen_bins):
         """ Input parameters:
                 - chosen_bins : Length N list of the indices of the bins that have been chosen.
                                 Duplicates (starting from the same bin) are simply many times in the list.
             Output:
-                - v : Length N array of the fvals for each new rep
-                - e : Length N array of the epochs each new rep comes from
-                - r : Length N array of the rep within the epoch each new rep comes from
-                - f : Length N array of the frame within the rep each new rep comes from
+                - v : Length N list of the fvals for each new rep
+                - e : Length N list of the epochs each new rep comes from
+                - r : Length N list of the rep within the epoch each new rep comes from
+                - f : Length N list of the frame within the rep each new rep comes from
 
             Other "inputs":
                 Saved already in the object:
@@ -205,7 +208,12 @@ class FrameChooser():
             r.append(self.reps[vals_in_bin][ndx])
             f.append(self.frms[vals_in_bin][ndx])
 
-        return np.array(v), np.array(e), np.array(r), np.array(f)
+        return v,e,r,f
+
+    def print_choices(self,val, epc, rep, frm):
+        print("Final choices:")
+        for v,e,r,f in zip(val, epc, rep, frm):
+            print(f"frm {f}, rep {r}, epc {e}, fval={v}")
 
     def plot_hist(self):
 

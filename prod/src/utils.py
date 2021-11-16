@@ -68,3 +68,23 @@ def rsync_up(cfg):
     """
     rc = rsync_command( "./", "%s:%s/"%(cfg.remote_name,cfg.remote_dir), excludes=cfg.rsync_excludes)
     print("Process returned %d"%rc)
+
+def make_pdb(cfg):
+    """
+    Makes the pdb to load mdtraj
+    """
+    print("Making initial/start.pdb")
+
+    # Save original working dir to come back to
+    prevdir = os.getcwd()
+    try:
+        os.chdir("initial")
+
+        rc=gromacs_command(cfg.gmx, "trjconv", f="start.gro",
+        s="../epoch01/rep01/mdrun.tpr", o="start.pdb")
+
+        print("Process returned %d"%rc)
+        assert rc == 0, "Nonzero returncode from trjconv, see initial/output_trjconv.txt for more detail."
+    finally:
+        # Whatever happens, we go back to the original working dir
+        os.chdir(prevdir)

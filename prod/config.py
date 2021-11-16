@@ -14,7 +14,7 @@ remote_dir="/scratch/project_2004581/functional_sampling_tool/prod"
 # remote name, either "host" or "user@host". Must be setup for passwordless connect.
 remote_name="mahti"
 # Set dirs/files/patterns to exclude from rsync command
-rsync_excludes = ["config.py", "initial", "templates", "fval.npy", "*.ipynb", "dump", "figs"]
+rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", "*.ipynb", "dump", "figs"]
 
 
 ########################### sbatch template variables ##########################
@@ -36,10 +36,13 @@ ndx   = "index_grompp.ndx"
 
 
 ############################## Function calcs ##################################
-# To save memory we only load this selection
+# To make next run faster we save this selection to disk
+# The coordinates of the selction are used in function_val
 # Should be a valid mdtraj selection string
 # mdtraj selection string https://www.mdtraj.org/1.9.5/atom_selection.html
 select_str = "protein and residue 638 and not (name =~ 'H.*')"
+# Same as above, but selection for clustering
+select_str_clust = "protein and name CA"
 
 # Minimum and maximum values to sample from between. None to ignore boundary, "start" string to use the
 # initial value of the starting structure
@@ -87,5 +90,11 @@ maxbins = 100
 clust_data_per_bin=1000
 clust_maxbins=10
 
+#Max number of clusters per bin
+maxclust=15
 # choose at most this fraction of choices from clustering
 clust_choice_frac=0.5
+# Tolerace for number of clusters in clustering
+clust_tol=0.1
+# Number of epoch before clustering
+epochs_pre_clust=3

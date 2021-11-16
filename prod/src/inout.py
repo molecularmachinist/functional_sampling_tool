@@ -3,6 +3,9 @@ import os
 import numpy as np
 import mdtraj
 
+class LoadError(ValueError):
+    pass
+
 def check_num(prefix):
     """
     Checks filenames prefix01, prefix02, etc and returns the highest found (0 if none found)
@@ -22,42 +25,66 @@ def check_num(prefix):
         if("%s%02d"%(fprefix,i) not in files):
             return i-1
 
-def load_epoch_data(struct, sel,function_val, epoch, load_fval):
+def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval):
     N = check_num("epoch%02d/rep"%epoch)
     fval = []
+    crd  = []
     for i in range(1,N+1):
         d = "epoch%02d/rep%02d/"%(epoch, i)
         if(not load_fval):
             try:
-                fval.append(np.load(d+"fval.npy"))
-                print("Loaded fval from %sfval.npy"%d)
+                with np.load(d+"fval_data.npz") as dat:
+                    if(dat["xtc_mod_t"]!=os.path.getmtime(d+"mdrun.xtc")):
+                        raise LoadError("Modification time of %s does not match, reloading"%(d+"mdrun.xtc"))
+                    if((not np.array_equal(sel,dat["sel"])) or (not np.array_equal(sel_clust,dat["sel_clust"]))):
+                        raise LoadError("Selections in %sfval_data.npz do not match, reloading"%d)
+
+                    fval.append(function_val(dat["fval_crd"]))
+                    crd.append(dat["crd"])
+                print("Loaded fval from %sfval_data.npz"%d)
                 continue
             except FileNotFoundError:
-                print("Could not open %s"%(d+"fval.npy"))
+                print("Could not open %s, loading from xtc"%(d+"fval_data.npz"))
+            except LoadError as e:
+                print(e)
+            except KeyError as e:
+                print(d+"fval_data.npz"+" missing data:")
+                print(e)
+                print("reloading from xtc")
 
         print("Loading trajectory %s"%(d+"mdrun.xtc"))
-        traj = mdtraj.load(d+"mdrun.xtc", top=struct,atom_indices=sel)
+        traj = mdtraj.load(d+"mdrun.xtc", top=struct)
         print("Calculating fval")
-        fval.append(function_val(traj.xyz))
-        print("Saving fval")
-        np.save(d+"fval.npy", fval[-1])
+        fval_crd = traj.xyz[:,sel,:].copy()
+        fval.append(function_val(fval_crd))
+        print("Copying crd")
+        crd.append(traj.xyz[:,sel_clust,:].copy())
+        print("Saving fval_data")
+        xtc_mod_t = os.path.getmtime(d+"mdrun.xtc")
+        np.savez_compressed(d+"fval_data.npz",
+                            fval_crd=fval_crd,
+                            crd=crd[-1],
+                            xtc_mod_t=xtc_mod_t,
+                            sel=sel, sel_clust=sel_clust)
 
     reps = [np.full(f.shape,i+1) for i,f in enumerate(fval)]
     frms = [np.arange(len(f)) for f in fval]
 
-    return np.concatenate(reps), np.concatenate(fval), np.concatenate(frms)
+    return np.concatenate(reps), np.concatenate(fval), np.concatenate(frms), np.concatenate(crd)
 
 
-def load_data(struct, sel,function_val, load_fval=False):
+def load_data(struct, sel, sel_clust, function_val, load_fval=False):
     epochs = check_num("epoch")
     fval = []
     reps = []
     frms = []
+    crds = []
     for i in range(1,epochs+1):
-        r,f,fr = load_epoch_data(struct, sel,function_val, i, load_fval)
+        r,f,fr,crd = load_epoch_data(struct, sel,sel_clust, function_val, i, load_fval)
         reps.append(r)
         fval.append(f)
         frms.append(fr)
+        crds.append(crd)
 
 
     epcs = [np.full(f.shape,i+1) for i,f in enumerate(fval)]
@@ -66,4 +93,5 @@ def load_data(struct, sel,function_val, load_fval=False):
     fval = np.concatenate(fval)
     epcs = np.concatenate(epcs)
     frms = np.concatenate(frms)
-    return reps, fval, epcs, frms
+    crds = np.concatenate(crds)
+    return fval, crds, frms, reps, epcs

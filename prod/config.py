@@ -82,3 +82,10 @@ def function_val(positions):
 data_per_bin = 100
 # Maximum amount of bins between boundaries
 maxbins = 100
+
+# Cluster histogram
+clust_data_per_bin=1000
+clust_maxbins=10
+
+# choose at most this fraction of choices from clustering
+clust_choice_frac=0.5

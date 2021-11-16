@@ -2,6 +2,7 @@
 import os
 import numpy as np
 import mdtraj
+import inspect
 
 class LoadError(ValueError):
     pass
@@ -33,15 +34,24 @@ def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval):
         d = "epoch%02d/rep%02d/"%(epoch, i)
         if(not load_fval):
             try:
-                with np.load(d+"fval_data.npz") as dat:
-                    if(dat["xtc_mod_t"]!=os.path.getmtime(d+"mdrun.xtc")):
-                        raise LoadError("Modification time of %s does not match, reloading"%(d+"mdrun.xtc"))
-                    if((not np.array_equal(sel,dat["sel"])) or (not np.array_equal(sel_clust,dat["sel_clust"]))):
-                        raise LoadError("Selections in %sfval_data.npz do not match, reloading"%d)
-
+                with np.load(d+"fval_data.npz") as npz:
+                    dat = dict(npz)
+                if(dat["xtc_mod_t"]!=os.path.getmtime(d+"mdrun.xtc")):
+                    raise LoadError("Modification time of %s does not match, reloading"%(d+"mdrun.xtc"))
+                if((not np.array_equal(sel,dat["sel"])) or (not np.array_equal(sel_clust,dat["sel_clust"]))):
+                    raise LoadError("Selections in %sfval_data.npz do not match, reloading"%d)
+                if(dat["func_hash"]!=hash(inspect.getsource(function_val))):
+                    print("Function hash changed, recalculating fval")
                     fval.append(function_val(dat["fval_crd"]))
-                    crd.append(dat["crd"])
-                print("Loaded fval from %sfval_data.npz"%d)
+                    dat["fval"] = fval[-1]
+                    print("Saving modified fval to fval_data.npz")
+                    dat["func_hash"]=hash(inspect.getsource(function_val))
+                    np.savez_compressed(d+"fval_data.npz",**dat)
+                else:
+                    fval.append(dat["fval"])
+
+                crd.append(dat["crd"])
+                print("Loaded data from %sfval_data.npz"%d)
                 continue
             except FileNotFoundError:
                 print("Could not open %s, loading from xtc"%(d+"fval_data.npz"))
@@ -59,9 +69,10 @@ def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval):
         fval.append(function_val(fval_crd))
         print("Copying crd")
         crd.append(traj.xyz[:,sel_clust,:].copy())
-        print("Saving fval_data")
+        print("Saving fval_data.npz")
         xtc_mod_t = os.path.getmtime(d+"mdrun.xtc")
         np.savez_compressed(d+"fval_data.npz",
+                            fval=fval[-1],
                             fval_crd=fval_crd,
                             crd=crd[-1],
                             xtc_mod_t=xtc_mod_t,

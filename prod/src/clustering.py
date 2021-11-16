@@ -56,7 +56,8 @@ class ClusterChooser(choosing.FrameChooser):
                 self.cfg.clust_maxbins,
                 self.cfg.clust_data_per_bin,
                 self.cfg.minval,
-                self.cfg.maxval
+                self.cfg.maxval,
+                hard_boundaries=True
             )
         self.clust_hist_indexes = np.digitize(self.fval, bins=self.bin_edges)
         self.clust_unique_bins,self.clust_unique_bin_counts = np.unique(self.clust_hist_indexes,return_counts=True)
@@ -73,7 +74,7 @@ class ClusterChooser(choosing.FrameChooser):
         natoms = self.coords.shape[1]
         dims = self.coords.shape[2]
         for ci,cc in zip(self.clust_unique_bins,self.clust_unique_bin_counts):
-            if(cc>=self.cfg.clust_data_per_bin):
+            if(ci!=0 and ci!=len(self.bin_edges) and cc>=self.cfg.clust_data_per_bin):
                 indxs = self.clust_hist_indexes==ci
                 nframes = np.sum(indxs, dtype=int)
                 crds = self.coords[indxs].reshape((nframes,natoms*dims))
@@ -153,15 +154,22 @@ class ClusterChooser(choosing.FrameChooser):
 
 
     def plot_hist(self):
+        clust_hist_indexes = np.digitize(self.fval, bins=self.bin_edges)
+        clust_unique_bins,clust_unique_bin_counts = np.unique(clust_hist_indexes, return_counts=True)
 
-        for i in self.u_epcs:
-            _ep_hist, _ = np.histogram(self.fval[self.epcs==i], bins=self.bin_edges)
-            plt.plot(self.bin_centers, _ep_hist, "--", color="C%d"%(i+2), label="Epoch %d"%i)
-        plt.plot(self.bin_centers, self.hist, color="C0", alpha=0.5)
-        plt.plot(self.bin_centers[self.hist_mask], self.hist[self.hist_mask], color="C0", label="Total")
+        clust_histx, clust_histy = [],[]
+        for ci,cc in zip(clust_unique_bins,clust_unique_bin_counts):
+            clust_histx.append(np.mean(self.fval[ci==clust_hist_indexes]))
+            clust_histy.append(cc)
+
+        plt.plot(clust_histx, clust_histy, color="C0")
         plt.axvline(self.cfg.startval, linestyle="-.", color="C1", label="Start", alpha=0.5)
         plt.axvline(self.cfg.minval, linestyle="-.", color="C2", label="Boundaries")
         plt.axvline(self.cfg.maxval, linestyle="-.", color="C2")
+
+        for c in self.bin_edges:
+            plt.axvline(c, linestyle="-.", alpha=.1, color="k")
+
         plt.legend()
         os.makedirs("figs/epoch%02d"%(self.u_epcs[-1]),exist_ok=True)
         plt.savefig("figs/epoch%02d/hist_clust.png"%(self.u_epcs[-1]))

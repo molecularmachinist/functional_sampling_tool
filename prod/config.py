@@ -24,7 +24,7 @@ account="project_2004581"
 
 ########################### Sampling variables
 # number of simulations per epoch, only affects new epochs
-N = 160
+N = 16
 
 
 ########################### Running simulations

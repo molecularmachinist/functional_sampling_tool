@@ -60,11 +60,13 @@ class FrameChooser():
 
         self.make_hist()
 
-    def _make_hist_no_cfg(self,maxbins,data_per_bin,minval,maxval):
+    def _make_hist_no_cfg(self,maxbins,data_per_bin,minval,maxval,hard_boundaries=False):
         """
         The function that actually makes the histogram. Does not read values from cfg,
         but gets them as parameters. This way different implementations can use
         different values.
+        hard_boundaries=True means that bins are calculated strictly between the boundaries only.
+        Otherwise teh bin edges do not have to got with the boundaries and bins exist outside boundries also.
         """
         print(f"Making histogram with total {len(self.fval)} data")
         # Get extent of data and boundaries
@@ -79,7 +81,10 @@ class FrameChooser():
         print(f"Calculated maxbins {maxbins_calc}, final maxbins {maxbins}")
         print(f"{np.sum((self.fval>minval)*(self.fval<maxval))} data inside boundaries")
         # Make histogram
-        self.bin_edges = np.arange(lowest_val,largest_val+self.binsize , self.binsize)
+        if(hard_boundaries):
+            self.bin_edges = np.linspace(self.binmin,self.binmax, maxbins)
+        else:
+            self.bin_edges = np.arange(lowest_val,largest_val+self.binsize , self.binsize)
         self.hist, _ = np.histogram(self.fval, bins=self.bin_edges)
         self.bin_centers = (self.bin_edges[:-1]+self.bin_edges[1:])/2
         # Make a mask of which bins have higher edge larger than minval

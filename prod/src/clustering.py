@@ -104,8 +104,6 @@ class ClusterChooser(choosing.FrameChooser):
             for i in range(nchoices-len(choices)):
                 choices.append(choices[i])
 
-        print(choices)
-
         print(f"Chose {len(choices)} clusters out of {len(clusts)}, with {nchoices} max allowed")
         print(f"{len(np.unique(choices))} unique clusters")
         fval,epcs,reps,frms = self.choose_frames(choices,clusters)

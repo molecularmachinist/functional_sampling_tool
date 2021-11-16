@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import os
+import math
 from sklearn.decomposition import PCA
 from sklearn.mixture import GaussianMixture
 
@@ -82,29 +83,38 @@ class ClusterChooser(choosing.FrameChooser):
                     plotname="figs/epoch%02d/clusters/choices_%d.png"%(self.u_epcs[-1],ci),
                     maxclust=self.cfg.maxclust,
                     tol=self.cfg.clust_tol
-                    ) * self.cfg.maxclust*2
+                    ) + ci*(self.cfg.maxclust)*2
 
         clusts,counts = np.unique(clusters[clusters>=0], return_counts=True)
         srt_clusts = clusts[np.argsort(counts)]
 
-        nchoices = int(self.cfg.clust_choice_frac*self.cfg.N)
-        if(nchoices>len(srt_clusts)):
-            choices = srt_clusts
-        else:
-            choices = srt_clusts[:nchoices]
+        nchoices=int(self.cfg.clust_choice_frac*self.cfg.N)
+        maxchoice = min(int(self.cfg.clust_choice_frac*self.cfg.N),len(srt_clusts)//2)
+        choices = list(srt_clusts[:maxchoice])
+        if(len(choices)<nchoices):
+            weights = [(np.max(counts)-counts[c==clusts][0]) for c in choices]
+            weights /= np.sum(weights)
+            # Each point has been added once
+            len_choice = len(choices)
+            # Add more depending on weight. Multiplication is floored, so between 0 and len_choice-1 too few are added
+            for i in range(len_choice):
+                for j in range(math.floor(weights[i]*(nchoices-len_choice))):
+                    choices.append(choices[i])
+
+            for i in range(nchoices-len(choices)):
+                choices.append(choices[i])
 
         print(choices)
 
         print(f"Chose {len(choices)} clusters out of {len(clusts)}, with {nchoices} max allowed")
+        print(f"{len(np.unique(choices))} unique clusters")
         fval,epcs,reps,frms = self.choose_frames(choices,clusters)
-        print(fval,epcs,reps,frms)
 
         v,e,r,f = self.plain_chooser.make_choices(prechoices+len(choices),plot)
         fval += v
         epcs += e
         reps += r
         frms += f
-        print(fval,epcs,reps,frms)
 
         return fval, epcs, reps, frms
 

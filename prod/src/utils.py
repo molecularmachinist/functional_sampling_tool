@@ -45,11 +45,9 @@ def rsync_command(send_from, send_to, excludes=[]):
         Uses -ravP by default.
         Prints stdout and sterr when program finishes and returns the return code.
     """
-    command = ["rsync", "-av", "--partial"]+["--exclude=%s"%e for e in excludes] + [send_from, send_to]
+    command = ["rsync", "-avP", "--partial"]+["--exclude=%s"%e for e in excludes] + [send_from, send_to]
     print(f"Running: {' '.join(command)}")
-    compProc = subp.run(command,capture_output=True,text=True)
-    print(compProc.stdout)
-    print(compProc.stderr)
+    compProc = subp.run(command)
     return compProc.returncode
 
 

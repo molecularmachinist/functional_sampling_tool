@@ -2,7 +2,8 @@
 import os
 import numpy as np
 import mdtraj
-import inspect
+
+from . import utils
 
 class LoadError(ValueError):
     pass
@@ -40,12 +41,13 @@ def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval):
                     raise LoadError("Modification time of %s does not match, reloading"%(d+"mdrun.xtc"))
                 if((not np.array_equal(sel,dat["sel"])) or (not np.array_equal(sel_clust,dat["sel_clust"]))):
                     raise LoadError("Selections in %sfval_data.npz do not match, reloading"%d)
-                if(dat["func_hash"]!=hash(inspect.getsource(function_val))):
+                if(dat["func_hash"]!=utils.hash_func(function_val)):
+                    print(dat["func_hash"],utils.hash_func(function_val))
                     print("Function hash changed, recalculating fval")
                     fval.append(function_val(dat["fval_crd"]))
                     dat["fval"] = fval[-1]
                     print("Saving modified fval to fval_data.npz")
-                    dat["func_hash"]=hash(inspect.getsource(function_val))
+                    dat["func_hash"]=utils.hash_func(function_val)
                     np.savez_compressed(d+"fval_data.npz",**dat)
                 else:
                     fval.append(dat["fval"])
@@ -71,11 +73,13 @@ def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval):
         crd.append(traj.xyz[:,sel_clust,:].copy())
         print("Saving fval_data.npz")
         xtc_mod_t = os.path.getmtime(d+"mdrun.xtc")
+        func_hash = utils.hash_func(function_val)
         np.savez_compressed(d+"fval_data.npz",
                             fval=fval[-1],
                             fval_crd=fval_crd,
                             crd=crd[-1],
                             xtc_mod_t=xtc_mod_t,
+                            func_hash=func_hash,
                             sel=sel, sel_clust=sel_clust)
 
     reps = [np.full(f.shape,i+1) for i,f in enumerate(fval)]

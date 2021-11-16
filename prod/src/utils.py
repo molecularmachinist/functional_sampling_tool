@@ -2,6 +2,7 @@
 import subprocess as subp
 import numpy as np
 import math
+import inspect, hashlib
 
 
 
@@ -86,3 +87,11 @@ def make_pdb(cfg):
     finally:
         # Whatever happens, we go back to the original working dir
         os.chdir(prevdir)
+
+
+def hash_func(f):
+    """
+    Reads function as string and calulates the md5sum as a hex string
+    """
+    fstr = inspect.getsource(f)
+    return hashlib.md5(fstr.encode('utf-8')).hexdigest()

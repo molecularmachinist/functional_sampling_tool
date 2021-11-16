@@ -62,7 +62,7 @@ class FrameChooser():
 
     def __make_hist_no_cfg(self,maxbins,data_per_bin,minval,maxval):
         """
-        The function that actually makes the histogram. Does not read values from,
+        The function that actually makes the histogram. Does not read values from cfg,
         but gets them as parameters. This way different implementations can use
         different values.
         """

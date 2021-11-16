@@ -74,9 +74,10 @@ def choose(args):
     chooser = clustering.ClusterChooser.fromReadData(args.cfg, args.reload_fval)
     chooser.plot_hist()
     val, epc, rep, frm = chooser.make_choices()
-    chooser.print_choices(val, epc, rep, frm)
     if(not args.choose_only):
         epoch_starting.start_epoch(chooser.nextepoch, args.cfg, val, epc, rep, frm)
+    else:
+        chooser.print_choices(val, epc, rep, frm)
     if(args.push):
         utils.rsync_up(args.cfg)
 

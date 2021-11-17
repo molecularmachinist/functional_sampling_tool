@@ -36,8 +36,18 @@ def load_options(cfgname,cache):
     if(not os.path.isfile("initial/start.pdb")):
         util.make_pdb(cfg)
     cfg.struct = mdtraj.load("initial/start.pdb")
-    cfg.sel    = cfg.struct.topology.select(cfg.select_str)
-    cfg.sel_clust = cfg.struct.topology.select(cfg.select_str_clust)
+    if(not cfg.index_file is None):
+        cfg.indxexes = utils.read_ndx(cfg.index_file)
+    else:
+        cfg.indxexes = {}
+    if(cfg.select_str in cfg.indxexes):
+        cfg.sel = np.array(cfg.indexes[cfg.select_str])
+    else:
+        cfg.sel = cfg.struct.topology.select(cfg.select_str)
+    if(cfg.select_str_clust in cfg.indxexes):
+        cfg.sel_clust = np.array(cfg.indexes[cfg.select_str_clust])
+    else:
+        cfg.sel_clust = cfg.struct.topology.select(cfg.select_str_clust)
     print("Selected %d atoms"%len(cfg.sel))
     print("Selected %d atoms for clustering"%len(cfg.sel_clust))
     cfg.startval = cfg.function_val(cfg.struct.xyz[:,cfg.sel,:])

@@ -33,12 +33,14 @@ gmx = "gmx"
 mdp   = "mdrun.mdp"
 topol = "topol.top"
 ndx   = "index_grompp.ndx"
+# index file for selections
+index_file = None
 
 
 ############################## Function calcs ##################################
 # To make next run faster we save this selection to disk
 # The coordinates of the selction are used in function_val
-# Should be a valid mdtraj selection string
+# Should be a valid mdtraj selection string OR a group in index_file
 # mdtraj selection string https://www.mdtraj.org/1.9.5/atom_selection.html
 select_str = "protein and residue 638 and not (name =~ 'H.*')"
 # Same as above, but selection for clustering

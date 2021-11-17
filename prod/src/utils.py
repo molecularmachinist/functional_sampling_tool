@@ -24,6 +24,34 @@ def rolling_mean(data, window=10, center = True, fill=np.nan):
 
     return mean
 
+
+def read_ndx(ndx):
+    print("\nReading index groups from %s"%ndx)
+    indexes = {}
+    groups  = []
+    current=None
+
+    with open(ndx) as f:
+        for line in f:
+            line = line.strip()
+            if (line.startswith("[") and line.endswith("]")):
+                current = line[1:-1].strip()
+                indexes[current] = []
+                groups.append(current)
+                continue
+            parts = line.split()
+            for i in parts:
+                indexes[current].append(int(i))
+
+    print("Found %d groups"%len(groups))
+    print("    %-20s%10s\n"%("Group name", "atoms"))
+    for i, g in enumerate(groups):
+        print("%2d. %-20s%10d"%(i+1, g, len(indexes[g])))
+
+    print()
+    return indexes
+
+
 def gromacs_command(gmx, cmd, *args, input=None, **kwargs):
     """ Call the gromacs subcommand cmd. Both args and keys of kwargs should be without the leading dash.
         output is redirected to output_<cmd>.txt. Returns the return code of the command.

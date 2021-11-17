@@ -39,11 +39,11 @@ def load_options(cfgname):
         cfg.indexes = utils.read_ndx(cfg.index_file)
     else:
         cfg.indexes = {}
-    if(cfg.select_str in cfg.indxexes):
+    if(cfg.select_str in cfg.indexes):
         cfg.sel = np.array(cfg.indexes[cfg.select_str])-1
     else:
         cfg.sel = cfg.struct.topology.select(cfg.select_str)-1
-    if(cfg.select_str_clust in cfg.indxexes):
+    if(cfg.select_str_clust in cfg.indexes):
         cfg.sel_clust = np.array(cfg.indexes[cfg.select_str_clust])
     else:
         cfg.sel_clust = cfg.struct.topology.select(cfg.select_str_clust)

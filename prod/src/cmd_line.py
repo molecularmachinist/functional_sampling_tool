@@ -37,6 +37,7 @@ def load_options(cfgname):
     cfg.sel    = cfg.struct.topology.select(cfg.select_str)
     cfg.sel_clust = cfg.struct.topology.select(cfg.select_str_clust)
     print("Selected %d atoms"%len(cfg.sel))
+    print("Selected %d atoms for clustering"%len(cfg.sel_clust))
     cfg.startval = cfg.function_val(cfg.struct.xyz[:,cfg.sel,:])
     print("Initial function value %g"%cfg.startval)
 

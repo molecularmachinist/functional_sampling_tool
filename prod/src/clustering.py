@@ -248,8 +248,6 @@ def make_clusters(coords, plot=False, plotname="plot.png", maxclust=15, tol=0.1)
         axes[1,0].plot(nclust,raic[nclust-1],"rx")
         fig.tight_layout()
 
-        fig.savefig(plotname)
-
         if(nclust<len(colors)):
             cmap = mpl.colors.ListedColormap(colors[:nclust],N=nclust)
         else:
@@ -258,6 +256,7 @@ def make_clusters(coords, plot=False, plotname="plot.png", maxclust=15, tol=0.1)
         labels = gm.predict(first_2)
         axes[1,1].scatter(first_2[:,0],first_2[:,1],s=1,c=labels, cmap=cmap)
 
+        fig.savefig(plotname)
 
     plt.clf()
     return labels

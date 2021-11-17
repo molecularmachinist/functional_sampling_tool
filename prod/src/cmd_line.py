@@ -5,6 +5,7 @@ import importlib
 import argparse
 import pathlib
 import sys,os
+import numpy as np
 
 from . import inout
 from . import epoch_starting

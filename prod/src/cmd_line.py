@@ -36,9 +36,9 @@ def load_options(cfgname):
         util.make_pdb(cfg)
     cfg.struct = mdtraj.load("initial/start.pdb")
     if(not cfg.index_file is None):
-        cfg.indxexes = utils.read_ndx(cfg.index_file)
+        cfg.indexes = utils.read_ndx(cfg.index_file)
     else:
-        cfg.indxexes = {}
+        cfg.indexes = {}
     if(cfg.select_str in cfg.indxexes):
         cfg.sel = np.array(cfg.indexes[cfg.select_str])-1
     else:

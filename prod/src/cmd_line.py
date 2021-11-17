@@ -49,7 +49,7 @@ def load_options(cfgname):
         cfg.sel_clust = cfg.struct.topology.select(cfg.select_str_clust)
     print("Selected %d atoms"%len(cfg.sel))
     print("Selected %d atoms for clustering"%len(cfg.sel_clust))
-    cfg.startval = cfg.function_val(cfg.struct.xyz[:,cfg.sel,:])
+    cfg.startval = cfg.function_val(cfg.struct.xyz[:,cfg.sel,:])[0]
     print("Initial function value %g"%cfg.startval)
 
     # Min and maxvals

@@ -11,27 +11,25 @@ from . import epoch_starting
 from . import clustering
 from . import utils
 
-def import_cfg(cfgname,cache):
+def import_cfg(cfgname):
     """
     Only import the config, does not load structs or do anything with it.
     """
     print("Loading config from %s"%cfgname)
     spec = importlib.util.spec_from_file_location("config", cfgname)
-    if(not cache):
-        writebytecode = sys.dont_write_bytecode
-        sys.dont_write_bytecode = True
+    writebytecode = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
     cfg = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(cfg)
-    if(not cache):
-        sys.dont_write_bytecode = writebytecode
+    sys.dont_write_bytecode = writebytecode
     return cfg
 
 
-def load_options(cfgname,cache):
+def load_options(cfgname):
     """
     Imports the config, and loads the structs and selections
     """
-    cfg    = import_cfg(cfgname,cache)
+    cfg    = import_cfg(cfgname)
     print("Loading structure")
     if(not os.path.isfile("initial/start.pdb")):
         util.make_pdb(cfg)
@@ -106,9 +104,6 @@ def argP():
     # The only global option
     parser.add_argument("-c","--config",metavar="<name>.py",default=pathlib.Path("config.py"),
                         type=pathlib.Path, help="Path to config file (default: %(default)s)")
-
-    parser.add_argument("--allow_cache", action="store_true",
-                        help="Allow forming a __pycache__ for config (default: %(default)s)")
     # Global default for config_func
     parser.set_defaults(config_func=load_options)
 
@@ -146,6 +141,6 @@ def argP():
     arguments = parser.parse_args()
     assert arguments.config.exists(), "Config file does not exist at %s."%arguments.config
 
-    arguments.cfg = arguments.config_func(arguments.config, arguments.allow_cache)
+    arguments.cfg = arguments.config_func(arguments.config)
 
     return arguments

@@ -33,8 +33,6 @@ gmx = "gmx"
 mdp   = "mdrun.mdp"
 topol = "topol.top"
 ndx   = "index_grompp.ndx"
-# index file for selections
-index_file = None
 
 
 ############################## Function calcs ##################################
@@ -45,6 +43,8 @@ index_file = None
 select_str = "protein and residue 638 and not (name =~ 'H.*')"
 # Same as above, but selection for clustering
 select_str_clust = "protein and name CA"
+# index file for selections
+index_file = None
 
 # Minimum and maximum values to sample from between. None to ignore boundary, "start" string to use the
 # initial value of the starting structure

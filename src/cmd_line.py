@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import mdtraj
+import MDAnalysis as mda
 import importlib
 import argparse
 import pathlib
@@ -33,23 +33,23 @@ def load_options(cfgname):
     cfg    = import_cfg(cfgname)
     print("Loading structure")
     if(not os.path.isfile("initial/start.pdb")):
-        util.make_pdb(cfg)
-    cfg.struct = mdtraj.load("initial/start.pdb")
+        utils.make_pdb(cfg)
+    cfg.struct = mda.Universe("initial/start.pdb")
     if(not cfg.index_file is None):
         cfg.indexes = utils.read_ndx(cfg.index_file)
     else:
         cfg.indexes = {}
     if(cfg.select_str in cfg.indexes):
-        cfg.sel = np.array(cfg.indexes[cfg.select_str])-1
+        cfg.sel = cfg.struct.atoms[np.array(cfg.indexes[cfg.select_str])-1]
     else:
-        cfg.sel = cfg.struct.topology.select(cfg.select_str)-1
+        cfg.sel = cfg.struct.select_atoms(cfg.select_str)
     if(cfg.select_str_clust in cfg.indexes):
-        cfg.sel_clust = np.array(cfg.indexes[cfg.select_str_clust])
+        cfg.sel_clust = cfg.struct.atoms[np.array(cfg.indexes[cfg.select_str])-1]
     else:
-        cfg.sel_clust = cfg.struct.topology.select(cfg.select_str_clust)
+        cfg.sel_clust = cfg.struct.select_atoms(cfg.select_str_clust)
     print("Selected %d atoms"%len(cfg.sel))
     print("Selected %d atoms for clustering"%len(cfg.sel_clust))
-    cfg.startval = cfg.function_val(cfg.struct.xyz[:,cfg.sel,:])[0]
+    cfg.startval = cfg.function_val(np.array([cfg.sel.positions]))[0]
     print("Initial function value %g"%cfg.startval)
 
     # Min and maxvals

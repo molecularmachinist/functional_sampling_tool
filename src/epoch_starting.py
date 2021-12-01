@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, shutil
 import numpy as np
-import mdtraj
 
 from . import utils
 
@@ -41,9 +40,10 @@ def next_rep(i,cfg,newepoch,oldepoch,rep,frm, val):
     os.makedirs("epoch%02d/rep%02d"%(newepoch, i))
 
     print("Reading frame %d of epoch %d, rep %d"%(frm, oldepoch, rep))
-    init_struct = mdtraj.load_frame("epoch%02d/rep%02d/mdrun.xtc"%(oldepoch, rep), frm, top=cfg.struct)
+    cfg.struct.load_new("epoch%02d/rep%02d/mdrun.xtc"%(oldepoch, rep))
+    cfg.struct.trajectory[frm]
 
-    init_struct.save_gro("epoch%02d/rep%02d/start.gro"%(newepoch, i))
+    cfg.struct.atoms.write("epoch%02d/rep%02d/start.gro"%(newepoch, i))
     print("Wrote structure to epoch%02d/rep%02d/start.gro, starting to grompp..."%(newepoch, i))
 
     # Make a note of the origin

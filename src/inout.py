@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import numpy as np
-import mdtraj
 
 from . import utils
 
@@ -31,6 +30,8 @@ def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval):
     N = check_num("epoch%02d/rep"%epoch)
     fval = []
     crd  = []
+    seli = [a.index for a in sel]
+    sel_clusti = [a.index for a in sel_clust]
     for i in range(1,N+1):
         d = "epoch%02d/rep%02d/"%(epoch, i)
         if(not load_fval):
@@ -39,7 +40,7 @@ def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval):
                     dat = dict(npz)
                 if(dat["xtc_mod_t"]!=os.path.getmtime(d+"mdrun.xtc")):
                     raise LoadError("Modification time of %s does not match, reloading"%(d+"mdrun.xtc"))
-                if((not np.array_equal(sel,dat["sel"])) or (not np.array_equal(sel_clust,dat["sel_clust"]))):
+                if((not np.array_equal(seli,dat["sel"])) or (not np.array_equal(sel_clusti,dat["sel_clust"]))):
                     raise LoadError("Selections in %sfval_data.npz do not match, reloading"%d)
                 if(dat["func_hash"]!=utils.hash_func(function_val)):
                     print(dat["func_hash"],utils.hash_func(function_val))
@@ -65,12 +66,16 @@ def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval):
                 print("reloading from xtc")
 
         print("Loading trajectory %s"%(d+"mdrun.xtc"))
-        traj = mdtraj.load(d+"mdrun.xtc", top=struct)
-        print("Calculating fval")
-        fval_crd = traj.xyz[:,sel,:].copy()
-        fval.append(function_val(fval_crd))
+        struct.load_new(d+"mdrun.xtc")
+        fval_crd = np.empty([len(struct.trajectory), len(sel), 3])
+        crd.append(np.empty([len(struct.trajectory), len(sel_clust), 3]))
         print("Copying crd")
-        crd.append(traj.xyz[:,sel_clust,:].copy())
+        for j,ts in enumerate(struct.trajectory):
+            fval_crd[j] = sel.positions
+            crd[-1][j]  = sel_clust.positions
+
+        print("Calculating fval")
+        fval.append(function_val(fval_crd))
         print("Saving fval_data.npz")
         xtc_mod_t = os.path.getmtime(d+"mdrun.xtc")
         func_hash = utils.hash_func(function_val)
@@ -80,7 +85,7 @@ def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval):
                             crd=crd[-1],
                             xtc_mod_t=xtc_mod_t,
                             func_hash=func_hash,
-                            sel=sel, sel_clust=sel_clust)
+                            sel=seli, sel_clust=sel_clusti)
 
     reps = [np.full(f.shape,i+1) for i,f in enumerate(fval)]
     frms = [np.arange(len(f)) for f in fval]

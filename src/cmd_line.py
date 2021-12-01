@@ -121,16 +121,16 @@ def argP():
 
     # The chooser command
     choose_parser = subparsers.add_parser("choose", help="Choose frames for next epoch and initialize it.")
-    choose_parser.add_argument("--pull", action="store_true", help="push to remote after initialization (default: %(default)s)")
-    choose_parser.add_argument("--push", action="store_true", help="push to remote after initialization (default: %(default)s)")
+    choose_parser.add_argument("--pull", action="store_true", help="pull from remote before choosing (default: %(default)s)")
+    choose_parser.add_argument("--push", action="store_true", help="push to remote after choosing (default: %(default)s)")
     choose_parser.add_argument("--choose_only", action="store_true", help="Only make the choices and plots, do not initialize next epoch (default: %(default)s)")
-    choose_parser.add_argument("--reload_fval", action="store_true", help="Recalculate fval even if fval.npy exists (default: %(default)s)")
+    choose_parser.add_argument("--reload_fval", action="store_true", help="Reload data from mdrun.xtc even if fval_data.npz exists and everything matches (default: %(default)s)")
     choose_parser.set_defaults(func=choose)
 
     # newepoch command
     epochstarter_parser = subparsers.add_parser("newepoch", help="Shorthand for \"choose --pull --push\".")
     epochstarter_parser.set_defaults(func=choose, push=True, pull=True, choose_only=False)
-    epochstarter_parser.add_argument("--reload_fval", action="store_true", help="Recalculate fval even if fval.npy exists (default: %(default)s)")
+    epochstarter_parser.add_argument("--reload_fval", action="store_true", help="Reload data from mdrun.xtc even if fval_data.npz exists and everything matches (default: %(default)s)")
 
     # Push and pull commands
     push_parser = subparsers.add_parser("push", help="rsync from local to remote")

@@ -3,16 +3,14 @@
 ## Requirements
 
 1. Python 3 with NumPy and matplotlib
-1. [MDTraj](https://www.mdtraj.org/1.9.5/index.html)
+1. [MDAnalysis](https://docs.mdanalysis.org/stable/index.html)
 
 
-If you have conda, you can install mdtraj with
+If you have conda, you can install MDAnalysis with
 
 ```
-conda install -c conda-forge mdtraj
+conda install -c conda-forge mdanalysis
 ```
-
-**Note:** MDTraj to be changed to MDAnalysis in near future.
 
 ## How it works
 

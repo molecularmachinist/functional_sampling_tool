@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import subprocess as subp
 import numpy as np
-import math
+import math, os
 import inspect, hashlib
 
 
@@ -108,7 +108,7 @@ def make_pdb(cfg):
         os.chdir("initial")
 
         rc=gromacs_command(cfg.gmx, "trjconv", f="start.gro",
-        s="../epoch01/rep01/mdrun.tpr", o="start.pdb")
+        s="../epoch01/rep01/mdrun.tpr", o="start.pdb", input=b"System")
 
         print("Process returned %d"%rc)
         assert rc == 0, "Nonzero returncode from trjconv, see initial/output_trjconv.txt for more detail."

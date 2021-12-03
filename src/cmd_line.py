@@ -44,7 +44,7 @@ def load_options(cfgname):
     else:
         cfg.sel = cfg.struct.select_atoms(cfg.select_str)
     if(cfg.select_str_clust in cfg.indexes):
-        cfg.sel_clust = cfg.struct.atoms[np.array(cfg.indexes[cfg.select_str])-1]
+        cfg.sel_clust = cfg.struct.atoms[np.array(cfg.indexes[cfg.select_str_clust])-1]
     else:
         cfg.sel_clust = cfg.struct.select_atoms(cfg.select_str_clust)
     print("Selected %d atoms"%len(cfg.sel))

@@ -9,7 +9,7 @@ import numpy as np
 
 
 ########################### Remote options #####################################
-# remote dir corresponding to dir of this notebook
+# remote dir corresponding to dir of this project
 remote_dir="/scratch/project_2004581/functional_sampling_tool/prod"
 # remote name, either "host" or "user@host". Must be setup for passwordless connect.
 remote_name="mahti"
@@ -27,12 +27,13 @@ account="project_2004581"
 N = 16
 
 
-########################### Running simulations
+########################### Grompping
 gmx = "gmx"
 # input files for grompping
 mdp   = "mdrun.mdp"
 topol = "topol.top"
 ndx   = "index_grompp.ndx"
+maxwarn = 0
 
 
 ############################## Function calcs ##################################
@@ -82,6 +83,9 @@ def function_val(positions):
 
 ############################## Advanced options ################################
 
+# whether to add one to maxwarn on the subsequent epochs (due to atom names changing)
+maxwarn_add = False
+
 # Histogram building
 # At least this much data in each bin of the histogram
 data_per_bin = 100
@@ -92,11 +96,11 @@ maxbins = 100
 clust_data_per_bin=1000
 clust_maxbins=10
 
+# Number of epoch before clustering
+epochs_pre_clust=3
 #Max number of clusters per bin
 maxclust=15
 # choose at most this fraction of choices from clustering
 clust_choice_frac=0.5
 # Tolerace for number of clusters in clustering
 clust_tol=0.1
-# Number of epoch before clustering
-epochs_pre_clust=3

@@ -24,7 +24,7 @@ def init_rep(i,cfg,d="epoch01"):
         os.chdir("%s/rep%02d"%(d,i))
 
         rc=utils.gromacs_command(cfg.gmx, "grompp", c="start.gro", f="../../"+cfg.mdp, n="../../"+cfg.ndx,
-                           p="../../"+cfg.topol, o="mdrun.tpr", maxwarn="1")
+                           p="../../"+cfg.topol, o="mdrun.tpr", maxwarn=cfg.maxwarn)
 
         print("Process returned %d"%rc)
         assert rc == 0, "Nonzero returncode from grompp, see %s/rep%02d/output_grompp.txt for more detail."%(d,i)
@@ -59,7 +59,7 @@ def next_rep(i,cfg,newepoch,oldepoch,rep,frm, val):
 
         # The pdb structure seems to change the atom names, so maxwarn is 2
         rc=utils.gromacs_command(cfg.gmx, "grompp", c="start.gro", f="../../"+cfg.mdp, n="../../"+cfg.ndx,
-                           p="../../"+cfg.topol, o="mdrun.tpr", maxwarn="2")
+                           p="../../"+cfg.topol, o="mdrun.tpr", maxwarn=cfg.maxwarn+cfg.maxwarn_add)
 
         print("Process returned %d"%rc)
 

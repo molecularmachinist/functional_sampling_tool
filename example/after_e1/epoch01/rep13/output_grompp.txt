@@ -1,0 +1,83 @@
+                      :-) GROMACS - gmx grompp, 2020.6 (-:
+
+                            GROMACS is written by:
+     Emile Apol      Rossen Apostolov      Paul Bauer     Herman J.C. Berendsen
+    Par Bjelkmar      Christian Blau   Viacheslav Bolnykh     Kevin Boyd    
+ Aldert van Buuren   Rudi van Drunen     Anton Feenstra       Alan Gray     
+  Gerrit Groenhof     Anca Hamuraru    Vincent Hindriksen  M. Eric Irrgang  
+  Aleksei Iupinov   Christoph Junghans     Joe Jordan     Dimitrios Karkoulis
+    Peter Kasson        Jiri Kraus      Carsten Kutzner      Per Larsson    
+  Justin A. Lemkul    Viveca Lindahl    Magnus Lundborg     Erik Marklund   
+    Pascal Merz     Pieter Meulenhoff    Teemu Murtola       Szilard Pall   
+    Sander Pronk      Roland Schulz      Michael Shirts    Alexey Shvetsov  
+   Alfons Sijbers     Peter Tieleman      Jon Vincent      Teemu Virolainen 
+ Christian Wennberg    Maarten Wolf      Artem Zhmurov   
+                           and the project leaders:
+        Mark Abraham, Berk Hess, Erik Lindahl, and David van der Spoel
+
+Copyright (c) 1991-2000, University of Groningen, The Netherlands.
+Copyright (c) 2001-2019, The GROMACS development team at
+Uppsala University, Stockholm University and
+the Royal Institute of Technology, Sweden.
+check out http://www.gromacs.org for more information.
+
+GROMACS is free software; you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License
+as published by the Free Software Foundation; either version 2.1
+of the License, or (at your option) any later version.
+
+GROMACS:      gmx grompp, version 2020.6
+Executable:   /home/group/cubbli/opt/gromacs-2020.6/bin/gmx
+Data prefix:  /home/group/cubbli/opt/gromacs-2020.6
+Working dir:  /home/work2/paajasan/functional_sampling_tool/prod/epoch01/rep13
+Command line:
+  gmx grompp -c start.gro -f ../../mdrun.mdp -n ../../index_grompp.ndx -p ../../topol.top -o mdrun.tpr -maxwarn 1
+
+
+NOTE 1 [file ../../mdrun.mdp]:
+  leapfrog does not yet support Nose-Hoover chains, nhchainlength reset to 1
+
+
+WARNING 1 [file ../../mdrun.mdp]:
+  You are generating velocities so I am assuming you are equilibrating a
+  system. You are using Parrinello-Rahman pressure coupling, but this can
+  be unstable for equilibration. If your system crashes, try equilibrating
+  first with Berendsen pressure coupling. If you are not equilibrating the
+  system, you can probably ignore this warning.
+
+Setting the LD random seed to 2013181946
+Generated 3223 of the 3240 non-bonded parameter combinations
+Generating 1-4 interactions: fudge = 1
+Generated 1700 of the 3240 1-4 parameter combinations
+Excluding 3 bonded neighbours molecule type 'PROA'
+Excluding 3 bonded neighbours molecule type 'HETA'
+Excluding 3 bonded neighbours molecule type 'POPC'
+Excluding 2 bonded neighbours molecule type 'TIP3'
+Excluding 1 bonded neighbours molecule type 'SOD'
+Excluding 1 bonded neighbours molecule type 'CLA'
+Setting gen_seed to -1620234277
+Velocities were taken from a Maxwell distribution at 310.15 K
+Number of degrees of freedom in T-Coupling group SOLU is 56967.29
+Number of degrees of freedom in T-Coupling group MEMB is 182110.72
+Number of degrees of freedom in T-Coupling group SOLV is 650265.00
+Estimate for the relative computational load of the PME mesh part: 0.16
+
+There was 1 note
+
+There was 1 warning
+
+GROMACS reminds you: "Naive you are if you believe life favours those who aren't naive." (Piet Hein)
+
+turning all bonds into constraints...
+turning all bonds into constraints...
+turning all bonds into constraints...
+turning all bonds into constraints...
+turning all bonds into constraints...
+turning all bonds into constraints...
+Determining Verlet buffer for a tolerance of 0.005 kJ/mol/ps at 310.15 K
+Calculated rlist for 1x1 atom pair-list as 1.377 nm, buffer size 0.177 nm
+Set rlist, assuming 4x4 atom pair-list, to 1.259 nm, buffer size 0.059 nm
+Note that mdrun will redetermine rlist based on the actual pair-list setup
+Calculating fourier grid dimensions for X Y Z
+Using a fourier grid of 144x144x160, spacing 0.108 0.108 0.112
+This run will generate roughly 34 Mb of data

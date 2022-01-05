@@ -132,32 +132,11 @@ dmypy.json
 ##################### Project specific additions ###############################
 # just throw anything in a dump-folder to not add to git
 dump
-# simulation output probs too much in github
-*.xtc
-*.trr
-*.log
-*.edr
-*.cpt
-# The folder with all the charmm-gui output
-charmm-gui-[0-9]*
-charmm-gui.tgz
-charmm-gui[0-9].tgz
-# equilibration stuff, maybe not so important to have in github
-/making/equilibr/rep*
-/making/equilibr/solv/*
-/making/equilibr/charmm_model/*
-/making/closed
-# Exclude a few important steps from getting ignored
-!/making/equilibr/solv/*.py
-!/making/equilibr/solv/input.dat
-!/making/equilibr/solv/ions.mdp
-# No need for all modeller oputput
-5weo_fill.*
-# Even the initial structures took as lot of space, so ignoring them
-prod/initial/start[0-9][0-9].gro
-prod/initial/start.pdb
-# Output txt files also not really needed
-output_*.txt
-# At least for now ignoring all production run simulation data
-epoch[0-9][0-9]
-naive
+# example output
+/example/initialize/epoch01
+/example/after_e1/epoch02
+/example/after_e1/figs
+/example/after_e1/epoch01/rep*/fval_data.npz
+/example/after_e1/epoch01/rep*/.mdrun.xtc_offsets.npz
+/example/after_e1/initial/start.pdb
+/example/after_e1/initial/output_trjconv.txt

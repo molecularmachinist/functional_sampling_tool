@@ -154,6 +154,9 @@ class ClusterChooser(choosing.FrameChooser):
 
 
     def plot_hist(self):
+        self.plain_chooser.plot_hist()
+        if(self.u_epcs[-1]<=self.cfg.epochs_pre_clust):
+            return
         clust_hist_indexes = np.digitize(self.fval, bins=self.bin_edges)
         clust_unique_bins,clust_unique_bin_counts = np.unique(clust_hist_indexes, return_counts=True)
 
@@ -174,7 +177,6 @@ class ClusterChooser(choosing.FrameChooser):
         os.makedirs("figs/epoch%02d"%(self.u_epcs[-1]),exist_ok=True)
         plt.savefig("figs/epoch%02d/hist_clust.png"%(self.u_epcs[-1]))
         plt.clf()
-        self.plain_chooser.plot_hist()
 
 def make_clusters(coords, plot=False, plotname="plot.png", maxclust=15, tol=0.1):
     global colors

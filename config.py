@@ -41,7 +41,7 @@ maxwarn = 0
 # The coordinates of the selction are used in function_val
 # Should be a valid mdtraj selection string OR a group in index_file
 # mdtraj selection string https://www.mdtraj.org/1.9.5/atom_selection.html
-select_str = "protein and residue 638 and not (name =~ 'H.*')"
+select_str = "protein and resid 638 and not ( type H )"
 # Same as above, but selection for clustering
 select_str_clust = "protein and name CA"
 # index file for selections

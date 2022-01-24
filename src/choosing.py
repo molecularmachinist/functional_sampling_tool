@@ -77,7 +77,7 @@ class FrameChooser():
         # Calculate binsize
         maxbins_calc = np.sum((self.fval>minval)*(self.fval<maxval))//data_per_bin
         maxbins = min(maxbins_calc,maxbins)
-        self.binsize = (largest_val-lowest_val)/maxbins
+        self.binsize = (self.binmax-self.binmin)/maxbins
         print(f"Calculated maxbins {maxbins_calc}, final maxbins {maxbins}")
         print(f"{np.sum((self.fval>minval)*(self.fval<maxval))} data inside boundaries")
         # Make histogram

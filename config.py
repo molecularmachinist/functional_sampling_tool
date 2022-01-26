@@ -11,7 +11,7 @@ import numpy as np
 ########################### Remote options #####################################
 # remote dir corresponding to dir of this project
 remote_dir="/scratch/project_2004581/functional_sampling_tool/prod"
-# remote name, either "host" or "user@host". Must be setup for passwordless connect.
+# remote name, either "host" or "user@host".
 remote_name="mahti"
 # Set dirs/files/patterns to exclude from rsync command
 rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", "*.ipynb", "dump", "figs", "fst", "src"]

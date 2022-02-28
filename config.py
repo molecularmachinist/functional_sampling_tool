@@ -92,6 +92,15 @@ unwrap_starters = None
 # Only considers atoms in unwrap_sel
 mols_in_box = False
 
+
+############################## Coordinate fitting ##############################
+
+# whether to translate clustering coordinates to initial structure
+clust_centre = True
+# whether to fit clustering coordinates to initial structure, rotationally AND translationally
+clust_superpos = True
+
+
 ############################## Advanced options ################################
 
 # whether to add one to maxwarn on the subsequent epochs (due to atom names changing)

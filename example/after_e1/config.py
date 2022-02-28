@@ -104,10 +104,10 @@ maxwarn_add=True
 # At least this much data in each bin of the histogram
 data_per_bin = 100
 # Maximum amount of bins between boundaries
-maxbins = 100
+maxbins = 10
 
 # Cluster histogram
-clust_data_per_bin=1000
+clust_data_per_bin=100
 clust_maxbins=10
 
 #Max number of clusters per bin

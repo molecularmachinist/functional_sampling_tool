@@ -161,15 +161,14 @@ def wrap_mols(ag):
         mols.append(ag.intersection(frag).indices)
         weights.append(ag.intersection(frag).masses)
 
-    weights = np.array(weights)
-    totw = weights.sum()
+    totw = [np.sum(w) for w in weights]
 
     def wrapped_func(ts):
         box = ts.triclinic_dimensions
         # Inverse box
         invbox = np.linalg.inv(box)
-        for m in mols:
-            pos = np.mean(weights*ts.positions[m].T,axis=-1)/totw
+        for i,m in enumerate(mols):
+            pos = np.mean(weights[i]*ts.positions[m].T,axis=-1)/totw[i]
             # Transfer coordinates to unit cell and put in box
             unitpos = (pos @ invbox) % 1
             newpos = unitpos @ box

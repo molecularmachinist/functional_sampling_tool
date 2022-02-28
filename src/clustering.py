@@ -47,7 +47,7 @@ class ClusterChooser(choosing.FrameChooser):
         """
         Factory method to easily load data and make the object
         """
-        fval, crds, frms, reps, epcs = inout.load_data(cfg.struct,cfg.sel,cfg.sel_clust,cfg.function_val,load_fval,cfg.traj_transforms)
+        fval, crds, frms, reps, epcs = inout.load_data(cfg,load_fval)
         return cls(cfg, fval, crds, frms, reps, epcs)
 
 

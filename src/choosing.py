@@ -40,7 +40,7 @@ class FrameChooser():
         """
         Factory method to easily load data and make the object
         """
-        fval,_,frms,reps,epcs = inout.load_data(cfg.struct,cfg.sel,[],cfg.function_val,load_fval,cfg.traj_transforms)
+        fval,_,frms,reps,epcs = inout.load_data(cfg,load_fval)
         return cls(cfg, fval, frms, reps, epcs)
 
 

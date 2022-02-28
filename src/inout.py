@@ -26,54 +26,56 @@ def check_num(prefix):
         if("%s%02d"%(fprefix,i) not in files):
             return i-1
 
-def get_data_from_archive(d, sel, sel_clust, function_val):
-    with np.load(d+"fval_data.npz") as dat:
-        if(dat["xtc_mod_t"]!=os.path.getmtime(d+"mdrun.xtc")):
-            raise LoadError("Modification time of %s does not match, reloading"%(d+"mdrun.xtc"))
-        if((not np.array_equal(sel.indices,dat["sel"])) or (not np.array_equal(sel_clust.indices,dat["sel_clust"]))):
-            raise LoadError("Selections in %sfval_data.npz do not match, reloading"%d)
-        if(dat["func_hash"]!=utils.hash_func(function_val)):
-            print("Function hash changed, recalculating fval")
-            fval= function_val(dat["fval_crd"])
-            dat["fval"] = fval[-1]
-            print("Saving modified fval to fval_data.npz")
-            dat["func_hash"]=utils.hash_func(function_val)
-            np.savez_compressed(d+"fval_data.npz",**dat)
-        else:
-            fval = dat["fval"]
+def get_data_from_archive(d, cfg):
+    with np.load(d+"fval_data.npz") as npz:
+        dat = dict(npz)
+    if(dat["xtc_mod_t"]!=os.path.getmtime(d+"mdrun.xtc")):
+        raise LoadError("Modification time of %s does not match, reloading"%(d+"mdrun.xtc"))
+    if((not np.array_equal(cfg.sel.indices,dat["sel"])) or (not np.array_equal(cfg.sel_clust.indices,dat["sel_clust"]))):
+        raise LoadError("Selections in %sfval_data.npz do not match, reloading"%d)
+    if(dat["func_hash"]!=utils.hash_func(cfg.function_val)):
+        print("Function hash changed, recalculating fval")
+        fval= cfg.function_val(dat["fval_crd"])
+        dat["fval"] = fval
+        print("Saving modified fval to fval_data.npz")
+        dat["func_hash"]=utils.hash_func(cfg.function_val)
+        np.savez_compressed(d+"fval_data.npz",**dat)
+    else:
+        fval = dat["fval"]
 
-        crd = dat["crd"]
+    crd = dat["crd"]
     return fval, crd
 
-def get_data_from_xtc(d, struct, sel, sel_clust, function_val, transforms):
-    struct.load_new(d+"mdrun.xtc")
-    struct.trajectory.add_transformations(*transforms)
-    fval_crd = np.empty([len(struct.trajectory), len(sel), 3])
-    crd      = np.empty([len(struct.trajectory), len(sel_clust), 3])
+def get_data_from_xtc(d, cfg):
+    cfg.struct.load_new(d+"mdrun.xtc")
+    cfg.struct.trajectory.add_transformations(*cfg.traj_transforms)
+    fval_crd = np.empty([len(cfg.struct.trajectory), len(cfg.sel), 3])
+    crd      = np.empty([len(cfg.struct.trajectory), len(cfg.sel_clust), 3])
     print("Copying crd")
-    for j,ts in enumerate(struct.trajectory):
-        fval_crd[j] = sel.positions
-        crd[j]      = sel_clust.positions
+    for j,ts in enumerate(cfg.struct.trajectory):
+        fval_crd[j] = cfg.sel.positions
+        crd[j]      = cfg.sel_clust.positions
 
     print("Calculating fval")
-    fval = function_val(fval_crd)
+    fval = cfg.function_val(fval_crd)
     print("Saving fval_data.npz")
     xtc_mod_t = os.path.getmtime(d+"mdrun.xtc")
-    func_hash = utils.hash_func(function_val)
+    func_hash = utils.hash_func(cfg.function_val)
     np.savez_compressed(d+"fval_data.npz",
                         fval=fval,
                         fval_crd=fval_crd,
                         crd=crd,
                         xtc_mod_t=xtc_mod_t,
                         func_hash=func_hash,
-                        sel=sel.indices, sel_clust=sel_clust.indices)
+                        sel=cfg.sel.indices,
+                        sel_clust=cfg.sel_clust.indices)
 
     return fval, crd
 
-def load_from_dir(d, struct, sel, sel_clust, function_val, load_fval, transforms):
+def load_from_dir(d, cfg, load_fval):
     if(not load_fval):
         try:
-            fval,crd = get_data_from_archive(d, sel, sel_clust, function_val)
+            fval,crd = get_data_from_archive(d, cfg)
             print("Loaded data from %sfval_data.npz"%d)
             return fval, crd
         except FileNotFoundError:
@@ -87,15 +89,15 @@ def load_from_dir(d, struct, sel, sel_clust, function_val, load_fval, transforms
 
     print("Loading trajectory %s"%(d+"mdrun.xtc"))
 
-    return get_data_from_xtc(d, struct, sel, sel_clust, function_val, transforms)
+    return get_data_from_xtc(d, cfg)
 
-def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval, transforms):
+def load_epoch_data(epoch, cfg, load_fval):
     N = check_num("epoch%02d/rep"%epoch)
     fval = []
     crd  = []
     for i in range(1,N+1):
         d="epoch%02d/rep%02d/"%(epoch, i)
-        fv,cr = load_from_dir(d, struct, sel, sel_clust, function_val, load_fval, transforms)
+        fv,cr = load_from_dir(d, cfg, load_fval)
         fval.append(fv)
         crd.append(cr)
 
@@ -105,14 +107,14 @@ def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval, tran
     return np.concatenate(reps), np.concatenate(fval), np.concatenate(frms), np.concatenate(crd)
 
 
-def load_data(struct, sel, sel_clust, function_val, load_fval=False, transforms=[]):
+def load_data(cfg, load_fval):
     epochs = check_num("epoch")
     fval = []
     reps = []
     frms = []
     crds = []
     for i in range(1,epochs+1):
-        r,f,fr,crd = load_epoch_data(struct, sel,sel_clust, function_val, i, load_fval, transforms)
+        r,f,fr,crd = load_epoch_data(i, cfg, load_fval)
         reps.append(r)
         fval.append(f)
         frms.append(fr)

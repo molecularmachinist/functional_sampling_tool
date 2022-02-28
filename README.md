@@ -5,12 +5,14 @@
 1. Python 3 with NumPy and matplotlib
 1. [MDAnalysis](https://docs.mdanalysis.org/stable/index.html)
 1. [Numba](https://numba.pydata.org/)
+1. [scikit-learn](https://scikit-learn.org/stable/)
 
 
-If you have conda, you can install MDAnalysis with
+
+If you have conda, you can make sure all dependencies are met by running
 
 ```
-conda install -c conda-forge mdanalysis
+conda install -c conda-forge numpy matplotlib numba mdanalysis scikit-learn
 ```
 
 The tool has been tested and developed with python 3.7. Please let us if you are using other versions, whether everything works (and especially if it doesn't).

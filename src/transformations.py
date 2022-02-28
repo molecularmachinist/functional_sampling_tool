@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
-import MDAnalysis as mda
+from MDAnalysis.analysis import align
 import warnings
 from numba import jit
 
@@ -174,6 +174,38 @@ def wrap_mols(ag):
             newpos = unitpos @ box
             trans = newpos-pos
             ts.positions[m] += trans
+        return ts
+
+    return wrapped_func
+
+
+def superpos(ag, centre, superposition):
+    """
+    Superposition for optimal mass weighted rmsd
+    parameters:
+        ag:       Atom group of atoms to fit, from the reference universe
+    returns:
+        transformation function
+    """
+    seli = ag.indices
+    ref = ag.positions
+    ref_com = ag.centre_of_mass()
+    w   = ag.masses
+
+    def wrapped_func(ts):
+        if(centre or superposition):
+            sel = ts.atoms[seli]
+            sel_com = np.mean(w*sel.positions.T, axis=-1)
+
+        if(superposition):
+            sel0 = sel_pos-ref_com
+            R, rmsd = align.rotation_matrix(sel0-sel_com, ref-ref_com)
+            sel.positions = sel0
+            sel.rotate(R)
+            sel.positions += ref_com
+        elif(centre):
+            sel.positions += ref_com-sel_com
+
         return ts
 
     return wrapped_func

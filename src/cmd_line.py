@@ -11,6 +11,7 @@ from . import inout
 from . import epoch_starting
 from . import clustering
 from . import utils
+from . import transformations
 
 def import_cfg(cfgname):
     """
@@ -25,6 +26,12 @@ def import_cfg(cfgname):
     sys.dont_write_bytecode = writebytecode
     return cfg
 
+def load_sel(sel_str, struct, ndx):
+    if(sel_str in ndx):
+        sel = struct.atoms[np.array(ndx[cfg.select_str])-1]
+    else:
+        sel = struct.select_atoms(sel_str)
+    return sel
 
 def load_options(cfgname):
     """
@@ -39,16 +46,28 @@ def load_options(cfgname):
         cfg.indexes = utils.read_ndx(cfg.index_file)
     else:
         cfg.indexes = {}
-    if(cfg.select_str in cfg.indexes):
-        cfg.sel = cfg.struct.atoms[np.array(cfg.indexes[cfg.select_str])-1]
-    else:
-        cfg.sel = cfg.struct.select_atoms(cfg.select_str)
-    if(cfg.select_str_clust in cfg.indexes):
-        cfg.sel_clust = cfg.struct.atoms[np.array(cfg.indexes[cfg.select_str_clust])-1]
-    else:
-        cfg.sel_clust = cfg.struct.select_atoms(cfg.select_str_clust)
+    cfg.sel = load_sel(cfg.select_str, cfg.struct, cfg.indexes)
+    cfg.sel_clust = load_sel(cfg.select_str_clust, cfg.struct, cfg.indexes)
+
     print("Selected %d atoms"%len(cfg.sel))
     print("Selected %d atoms for clustering"%len(cfg.sel_clust))
+
+    if(cfg.unwrap_mols):
+        print("Preparing molecule unwrapper")
+        bonded_struct = mda.Universe("epoch01/rep01/mdrun.tpr", "initial/start.pdb")
+        unwrap_sel = load_sel(cfg.unwrap_sel, bonded_struct, cfg.indexes)
+        if(cfg.unwrap_starters is None):
+            unwrap_starters = []
+        else:
+            unwrap_starters = load_sel(cfg.unwrap_starters, unwrap_sel, cfg.indexes)
+        cfg.traj_transforms = [transformations.unwrap(unwrap_sel,unwrap_starters)]
+        print("Selected %d atoms for unwrapping"%len(unwrap_sel))
+        if(cfg.mols_in_box):
+            print("Also putting mol COMs back in box")
+            cfg.traj_transforms.append(transformations.wrap_mols(unwrap_sel))
+
+    else:
+        cfg.traj_transforms = []
     cfg.startval = cfg.function_val(np.array([cfg.sel.positions]))[0]
     print("Initial function value %g"%cfg.startval)
 

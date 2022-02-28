@@ -79,6 +79,20 @@ def function_val(positions):
     return np.minimum(dist1, dist2)
 
 
+############################## Unwrapping options ##############################
+
+# whether to make molecules whole from being broken over pbc
+unwrap_mols = True
+# The selection to make whole
+unwrap_sel = "protein"
+# A selection of atoms to use as "starters" for unwrapping. Unless mols_in_box=True,
+# these atoms are guaranteed to end up inside the box. Makes no difference to outcome
+# if mols_in_box=True. None means to use the smallest indexed atom of each mol.
+unwrap_starters = None
+# Put the molecule COM back into the box (ignored if not unwrapping).
+# Only considers atoms in unwrap_sel
+mols_in_box = False
+
 
 
 

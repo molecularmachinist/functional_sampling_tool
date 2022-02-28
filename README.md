@@ -4,6 +4,7 @@
 
 1. Python 3 with NumPy and matplotlib
 1. [MDAnalysis](https://docs.mdanalysis.org/stable/index.html)
+1. [Numba](https://numba.pydata.org/)
 
 
 If you have conda, you can install MDAnalysis with

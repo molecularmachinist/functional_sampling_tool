@@ -26,7 +26,7 @@ def check_num(prefix):
         if("%s%02d"%(fprefix,i) not in files):
             return i-1
 
-def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval):
+def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval, transforms):
     N = check_num("epoch%02d/rep"%epoch)
     fval = []
     crd  = []
@@ -67,6 +67,7 @@ def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval):
 
         print("Loading trajectory %s"%(d+"mdrun.xtc"))
         struct.load_new(d+"mdrun.xtc")
+        struct.trajectory.add_transformations(*transforms)
         fval_crd = np.empty([len(struct.trajectory), len(sel), 3])
         crd.append(np.empty([len(struct.trajectory), len(sel_clust), 3]))
         print("Copying crd")
@@ -93,14 +94,14 @@ def load_epoch_data(struct, sel, sel_clust, function_val, epoch, load_fval):
     return np.concatenate(reps), np.concatenate(fval), np.concatenate(frms), np.concatenate(crd)
 
 
-def load_data(struct, sel, sel_clust, function_val, load_fval=False):
+def load_data(struct, sel, sel_clust, function_val, load_fval=False, transforms=[]):
     epochs = check_num("epoch")
     fval = []
     reps = []
     frms = []
     crds = []
     for i in range(1,epochs+1):
-        r,f,fr,crd = load_epoch_data(struct, sel,sel_clust, function_val, i, load_fval)
+        r,f,fr,crd = load_epoch_data(struct, sel,sel_clust, function_val, i, load_fval, transforms)
         reps.append(r)
         fval.append(f)
         frms.append(fr)

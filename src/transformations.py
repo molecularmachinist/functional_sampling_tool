@@ -3,14 +3,63 @@
 import numpy as np
 from MDAnalysis.analysis import align
 import warnings
-from numba import jit
+from numba import njit
+from numba.typed import List,Dict
 
 """
 This module includes functions to make on the fly transformations for MDAnalysis trajectories
 """
 
 
-#@jit(forceobj=True)
+def find_frags(ag):
+    """ Traverse all molecules that atoms in ag are part of.
+        Parameters:
+            ag:       Atom group of atoms to check
+            starters: List of atoms or atom group to use as starting points. (optional)
+        Returns:
+            List of indices for each molecule, only including indices in ag.
+    """
+    # A dict to map the indices between system and selection
+    agi = set(ag.indices)
+    mols = []
+
+    # We iterate until there are no more atoms to search
+    while(agi):
+        # A set to hold info on whether we have "visited" atom
+        done = set()
+        start_i = min(agi)
+        start = ag.universe.atoms[start_i]
+
+        # Make a stack to hold atoms to visit and add start atom
+        stack = [start]
+        mol = [start.index]
+        done.add(start.index)
+        # Continue until stack is empty
+        while(stack):
+            # Pop from top of stack
+            curr = stack.pop()
+            # Iterate atoms bonded to popped atom
+            for a in curr.bonded_atoms:
+                # Ignore if atom visited or if it is not in selection
+                if(a.index in done):
+                    continue
+
+                # Add bond to list
+                if(a.index in agi):
+                    mol.append(a.index)
+                # Add atom on top of stack and mark it as visited
+                stack.append(a)
+                done.add(a.index)
+
+        # Remove visited atoms from selction to keep track of whether we are done
+        for a in done:
+            agi.remove(a)
+
+        mols.append(np.unique(mol))
+
+    return mols
+
+
 def traverse_mol(ag, starters=[]):
     """ Traverse all graphs of bonded atoms in ag, using atoms in starters (or the
         smallest indexes) as starting points for a DFS.
@@ -77,9 +126,9 @@ def traverse_mol(ag, starters=[]):
     return np.array(bonds)
 
 
-@jit(["f8[:,:](f8[:,:],i8[:,:])",
+@njit(["f8[:,:](f8[:,:],i8[:,:])",
       "f4[:,:](f4[:,:],i8[:,:])"],
-      nopython=True, cache=True)
+      cache=True)
 def _iterate_bonds(pos, bonds):
     """
     Fixes molecules whole over pbc.
@@ -157,10 +206,9 @@ def wrap_mols(ag):
     """
     mols = []
     weights = []
-    for frag in ag.fragments:
-        frag_int = ag.intersection(frag)
-        mols.append(frag_int.indices)
-        weights.append(frag_int.masses)
+    for frag in find_frags(ag):
+        mols.append(frag)
+        weights.append(ag.universe.atoms[frag].masses)
 
     totw = [np.sum(w) for w in weights]
 

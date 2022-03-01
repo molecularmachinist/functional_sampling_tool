@@ -71,6 +71,16 @@ def load_options(cfgname):
     cfg.startval = cfg.function_val(np.array([cfg.sel.positions]))[0]
     print("Initial function value %g"%cfg.startval)
 
+    if(cfg.clust_superpos):
+        print("Clustering coordinates will be superpositioned")
+    elif(cfg.clust_centre):
+        print("Clustering coordinates will be centred")
+
+    cfg.clust_transform = transformations.superpos(cfg.sel_clust,
+                                                   cfg.clust_centre,
+                                                   cfg.clust_superpos)
+
+
     # Min and maxvals
     if(cfg.minval=="start"):
         cfg.minval=cfg.startval

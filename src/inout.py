@@ -54,6 +54,7 @@ def get_data_from_xtc(d, cfg):
     print("Copying crd")
     for j,ts in enumerate(cfg.struct.trajectory):
         fval_crd[j] = cfg.sel.positions
+        ts = cfg.clust_transform(ts)
         crd[j]      = cfg.sel_clust.positions
 
     print("Calculating fval")

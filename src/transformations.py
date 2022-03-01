@@ -183,29 +183,36 @@ def superpos(ag, centre, superposition):
     """
     Superposition for optimal mass weighted rmsd
     parameters:
-        ag:       Atom group of atoms to fit, from the reference universe
+        ag:            Atom group of atoms to fit, from the reference universe
+        centre:        Boolean of whether to centre the selection
+        superposition: Boolean of whether to centre the selection and fit rotationally
     returns:
         transformation function
     """
     seli = ag.indices
     ref = ag.positions
-    ref_com = ag.centre_of_mass()
+    ref_com = ag.center_of_mass()
     w   = ag.masses
 
-    def wrapped_func(ts):
-        if(centre or superposition):
-            sel = ts.atoms[seli]
-            sel_com = np.mean(w*sel.positions.T, axis=-1)
+    if(superposition):
+        def wrapped_func(ts):
+            sel = ts.positions[seli]
+            sel_com = np.mean(w*sel.T, axis=-1)
+            sel -= sel_com
+            R, rmsd = align.rotation_matrix(sel, ref-ref_com)
+            sel = sel @ R
+            ts.positions[seli] = sel+ref_com
+            return ts
 
-        if(superposition):
-            sel0 = sel_pos-ref_com
-            R, rmsd = align.rotation_matrix(sel0-sel_com, ref-ref_com)
-            sel.positions = sel0
-            sel.rotate(R)
-            sel.positions += ref_com
-        elif(centre):
-            sel.positions += ref_com-sel_com
+    elif(centre):
+        def wrapped_func(ts):
+            sel = ts.positions[seli]
+            sel_com = np.mean(w*sel.T, axis=-1)
+            ts.positions[seli] += ref_com-sel_com
+            return ts
 
-        return ts
+    else:
+        def wrapped_func(ts):
+            return ts
 
     return wrapped_func

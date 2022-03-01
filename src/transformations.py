@@ -158,8 +158,9 @@ def wrap_mols(ag):
     mols = []
     weights = []
     for frag in ag.fragments:
-        mols.append(ag.intersection(frag).indices)
-        weights.append(ag.intersection(frag).masses)
+        frag_int = ag.intersection(frag)
+        mols.append(frag_int.indices)
+        weights.append(frag_int.masses)
 
     totw = [np.sum(w) for w in weights]
 
@@ -168,7 +169,7 @@ def wrap_mols(ag):
         # Inverse box
         invbox = np.linalg.inv(box)
         for i,m in enumerate(mols):
-            pos = np.mean(weights[i]*ts.positions[m].T,axis=-1)/totw[i]
+            pos = np.sum(weights[i]*ts.positions[m].T,axis=-1)/totw[i]
             # Transfer coordinates to unit cell and put in box
             unitpos = (pos @ invbox) % 1
             newpos = unitpos @ box
@@ -190,17 +191,18 @@ def superpos(ag, centre, superposition):
         transformation function
     """
     seli = ag.indices
-    ref = ag.positions
+    ref = ag.positions.copy()
     ref_com = ag.center_of_mass()
     w   = ag.masses
+    totw = w.sum()
 
     if(superposition):
         def wrapped_func(ts):
             sel = ts.positions[seli]
-            sel_com = np.mean(w*sel.T, axis=-1)
+            sel_com = np.sum(w*sel.T, axis=-1)/totw
             sel -= sel_com
             R, rmsd = align.rotation_matrix(sel, ref-ref_com)
-            sel = sel @ R
+            sel = sel @ R.T
             ts.positions[seli] = sel+ref_com
             return ts
 

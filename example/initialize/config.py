@@ -94,6 +94,12 @@ unwrap_starters = None
 mols_in_box = False
 
 
+############################## Coordinate fitting ##############################
+
+# whether to translate clustering coordinates to initial structure
+clust_centre = True
+# whether to fit clustering coordinates to initial structure, rotationally AND translationally
+clust_superpos = True
 
 
 ############################## Advanced options ################################

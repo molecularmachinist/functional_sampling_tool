@@ -78,7 +78,7 @@ def function_val(positions):
     return np.minimum(dist1, dist2)
 
 
-############################## Unwrapping options ##############################
+############################## Trajectrory transformations #####################
 
 # whether to make molecules whole from being broken over pbc
 unwrap_mols = False
@@ -91,9 +91,6 @@ unwrap_starters = None
 # Put the molecule COM back into the box (ignored if not unwrapping).
 # Only considers atoms in unwrap_sel
 mols_in_box = False
-
-
-############################## Coordinate fitting ##############################
 
 # whether to translate clustering coordinates to initial structure
 clust_centre = True

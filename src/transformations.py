@@ -170,7 +170,7 @@ def make_whole(ts, bonds, sel):
     return ts
 
 
-def unwrap(ag, starters=[]):
+class unwrap:
     """ Make molecules in ag whole over the pbc. only considers
         continuosly bonded molecules, so if molecules are in many parts,
         the nonbonded parts will be ignored and can be broken.
@@ -186,17 +186,17 @@ def unwrap(ag, starters=[]):
         returns:
             transformation function
     """
-    bonds = traverse_mol(ag, starters)
-    sel = ag.indices
+    def __init__(self, ag, starters=[]):
+        self.bonds = traverse_mol(ag, starters)
+        self.sel = ag.indices
 
-    def wrapped_func(ts):
-        return make_whole(ts, bonds, sel)
-
-    return wrapped_func
-
+    def __call__(self, ts):
+        return make_whole(ts, self.bonds, self.sel)
 
 
-def wrap_mols(ag):
+
+
+class wrap_mols:
     """
     Put centre of mass of molecules in selection to box
     parameters:
@@ -204,20 +204,22 @@ def wrap_mols(ag):
     returns:
         transformation function
     """
-    mols = []
-    weights = []
-    for frag in find_frags(ag):
-        mols.append(frag)
-        weights.append(ag.universe.atoms[frag].masses)
+    def __init__(self,ag):
+        self.selection = ag.indices
+        self.mols = []
+        self.weights = []
+        for frag in find_frags(ag):
+            self.mols.append(frag)
+            self.weights.append(ag.universe.atoms[frag].masses)
 
-    totw = [np.sum(w) for w in weights]
+        self.totw = np.array([np.sum(w) for w in self.weights])
 
-    def wrapped_func(ts):
+    def __call__(self,ts):
         box = ts.triclinic_dimensions
         # Inverse box
         invbox = np.linalg.inv(box)
-        for i,m in enumerate(mols):
-            pos = np.sum(weights[i]*ts.positions[m].T,axis=-1)/totw[i]
+        for i,m in enumerate(self.mols):
+            pos = np.sum(self.weights[i]*ts.positions[m].T,axis=-1)/self.totw[i]
             # Transfer coordinates to unit cell and put in box
             unitpos = (pos @ invbox) % 1
             newpos = unitpos @ box
@@ -225,10 +227,9 @@ def wrap_mols(ag):
             ts.positions[m] += trans
         return ts
 
-    return wrapped_func
 
 
-def superpos(ag, centre, superposition):
+class superpos:
     """
     Superposition for optimal mass weighted rmsd
     parameters:
@@ -238,31 +239,36 @@ def superpos(ag, centre, superposition):
     returns:
         transformation function
     """
-    seli = ag.indices
-    ref = ag.positions.copy()
-    ref_com = ag.center_of_mass()
-    w   = ag.masses
-    totw = w.sum()
+    def __init__(self,ag, centre, superposition):
+        self.seli = ag.indices.copy()
+        self.ref = ag.positions.copy()
+        self.ref_com = ag.center_of_mass()
+        self.w   = ag.masses.copy()
+        self.totw = self.w.sum()
+        if(superposition):
+            self.func = self.superpos
+        elif(centre):
+            self.func = self.centre
+        else:
+            self.func = self.nothing
 
-    if(superposition):
-        def wrapped_func(ts):
-            sel = ts.positions[seli]
-            sel_com = np.sum(w*sel.T, axis=-1)/totw
-            sel -= sel_com
-            R, rmsd = align.rotation_matrix(sel, ref-ref_com)
-            sel = sel @ R.T
-            ts.positions[seli] = sel+ref_com
-            return ts
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)
 
-    elif(centre):
-        def wrapped_func(ts):
-            sel = ts.positions[seli]
-            sel_com = np.mean(w*sel.T, axis=-1)
-            ts.positions[seli] += ref_com-sel_com
-            return ts
+    def superpos(self,ts):
+        sel = ts.positions[self.seli]
+        sel_com = np.sum(self.w*sel.T, axis=-1)/self.totw
+        sel -= sel_com
+        R, rmsd = align.rotation_matrix(sel, self.ref-self.ref_com)
+        sel = sel @ R.T
+        ts.positions[self.seli] = sel+self.ref_com
+        return ts
 
-    else:
-        def wrapped_func(ts):
-            return ts
+    def centre(self,ts):
+        sel = ts.positions[self.seli]
+        sel_com = np.sum(self.w*sel.T, axis=-1)/self.totw
+        ts.positions[self.seli] += self.ref_com-sel_com
+        return ts
 
-    return wrapped_func
+    def nothing(self,ts):
+        return ts

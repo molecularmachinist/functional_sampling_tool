@@ -3,14 +3,62 @@
 import numpy as np
 from MDAnalysis.analysis import align
 import warnings
-from numba import jit
+from numba import njit
+from numba.typed import List,Dict
 
 """
 This module includes functions to make on the fly transformations for MDAnalysis trajectories
 """
 
 
-#@jit(forceobj=True)
+def find_frags(ag):
+    """ Traverse all molecules that atoms in ag are part of.
+        Parameters:
+            ag:       Atom group of atoms to check
+            starters: List of atoms or atom group to use as starting points. (optional)
+        Returns:
+            List of indices for each molecule, only including indices in ag.
+    """
+    # A dict to map the indices between system and selection
+    agi = set(ag.indices)
+    mols = []
+
+    # We iterate until there are no more atoms to search
+    while(agi):
+        # A set to hold info on whether we have "visited" atom
+        done = set()
+        start_i = agi.pop()
+        start = ag.universe.atoms[start_i]
+
+        # Make a stack to hold atoms to visit and add start atom
+        stack = [start]
+        mol = [start.index]
+        done.add(start.index)
+
+        # Continue until stack is empty
+        while(stack):
+            # Pop from top of stack
+            curr = stack.pop()
+            # Iterate atoms bonded to popped atom
+            for a in curr.bonded_atoms:
+                # Ignore if atom visited or if it is not in selection
+                if(a.index in done):
+                    continue
+
+                # Add atom to list
+                if(a.index in agi):
+                    mol.append(a.index)
+                    agi.remove(a.index)
+                # Add atom on top of stack and mark it as visited
+                stack.append(a)
+                done.add(a.index)
+
+
+        mols.append(np.unique(mol))
+
+    return mols
+
+
 def traverse_mol(ag, starters=[]):
     """ Traverse all graphs of bonded atoms in ag, using atoms in starters (or the
         smallest indexes) as starting points for a DFS.
@@ -77,9 +125,8 @@ def traverse_mol(ag, starters=[]):
     return np.array(bonds)
 
 
-@jit(["f8[:,:](f8[:,:],i8[:,:])",
-      "f4[:,:](f4[:,:],i8[:,:])"],
-      nopython=True, cache=True)
+@njit(["f8[:,:](f8[:,:],i8[:,:])",
+      "f4[:,:](f4[:,:],i8[:,:])"])
 def _iterate_bonds(pos, bonds):
     """
     Fixes molecules whole over pbc.
@@ -121,7 +168,7 @@ def make_whole(ts, bonds, sel):
     return ts
 
 
-def unwrap(ag, starters=[]):
+class Unwrapper:
     """ Make molecules in ag whole over the pbc. only considers
         continuosly bonded molecules, so if molecules are in many parts,
         the nonbonded parts will be ignored and can be broken.
@@ -137,17 +184,17 @@ def unwrap(ag, starters=[]):
         returns:
             transformation function
     """
-    bonds = traverse_mol(ag, starters)
-    sel = ag.indices
+    def __init__(self, ag, starters=[]):
+        self.bonds = traverse_mol(ag, starters)
+        self.sel = ag.indices
 
-    def wrapped_func(ts):
-        return make_whole(ts, bonds, sel)
-
-    return wrapped_func
-
+    def __call__(self, ts):
+        return make_whole(ts, self.bonds, self.sel)
 
 
-def wrap_mols(ag):
+
+
+class MolWrapper:
     """
     Put centre of mass of molecules in selection to box
     parameters:
@@ -155,20 +202,22 @@ def wrap_mols(ag):
     returns:
         transformation function
     """
-    mols = []
-    weights = []
-    for frag in ag.fragments:
-        mols.append(ag.intersection(frag).indices)
-        weights.append(ag.intersection(frag).masses)
+    def __init__(self,ag):
+        self.selection = ag.indices
+        self.mols = []
+        self.weights = []
+        for frag in find_frags(ag):
+            self.mols.append(frag)
+            self.weights.append(ag.universe.atoms[frag].masses)
 
-    totw = [np.sum(w) for w in weights]
+        self.totw = np.array([np.sum(w) for w in self.weights])
 
-    def wrapped_func(ts):
+    def __call__(self,ts):
         box = ts.triclinic_dimensions
         # Inverse box
         invbox = np.linalg.inv(box)
-        for i,m in enumerate(mols):
-            pos = np.mean(weights[i]*ts.positions[m].T,axis=-1)/totw[i]
+        for i,m in enumerate(self.mols):
+            pos = np.sum(self.weights[i]*ts.positions[m].T,axis=-1)/self.totw[i]
             # Transfer coordinates to unit cell and put in box
             unitpos = (pos @ invbox) % 1
             newpos = unitpos @ box
@@ -176,36 +225,48 @@ def wrap_mols(ag):
             ts.positions[m] += trans
         return ts
 
-    return wrapped_func
 
 
-def superpos(ag, centre, superposition):
+class Superpos:
     """
     Superposition for optimal mass weighted rmsd
     parameters:
-        ag:       Atom group of atoms to fit, from the reference universe
+        ag:            Atom group of atoms to fit, from the reference universe
+        centre:        Boolean of whether to centre the selection
+        superposition: Boolean of whether to centre the selection and fit rotationally
     returns:
         transformation function
     """
-    seli = ag.indices
-    ref = ag.positions
-    ref_com = ag.centre_of_mass()
-    w   = ag.masses
-
-    def wrapped_func(ts):
-        if(centre or superposition):
-            sel = ts.atoms[seli]
-            sel_com = np.mean(w*sel.positions.T, axis=-1)
-
+    def __init__(self,ag, centre, superposition):
+        self.seli = ag.indices.copy()
+        self.ref = ag.positions.copy()
+        self.ref_com = ag.center_of_mass()
+        self.w   = ag.masses.copy()
+        self.totw = self.w.sum()
         if(superposition):
-            sel0 = sel_pos-ref_com
-            R, rmsd = align.rotation_matrix(sel0-sel_com, ref-ref_com)
-            sel.positions = sel0
-            sel.rotate(R)
-            sel.positions += ref_com
+            self.func = self.superpos
         elif(centre):
-            sel.positions += ref_com-sel_com
+            self.func = self.centre
+        else:
+            self.func = self.nothing
 
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)
+
+    def superpos(self,ts):
+        sel = ts.positions[self.seli]
+        sel_com = np.sum(self.w*sel.T, axis=-1)/self.totw
+        sel -= sel_com
+        R, rmsd = align.rotation_matrix(sel, self.ref-self.ref_com)
+        sel = sel @ R.T
+        ts.positions[self.seli] = sel+self.ref_com
         return ts
 
-    return wrapped_func
+    def centre(self,ts):
+        sel = ts.positions[self.seli]
+        sel_com = np.sum(self.w*sel.T, axis=-1)/self.totw
+        ts.positions[self.seli] += self.ref_com-sel_com
+        return ts
+
+    def nothing(self,ts):
+        return ts

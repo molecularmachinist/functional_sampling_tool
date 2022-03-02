@@ -29,10 +29,22 @@ def check_num(prefix):
 def get_data_from_archive(d, cfg):
     with np.load(d+"fval_data.npz") as npz:
         dat = dict(npz)
+
     if(dat["xtc_mod_t"]!=os.path.getmtime(d+"mdrun.xtc")):
         raise LoadError("Modification time of %s does not match, reloading"%(d+"mdrun.xtc"))
+
     if((not np.array_equal(cfg.sel.indices,dat["sel"])) or (not np.array_equal(cfg.sel_clust.indices,dat["sel_clust"]))):
         raise LoadError("Selections in %sfval_data.npz do not match, reloading"%d)
+
+    transform_opt = [cfg.unwrap_mols, cfg.unwrap_mols and cfg.mols_in_box,
+                     cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos]
+    if(not np.array_equal(transform_opt,dat["transform_opt"])):
+        raise LoadError("Trajetory transformations changed from %sfval_data.npz, reloading"%d)
+
+    unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(0,dtype=int)
+    if(not np.array_equal(unwrap_sel,dat["unwrap_sel"])):
+        raise LoadError("Unwrapping selection in %sfval_data.npz does not match, reloading"%d)
+
     if(dat["func_hash"]!=utils.hash_func(cfg.function_val)):
         print("Function hash changed, recalculating fval")
         fval= cfg.function_val(dat["fval_crd"])
@@ -54,6 +66,7 @@ def get_data_from_xtc(d, cfg):
     print("Copying crd")
     for j,ts in enumerate(cfg.struct.trajectory):
         fval_crd[j] = cfg.sel.positions
+        ts = cfg.clust_transform(ts)
         crd[j]      = cfg.sel_clust.positions
 
     print("Calculating fval")
@@ -61,12 +74,17 @@ def get_data_from_xtc(d, cfg):
     print("Saving fval_data.npz")
     xtc_mod_t = os.path.getmtime(d+"mdrun.xtc")
     func_hash = utils.hash_func(cfg.function_val)
+    unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(0,dtype=int)
+    transform_opt = [cfg.unwrap_mols, cfg.unwrap_mols and cfg.mols_in_box,
+                     cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos]
     np.savez_compressed(d+"fval_data.npz",
                         fval=fval,
                         fval_crd=fval_crd,
                         crd=crd,
                         xtc_mod_t=xtc_mod_t,
                         func_hash=func_hash,
+                        unwrap_sel=unwrap_sel,
+                        transform_opt=transform_opt,
                         sel=cfg.sel.indices,
                         sel_clust=cfg.sel_clust.indices)
 

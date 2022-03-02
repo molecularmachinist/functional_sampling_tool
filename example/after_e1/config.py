@@ -91,9 +91,15 @@ unwrap_sel = "protein"
 unwrap_starters = None
 # Put the molecule COM back into the box (ignored if not unwrapping).
 # Only considers atoms in unwrap_sel
-mols_in_box = False
+mols_in_box = True
 
 
+############################## Coordinate fitting ##############################
+
+# whether to translate clustering coordinates to initial structure
+clust_centre = True
+# whether to fit clustering coordinates to initial structure, rotationally AND translationally
+clust_superpos = True
 
 
 ############################## Advanced options ################################

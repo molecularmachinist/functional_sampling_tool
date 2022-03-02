@@ -60,16 +60,26 @@ def load_options(cfgname):
             unwrap_starters = []
         else:
             unwrap_starters = load_sel(cfg.unwrap_starters, unwrap_sel, cfg.indexes)
-        cfg.traj_transforms = [transformations.unwrap(unwrap_sel,unwrap_starters)]
+        cfg.traj_transforms = [transformations.Unwrapper(unwrap_sel,unwrap_starters)]
         print("Selected %d atoms for unwrapping"%len(unwrap_sel))
         if(cfg.mols_in_box):
             print("Also putting mol COMs back in box")
-            cfg.traj_transforms.append(transformations.wrap_mols(unwrap_sel))
+            cfg.traj_transforms.append(transformations.MolWrapper(unwrap_sel))
 
     else:
         cfg.traj_transforms = []
     cfg.startval = cfg.function_val(np.array([cfg.sel.positions]))[0]
     print("Initial function value %g"%cfg.startval)
+
+    if(cfg.clust_superpos):
+        print("Clustering coordinates will be superpositioned")
+    elif(cfg.clust_centre):
+        print("Clustering coordinates will be centred")
+
+    cfg.clust_transform = transformations.Superpos(cfg.sel_clust,
+                                                   cfg.clust_centre,
+                                                   cfg.clust_superpos)
+
 
     # Min and maxvals
     if(cfg.minval=="start"):

@@ -137,7 +137,7 @@ These variables are copied into the `sbatch_launch.sh` script when it is copied 
 
 
 
-##### Function calulations
+##### Function calculations
 
 
 | variable | description |
@@ -149,6 +149,28 @@ These variables are copied into the `sbatch_launch.sh` script when it is copied 
 | `function_val` | The function to be sampled. |
 
 
+##### Trajectory transformations
+
+
+###### General
+
+These options change the on-the-fly transformations that are done to the trajectory as it is being read.
+
+| variable | description |
+| --- | - |
+| `unwrap_mols` | Whether to unwrap molecules (make them whole if broken over the PBC). |
+| `unwrap_sel` | The selection string (or index group) used for unwrapping. Only atoms within this selection will be considered, so if parts of a chain are missing, only those parts that have unbroken bonded graphs will be made whole, each of them separately. In general you should make a selection with at least the backbone connecting whichever parts you want whole. This should be fast enough even with large proteins, but including the water can effect performance badly. The default selection of "protein" should work in most cases.|
+| `unwrap_starters` | `None` or the selection string (or index group) used as "starters". These atoms will be the starting points of making the molecules whole. In effect, they are guaranteed to be inside the box after the process. If `None`, or if a molecule does not have any atoms in the group, the atom with the smallest index will be used. |
+| `mols_in_box` | Whether to put centre of mas of molecules back in box after unwrapping. Only the coordinates in `unwrap_sel` are moved and considered for the centre of mass, **however**, unlike for unwrapping, molecules are moved as a whole, even if they are missing parts in between. This is option is ignored if `unwrap_mols=False`.|
+
+###### Clustering
+
+These options only affect the coordinates used for clustering. The transformations are added after the fval coordinates are read, but before the clustering coordinates.
+
+| variable | description |
+| --- | - |
+| `clust_centre` | Whether to move the centre of mass of the clustering coordinates to match the inital structure. Ignored if `clust_superpos=True` |
+| `clust_superpos` | Whether to move the centre of mass of the clustering coordinates to match the inital structure **and** rotate for optimal fit (minimum mass weighted RMSD). |
 
 ##### Advanced options
 

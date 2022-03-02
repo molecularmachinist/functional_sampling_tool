@@ -27,13 +27,14 @@ def find_frags(ag):
     while(agi):
         # A set to hold info on whether we have "visited" atom
         done = set()
-        start_i = min(agi)
+        start_i = agi.pop()
         start = ag.universe.atoms[start_i]
 
         # Make a stack to hold atoms to visit and add start atom
         stack = [start]
         mol = [start.index]
         done.add(start.index)
+
         # Continue until stack is empty
         while(stack):
             # Pop from top of stack
@@ -44,16 +45,14 @@ def find_frags(ag):
                 if(a.index in done):
                     continue
 
-                # Add bond to list
+                # Add atom to list
                 if(a.index in agi):
                     mol.append(a.index)
+                    agi.remove(a.index)
                 # Add atom on top of stack and mark it as visited
                 stack.append(a)
                 done.add(a.index)
 
-        # Remove visited atoms from selction to keep track of whether we are done
-        for a in done:
-            agi.remove(a)
 
         mols.append(np.unique(mol))
 
@@ -127,8 +126,7 @@ def traverse_mol(ag, starters=[]):
 
 
 @njit(["f8[:,:](f8[:,:],i8[:,:])",
-      "f4[:,:](f4[:,:],i8[:,:])"],
-      cache=True)
+      "f4[:,:](f4[:,:],i8[:,:])"])
 def _iterate_bonds(pos, bonds):
     """
     Fixes molecules whole over pbc.
@@ -170,7 +168,7 @@ def make_whole(ts, bonds, sel):
     return ts
 
 
-class unwrap:
+class Unwrapper:
     """ Make molecules in ag whole over the pbc. only considers
         continuosly bonded molecules, so if molecules are in many parts,
         the nonbonded parts will be ignored and can be broken.
@@ -196,7 +194,7 @@ class unwrap:
 
 
 
-class wrap_mols:
+class MolWrapper:
     """
     Put centre of mass of molecules in selection to box
     parameters:
@@ -229,7 +227,7 @@ class wrap_mols:
 
 
 
-class superpos:
+class Superpos:
     """
     Superposition for optimal mass weighted rmsd
     parameters:

@@ -91,7 +91,7 @@ unwrap_sel = "protein"
 unwrap_starters = None
 # Put the molecule COM back into the box (ignored if not unwrapping).
 # Only considers atoms in unwrap_sel
-mols_in_box = False
+mols_in_box = True
 
 
 ############################## Coordinate fitting ##############################

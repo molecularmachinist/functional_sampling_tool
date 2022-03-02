@@ -257,7 +257,7 @@ class Superpos:
         sel = ts.positions[self.seli]
         sel_com = np.sum(self.w*sel.T, axis=-1)/self.totw
         sel -= sel_com
-        R, rmsd = align.rotation_matrix(sel, self.ref-self.ref_com)
+        R, rmsd = align.rotation_matrix(sel, self.ref-self.ref_com, weights=self.w)
         sel = sel @ R.T
         ts.positions[self.seli] = sel+self.ref_com
         return ts

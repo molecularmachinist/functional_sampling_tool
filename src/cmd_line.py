@@ -28,7 +28,7 @@ def import_cfg(cfgname):
 
 def load_sel(sel_str, struct, ndx):
     if(sel_str in ndx):
-        sel = struct.atoms[np.array(ndx[cfg.select_str])-1]
+        sel = struct.atoms[np.array(ndx[sel_str])-1]
     else:
         sel = struct.select_atoms(sel_str)
     return sel

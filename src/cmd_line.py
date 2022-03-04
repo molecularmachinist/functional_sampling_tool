@@ -55,7 +55,8 @@ def load_options(cfgname):
     if(cfg.unwrap_mols):
         print("Preparing molecule unwrapper")
         bonded_struct = mda.Universe("epoch01/rep01/mdrun.tpr", "initial/start.pdb")
-        unwrap_sel = load_sel(cfg.unwrap_sel, bonded_struct, cfg.indexes)
+        unwrap_sel = load_sel(cfg.unwrap_sel, cfg.struct, cfg.indexes)
+        unwrap_sel = bonded_struct.atoms[unwrap_sel.indices]
         if(cfg.unwrap_starters is None):
             unwrap_starters = []
         else:

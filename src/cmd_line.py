@@ -32,6 +32,9 @@ def import_cfg(cfgname):
             continue
         if(not hasattr(cfg, item)):
             setattr(cfg,item,getattr(default_config,item))
+
+    cfg.ignore_epcs = set(cfg.ignore_epcs)
+    cfg.ignore_reps = set(cfg.ignore_reps)
     return cfg
 
 def load_sel(sel_str, struct, ndx):

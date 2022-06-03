@@ -101,6 +101,14 @@ clust_superpos = True
 
 ############################## Advanced options ################################
 
+# List of reps to ignore. Should be a list of tuples (epc,rep),
+# e.g. to ignore rep 1 of ep 11 and rep 3 of ep 5: ignore_reps = [(11,1),(5,3)]
+ignore_reps = []
+# Like above, but just a list of epochs to ignore,
+# e.g. to ignore epochs 6 and 7: ignore_epcs = [6,7]
+ignore_epcs = []
+
+
 # whether to add one to maxwarn on the subsequent epochs (due to atom names changing)
 maxwarn_add = False
 

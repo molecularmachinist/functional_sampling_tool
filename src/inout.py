@@ -114,6 +114,8 @@ def load_epoch_data(epoch, cfg, load_fval):
     fval = []
     crd  = []
     for i in range(1,N+1):
+        if((epoch,i) in cfg.ignore_reps):
+            continue
         d="epoch%02d/rep%02d/"%(epoch, i)
         fv,cr = load_from_dir(d, cfg, load_fval)
         fval.append(fv)
@@ -132,6 +134,8 @@ def load_data(cfg, load_fval):
     frms = []
     crds = []
     for i in range(1,epochs+1):
+        if (i in cfg.ignore_epcs):
+            continue
         r,f,fr,crd = load_epoch_data(i, cfg, load_fval)
         reps.append(r)
         fval.append(f)

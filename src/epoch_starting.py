@@ -102,7 +102,7 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
                     
                 res.append(next_rep(i+1,cfg, nextepoch, e, r, f, v, p))
         
-        print("Waiting for grommping to finish")
+        print("Waiting for grompping to finish")
         p.close()
         p.join()
 

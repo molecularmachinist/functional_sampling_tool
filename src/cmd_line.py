@@ -64,7 +64,7 @@ def load_options(cfgname):
     print("Selected %d atoms for clustering"%len(cfg.sel_clust))
 
     if(cfg.unwrap_mols):
-        print("Preparing molecule unwrapper")
+        # Preparing molecule unwrapper
         bonded_struct = mda.Universe("epoch01/rep01/mdrun.tpr", "initial/start.pdb")
         unwrap_sel = load_sel(cfg.unwrap_sel, cfg.struct, cfg.indexes)
         unwrap_sel = bonded_struct.atoms[unwrap_sel.indices]

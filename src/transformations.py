@@ -4,7 +4,6 @@ import numpy as np
 from MDAnalysis.analysis import align
 import warnings
 from numba import njit
-from numba.typed import List,Dict
 
 """
 This module includes functions to make on the fly transformations for MDAnalysis trajectories
@@ -177,18 +176,36 @@ class Unwrapper:
         bonded atom will be moved by a box vector if it is more than half the
         length of the box.
         parameters:
-            ag:       Atom group of molecules to make whole
-            starters: Atom goup (or list) of atoms that are guaranteed to stay
-                      in box. If multiple atoms are part of same molecule, only
-                      first is guaranteed.
+            ag:        Atom group of molecules to make whole
+            starters:  Atom goup (or list) of atoms that are guaranteed to stay
+                       in box. If multiple atoms are part of same molecule, only
+                       first is guaranteed.
+            initsetup: If True, setup is run when initializing object.
         returns:
             transformation function
     """
-    def __init__(self, ag, starters=[]):
-        self.bonds = traverse_mol(ag, starters)
-        self.sel = ag.indices
+    def __init__(self, ag, starters=[], initsetup=False):
+        self.starters = starters
+        self.ag  = ag
+        self.sel = self.ag.indices
+        self.__setup_run=False
+        if(initsetup):
+            self._setup()
+
+    def _setup(self):
+        if(self.__setup_run):
+            warnings.warn("Unwrapper setup being run after __setup_run is already." \
+                          "Continuing without new setup.", RuntimeWarning)
+        self.bonds = traverse_mol(self.ag, self.starters)
+        self.__setup_run = True
+        # No need to remember atom group or starters after setup
+        del self.ag
+        del self.starters
+
 
     def __call__(self, ts):
+        if(not self.__setup_run):
+            self._setup()
         return make_whole(ts, self.bonds, self.sel)
 
 
@@ -198,21 +215,38 @@ class MolWrapper:
     """
     Put centre of mass of molecules in selection to box
     parameters:
-        ag:       Atom group of molecules to put in box
+        ag:        Atom group of molecules to put in box
+        initsetup: If True, setup is run when initializing object.
     returns:
         transformation function
     """
-    def __init__(self,ag):
-        self.selection = ag.indices
+    def __init__(self,ag, initsetup=False):
+        self.ag  = ag
+        self.selection = self.ag.indices
+        self.__setup_run=False
+        if(initsetup):
+            self._setup()
+
+
+    def _setup(self):
+        if(self.__setup_run):
+            warnings.warn("Unwrapper setup being run after __setup_run is already True." \
+                          "Continuing without new setup.", RuntimeWarning)
         self.mols = []
         self.weights = []
-        for frag in find_frags(ag):
+        for frag in find_frags(self.ag):
             self.mols.append(frag)
-            self.weights.append(ag.universe.atoms[frag].masses)
+            self.weights.append(self.ag.universe.atoms[frag].masses)
 
         self.totw = np.array([np.sum(w) for w in self.weights])
+        self.__setup_run = True
+        # No need to remember atom group after setup
+        del self.ag
 
     def __call__(self,ts):
+        if(not self.__setup_run):
+            self._setup()
+
         box = ts.triclinic_dimensions
         # Inverse box
         invbox = np.linalg.inv(box)

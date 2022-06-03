@@ -75,7 +75,9 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
             - frm : Length N array of the frame within the rep each new rep comes from
     """
 
-    with Pool() as p:
+    numproc = min(os.cpu_count(),4,cfg.N) if(nextepoch!=1) else min(os.cpu_count(),cfg.N)
+
+    with Pool(numproc) as p:
         res = []
         if(nextepoch==1):
             # Initial structures and first epoch

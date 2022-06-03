@@ -205,8 +205,14 @@ class FrameChooser():
                 vals_in_bin = (self.fval >= self.bin_edges[bi])*(self.fval < self.bin_edges[bi+1])
             else:
                 vals_in_bin = (self.fval >= self.bin_edges[bi])*(self.fval <= self.bin_edges[bi+1])
+            
+            n_in_bin = np.sum(vals_in_bin)
+            if(n_in_bin<self.cfg.minchoice):
+                n_in_bin = self.cfg.minchoice
+                cnt = (self.bin_edges[bi]+self.bin_edges[bi+1])/2
+                vals_in_bin = np.argsort(np.abs(self.fval-cnt))[:n_in_bin]
 
-            ndx = rng.choice(np.sum(vals_in_bin))
+            ndx = rng.choice(n_in_bin)
 
             v.append(self.fval[vals_in_bin][ndx])
             e.append(self.epcs[vals_in_bin][ndx])

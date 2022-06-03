@@ -108,6 +108,8 @@ maxwarn_add = False
 data_per_bin = 100
 # Maximum amount of bins between boundaries
 maxbins = 100
+#Minimum amount to choose a frame from. If less frames are in the bin, this many closest frames in value will be used.
+minchoice = data_per_bin
 
 # Cluster histogram
 clust_data_per_bin=1000

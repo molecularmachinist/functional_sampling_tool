@@ -113,6 +113,7 @@ def load_epoch_data(epoch, cfg, load_fval):
     N = check_num("epoch%02d/rep"%epoch)
     fval = []
     crd  = []
+    reps = []
     for i in range(1,N+1):
         if((epoch,i) in cfg.ignore_reps):
             continue
@@ -120,8 +121,8 @@ def load_epoch_data(epoch, cfg, load_fval):
         fv,cr = load_from_dir(d, cfg, load_fval)
         fval.append(fv)
         crd.append(cr)
+        reps.append(np.full(fv.shape,i))
 
-    reps = [np.full(f.shape,i+1) for i,f in enumerate(fval)]
     frms = [np.arange(len(f)) for f in fval]
 
     return np.concatenate(reps), np.concatenate(fval), np.concatenate(frms), np.concatenate(crd)
@@ -133,6 +134,7 @@ def load_data(cfg, load_fval):
     reps = []
     frms = []
     crds = []
+    epcs = []
     for i in range(1,epochs+1):
         if (i in cfg.ignore_epcs):
             continue
@@ -141,9 +143,8 @@ def load_data(cfg, load_fval):
         fval.append(f)
         frms.append(fr)
         crds.append(crd)
+        epcs.append(np.full(f.shape,i))
 
-
-    epcs = [np.full(f.shape,i+1) for i,f in enumerate(fval)]
 
     reps = np.concatenate(reps)
     fval = np.concatenate(fval)

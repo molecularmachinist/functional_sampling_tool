@@ -14,12 +14,12 @@ remote_dir="/scratch/project_2004581/functional_sampling_tool/prod"
 # remote name, either "host" or "user@host".
 remote_name="mahti"
 # Set dirs/files/patterns to exclude from rsync command
-rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", "*.ipynb", "dump", "figs", "fst", "src"]
+rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", "figs", "fst", "src"]
 
 
 ########################### sbatch template variables ##########################
-email= "santeri.e.paajanen@helsinki.fi"
-account="project_2004581"
+email= "erkki.esimerkki@domain.com"
+account="project_1234567"
 
 
 ########################### Sampling variables

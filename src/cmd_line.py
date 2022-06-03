@@ -12,6 +12,7 @@ from . import epoch_starting
 from . import clustering
 from . import utils
 from . import transformations
+from . import default_config
 
 def import_cfg(cfgname):
     """
@@ -24,6 +25,13 @@ def import_cfg(cfgname):
     cfg = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(cfg)
     sys.dont_write_bytecode = writebytecode
+
+    #Load defaults
+    for item in dir(default_config):
+        if(item.startswith("__")):
+            continue
+        if(not hasattr(cfg, item)):
+            setattr(cfg,item,getattr(default_config,item))
     return cfg
 
 def load_sel(sel_str, struct, ndx):

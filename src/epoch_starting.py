@@ -39,7 +39,7 @@ def next_rep(i,cfg,newepoch,oldepoch,rep,frm, val):
     """
     os.makedirs("epoch%02d/rep%02d"%(newepoch, i))
 
-    print("Reading frame %d of epoch %d, rep %d"%(frm, oldepoch, rep))
+    print("Reading frame %d of epoch %d, rep %d, fval %f"%(frm, oldepoch, rep, val))
     cfg.struct.load_new("epoch%02d/rep%02d/mdrun.xtc"%(oldepoch, rep))
     cfg.struct.trajectory[frm]
 

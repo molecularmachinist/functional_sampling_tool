@@ -54,8 +54,13 @@ maxwarn_add = False
 data_per_bin = 100
 # Maximum amount of bins between boundaries
 maxbins = 100
-#Minimum amount to choose a frame from. If less frames are in the bin, this many closest frames in value will be used.
+# Minimum amount to choose a frame from. If less frames are in the bin, this many closest frames in value will be used.
+# Must be higher or equal to N if allow_choice_duplicates=True
 minchoice = data_per_bin
+# Allow choosing the same frame more than once in the same epoch.
+# In some edge cases of multiple choices within a region of low sampling,
+# the minchoice values might overlap and still produce duplicates.
+allow_choice_duplicates=False
 
 # Cluster histogram
 clust_data_per_bin=1000

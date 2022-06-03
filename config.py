@@ -111,6 +111,10 @@ data_per_bin = 100
 maxbins = 100
 #Minimum amount to choose a frame from. If less frames are in the bin, this many closest frames in value will be used.
 minchoice = data_per_bin
+# Allow choosing the same frame more than once in the same epoch.
+# In some edge cases of multiple choices within a region of low sampling,
+# the minchoice values might overlap and still produce duplicates.
+allow_choice_duplicates=False
 
 # Cluster histogram
 clust_data_per_bin=1000

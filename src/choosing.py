@@ -200,24 +200,29 @@ class FrameChooser():
         rng = np.random.default_rng()
         # lists for value, rpoch, rep and frame
         v,e,r,f=[],[],[],[]
-        for bi in chosen_bins:
+        for bi,ci in zip(np.unique(chosen_bins, return_index=True)):
             if(bi<len(self.bin_edges)-2):
                 vals_in_bin = (self.fval >= self.bin_edges[bi])*(self.fval < self.bin_edges[bi+1])
             else:
                 vals_in_bin = (self.fval >= self.bin_edges[bi])*(self.fval <= self.bin_edges[bi+1])
             
+            # How many are in bin
             n_in_bin = np.sum(vals_in_bin)
+            # Check if enough are to satisfy minchoice criteria
             if(n_in_bin<self.cfg.minchoice):
+                # If not, we choose minchoice closest to bin center
                 n_in_bin = self.cfg.minchoice
                 cnt = (self.bin_edges[bi]+self.bin_edges[bi+1])/2
+                # Sort by distance to cnt and choose the n_in_bin first ones
                 vals_in_bin = np.argsort(np.abs(self.fval-cnt))[:n_in_bin]
 
-            ndx = rng.choice(n_in_bin)
+            # Choose ci from bin
+            ndx = rng.choice(n_in_bin,size=ci,replace=(not self.cfg.allow_choice_duplicates))
 
-            v.append(self.fval[vals_in_bin][ndx])
-            e.append(self.epcs[vals_in_bin][ndx])
-            r.append(self.reps[vals_in_bin][ndx])
-            f.append(self.frms[vals_in_bin][ndx])
+            v.extend(self.fval[vals_in_bin][ndx])
+            e.extend(self.epcs[vals_in_bin][ndx])
+            r.extend(self.reps[vals_in_bin][ndx])
+            f.extend(self.frms[vals_in_bin][ndx])
 
         return v,e,r,f
 

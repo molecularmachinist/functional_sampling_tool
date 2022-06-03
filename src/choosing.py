@@ -200,7 +200,7 @@ class FrameChooser():
         rng = np.random.default_rng()
         # lists for value, rpoch, rep and frame
         v,e,r,f=[],[],[],[]
-        for bi,ci in zip(np.unique(chosen_bins, return_index=True)):
+        for bi,ci in zip(*np.unique(chosen_bins, return_counts=True)):
             if(bi<len(self.bin_edges)-2):
                 vals_in_bin = (self.fval >= self.bin_edges[bi])*(self.fval < self.bin_edges[bi+1])
             else:

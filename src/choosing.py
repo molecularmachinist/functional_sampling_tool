@@ -217,7 +217,7 @@ class FrameChooser():
                 vals_in_bin = np.argsort(np.abs(self.fval-cnt))[:n_in_bin]
 
             # Choose ci from bin
-            ndx = rng.choice(n_in_bin,size=ci,replace=(not self.cfg.allow_choice_duplicates))
+            ndx = rng.choice(n_in_bin,size=ci,replace=self.cfg.allow_choice_duplicates)
 
             v.extend(self.fval[vals_in_bin][ndx])
             e.extend(self.epcs[vals_in_bin][ndx])

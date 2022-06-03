@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import os, shutil
 import numpy as np
+from multiprocessing import Pool
 
 from . import utils
 
 
-def init_rep(i,cfg,d="epoch01"):
+def init_rep(i,cfg,pool,d="epoch01"):
     """ Initializes rep i
     """
     try:
@@ -18,23 +19,21 @@ def init_rep(i,cfg,d="epoch01"):
     shutil.copyfile("initial/start.gro", "%s/rep%02d/start.gro"%(d,i))
     print("Copied initial/start.gro to rep%02d, starting to grompp..."%(i))
 
-    # Save original working dir to come back to
-    prevdir = os.getcwd()
-    try:
-        os.chdir("%s/rep%02d"%(d,i))
-
-        rc=utils.gromacs_command(cfg.gmx, "grompp", c="start.gro", f="../../"+cfg.mdp, n="../../"+cfg.ndx,
-                           p="../../"+cfg.topol, o="mdrun.tpr", maxwarn=str(cfg.maxwarn))
-
-        print("Process returned %d"%rc)
-        assert rc == 0, "Nonzero returncode from grompp, see %s/rep%02d/output_grompp.txt for more detail."%(d,i)
-    finally:
-        # Whatever happens, we go back to the original working dir
-        os.chdir(prevdir)
+    # Do the gromacs job asynchronously in the worker pool
+    rc=pool.apply_async(utils.gromacs_command,
+                        args=(cfg.gmx, "grompp"),
+                        kwds={"c": "start.gro", "f": "../../"+cfg.mdp,
+                                "n": "../../"+cfg.ndx, "p": "../../"+cfg.topol,
+                                "o": "mdrun.tpr", "maxwarn": str(cfg.maxwarn),
+                                "directory": "%s/rep%02d"%(d, i)
+                                }
+                        )
 
 
+    return ("%s/rep%02d"%(d,i),rc)
 
-def next_rep(i,cfg,newepoch,oldepoch,rep,frm, val):
+
+def next_rep(i,cfg,newepoch,oldepoch,rep,frm, val, pool):
     """ Initializes rep i of newepoch, taking the frame frm from rep of oldepoch
     """
     os.makedirs("epoch%02d/rep%02d"%(newepoch, i))
@@ -52,20 +51,19 @@ def next_rep(i,cfg,newepoch,oldepoch,rep,frm, val):
         f.write("# epoch rep frame val\n")
         f.write("%d %d %d %f\n"%(oldepoch,rep,frm, val))
 
-    # Save original working dir to come back to
-    prevdir = os.getcwd()
-    try:
-        os.chdir("epoch%02d/rep%02d"%(newepoch, i))
+    # Do the gromacs job asynchronously in the worker pool
+    rc=pool.apply_async(utils.gromacs_command,
+                        args=(cfg.gmx, "grompp"),
+                        kwds={"c": "start.gro", "f": "../../"+cfg.mdp,
+                                "n": "../../"+cfg.ndx, "p": "../../"+cfg.topol,
+                                "o": "mdrun.tpr", "maxwarn": str(cfg.maxwarn+cfg.maxwarn_add),
+                                "directory": "epoch%02d/rep%02d"%(newepoch, i)
+                                }
+                        )
 
-        # The pdb structure seems to change the atom names, so maxwarn is 2
-        rc=utils.gromacs_command(cfg.gmx, "grompp", c="start.gro", f="../../"+cfg.mdp, n="../../"+cfg.ndx,
-                           p="../../"+cfg.topol, o="mdrun.tpr", maxwarn=str(cfg.maxwarn+cfg.maxwarn_add))
 
-        print("Process returned %d"%rc)
+    return ("epoch%02d/rep%02d"%(newepoch,i),rc)
 
-    finally:
-        # Whatever happens, we go back to the original working dir
-        os.chdir(prevdir)
 
 def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
     """ Start epoch nextepoch. If it is one, the initial epoch is started,
@@ -76,20 +74,38 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
             - rep : Length N array of the rep within the epoch each new rep comes from
             - frm : Length N array of the frame within the rep each new rep comes from
     """
-    if(nextepoch==1):
-        # Initial structures and first epoch
-        os.makedirs("epoch01", exist_ok=True)
 
-        for i in range(1,cfg.N+1):
-            init_rep(i,cfg)
-    elif(np.any([d is None for d in (val,epc,rep,frm)])):
-        raise ValueError("val, epc, rep or frm cannot be None if nextepoch!=1")
-    else:
+    with Pool() as p:
+        res = []
+        if(nextepoch==1):
+            # Initial structures and first epoch
+            os.makedirs("epoch01", exist_ok=True)
 
-        os.makedirs("epoch%02d"%(nextepoch))
+            for i in range(1,cfg.N+1):
+                for d,rc in res:
+                    if(rc.ready()):
+                        break
+                        
+                res.append(init_rep(i,cfg,p))
+        elif(np.any([d is None for d in (val,epc,rep,frm)])):
+            raise ValueError("val, epc, rep or frm cannot be None if nextepoch!=1")
+        else:
 
-        for i, (v, e, r, f) in enumerate(zip(val,epc,rep,frm)):
-            next_rep(i+1,cfg, nextepoch, e, r, f, v)
+            os.makedirs("epoch%02d"%(nextepoch))
+
+            for i, (v, e, r, f) in enumerate(zip(val,epc,rep,frm)):
+                for d,rc in res:
+                    if(rc.ready()):
+                        break
+                    
+                res.append(next_rep(i+1,cfg, nextepoch, e, r, f, v, p))
+        
+        print("Waiting for grommping to finish")
+        p.close()
+        p.join()
+
+    for d,rc in res:
+        assert rc.get() == 0, "Nonzero returncode from grompp, see %s/output_grompp.txt for more detail."%(d)
 
     # copy sbatch template
     with open("templates/sbatch_launch.sh") as fin:

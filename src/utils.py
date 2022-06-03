@@ -52,18 +52,27 @@ def read_ndx(ndx):
     return indexes
 
 
-def gromacs_command(gmx, cmd, *args, input=None, **kwargs):
-    """ Call the gromacs subcommand cmd. Both args and keys of kwargs should be without the leading dash.
+def gromacs_command(gmx, cmd, *args, directory=".", input=None, **kwargs):
+    """ Call the gromacs subcommand cmd in directory. Both args and keys of kwargs should be without the leading dash.
         output is redirected to output_<cmd>.txt. Returns the return code of the command.
     """
-    command = [gmx, cmd]+["-"+a for a in args]
-    for k in kwargs:
-        command += ["-"+k, kwargs[k]]
 
-    print(f"Running: {' '.join(command)}")
-    with open("output_%s.txt"%cmd, "w") as fout:
-        compProc = subp.run(command, stdout=fout, stderr=subp.STDOUT, input=input)
+    # Save original working dir to come back to
+    prevdir = os.getcwd()
+    try:
+        os.chdir(directory)
+        command = [gmx, cmd]+["-"+a for a in args]
+        for k in kwargs:
+            command += ["-"+k, kwargs[k]]
 
+        print(f"Running: {' '.join(command)}")
+        with open("output_%s.txt"%cmd, "w") as fout:
+            compProc = subp.run(command, stdout=fout, stderr=subp.STDOUT, input=input)
+
+    finally:
+        # Whatever happens, we go back to the original working dir
+        os.chdir(prevdir)
+        
     return compProc.returncode
 
 

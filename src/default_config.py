@@ -82,3 +82,7 @@ maxclust=15
 clust_choice_frac=0.5
 # Tolerace for number of clusters in clustering
 clust_tol=0.1
+
+
+# Name of archivefile
+npz_file_name = "fval_data.npz"

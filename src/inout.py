@@ -27,31 +27,31 @@ def check_num(prefix):
             return i-1
 
 def get_data_from_archive(d, cfg):
-    with np.load(d+"fval_data.npz") as npz:
+    with np.load(d+cfg.npz_file_name) as npz:
         dat = dict(npz)
 
     if(dat["xtc_mod_t"]!=os.path.getmtime(d+"mdrun.xtc")):
         raise LoadError("Modification time of %s does not match, reloading"%(d+"mdrun.xtc"))
 
     if((not np.array_equal(cfg.sel.indices,dat["sel"])) or (not np.array_equal(cfg.sel_clust.indices,dat["sel_clust"]))):
-        raise LoadError("Selections in %sfval_data.npz do not match, reloading"%d)
+        raise LoadError("Selections in %s%s do not match, reloading"%(d,cfg.npz_file_name))
 
     transform_opt = [cfg.unwrap_mols, cfg.unwrap_mols and cfg.mols_in_box,
                      cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos]
     if(not np.array_equal(transform_opt,dat["transform_opt"])):
-        raise LoadError("Trajetory transformations changed from %sfval_data.npz, reloading"%d)
+        raise LoadError("Trajetory transformations changed from %s%s, reloading"%(d,cfg.npz_file_name))
 
     unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(0,dtype=int)
     if(not np.array_equal(unwrap_sel,dat["unwrap_sel"])):
-        raise LoadError("Unwrapping selection in %sfval_data.npz does not match, reloading"%d)
+        raise LoadError("Unwrapping selection in %s%s does not match, reloading"%(d,cfg.npz_file_name))
 
     if(dat["func_hash"]!=utils.hash_func(cfg.function_val)):
         print("Function hash changed, recalculating fval")
         fval= cfg.function_val(dat["fval_crd"])
         dat["fval"] = fval
-        print("Saving modified fval to fval_data.npz")
+        print("Saving modified fval to %s"%cfg.npz_file_name)
         dat["func_hash"]=utils.hash_func(cfg.function_val)
-        np.savez_compressed(d+"fval_data.npz",**dat)
+        np.savez_compressed(d+cfg.npz_file_name,**dat)
     else:
         fval = dat["fval"]
 
@@ -71,13 +71,13 @@ def get_data_from_xtc(d, cfg):
 
     print("Calculating fval")
     fval = cfg.function_val(fval_crd)
-    print("Saving fval_data.npz")
+    print("Saving %s"%cfg.npz_file_name)
     xtc_mod_t = os.path.getmtime(d+"mdrun.xtc")
     func_hash = utils.hash_func(cfg.function_val)
     unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(0,dtype=int)
     transform_opt = [cfg.unwrap_mols, cfg.unwrap_mols and cfg.mols_in_box,
                      cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos]
-    np.savez_compressed(d+"fval_data.npz",
+    np.savez_compressed(d+cfg.npz_file_name,
                         fval=fval,
                         fval_crd=fval_crd,
                         crd=crd,
@@ -94,14 +94,14 @@ def load_from_dir(d, cfg, load_fval):
     if(not load_fval):
         try:
             fval,crd = get_data_from_archive(d, cfg)
-            print("Loaded data from %sfval_data.npz"%d)
+            print("Loaded data from %s%s"%(d,cfg.npz_file_name))
             return fval, crd
         except FileNotFoundError:
-            print("Did not find %s, loading from xtc"%(d+"fval_data.npz"))
+            print("Did not find %s, loading from xtc"%(d+cfg.npz_file_name))
         except LoadError as e:
             print(e)
         except KeyError as e:
-            print(d+"fval_data.npz"+" missing data:")
+            print(d+cfg.npz_file_name+" missing data:")
             print(e)
             print("reloading from xtc")
 

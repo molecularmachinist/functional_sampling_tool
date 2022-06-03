@@ -12,6 +12,18 @@ rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", ".*.xtc_
 
 
 
+########################### Running simulations
+gmx = "gmx"
+# input files for grompping
+mdp   = "mdrun.mdp"
+topol = "topol.top"
+ndx   = "index_grompp.ndx"
+maxwarn = 0
+
+############################## Function calcs ##################################
+# index file for selections
+index_file = None
+
 ############################## Trajectrory transformations #####################
 
 # whether to make molecules whole from being broken over pbc

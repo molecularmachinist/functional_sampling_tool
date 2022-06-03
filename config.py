@@ -39,8 +39,9 @@ maxwarn = 0
 ############################## Function calcs ##################################
 # To make next run faster we save this selection to disk
 # The coordinates of the selction are used in function_val
-# Should be a valid mdtraj selection string OR a group in index_file
-# mdtraj selection string https://www.mdtraj.org/1.9.5/atom_selection.html
+# Should be a valid MDAnalysis selection string OR a group in index_file
+# For MDAnalysis selection strings, see
+# https://docs.mdanalysis.org/stable/documentation_pages/selections.html
 select_str = "protein and resid 638 and not ( type H )"
 # Same as above, but selection for clustering
 select_str_clust = "protein and name CA"

@@ -10,7 +10,8 @@ import numpy as np
 
 ########################### Remote options #####################################
 # remote dir corresponding to dir of this notebook
-# Just make a local subfolder
+# For the example case we just make a local subfolder
+# DO NOT use in production
 import os
 remote_dir=os.getcwd()+"/remote_dir"
 # remote name, either "host" or "user@host". Must be setup for passwordless connect.
@@ -30,18 +31,14 @@ N = 16
 
 
 ########################### Running simulations
-gmx = "gmx"
-# input files for grompping
-mdp   = "mdrun.mdp"
-topol = "topol.top"
-ndx   = "index_grompp.ndx"
 maxwarn=1
 
 ############################## Function calcs ##################################
 # To make next run faster we save this selection to disk
 # The coordinates of the selction are used in function_val
-# Should be a valid mdtraj selection string OR a group in index_file
-# mdtraj selection string https://www.mdtraj.org/1.9.5/atom_selection.html
+# Should be a valid MDAnalysis selection string OR a group in index_file
+# For MDAnalysis selection strings, see
+# https://docs.mdanalysis.org/stable/documentation_pages/selections.html
 select_str = "protein and resid 638 and not ( type H )"
 # Same as above, but selection for clustering
 select_str_clust = "protein and name CA"
@@ -91,36 +88,14 @@ unwrap_sel = "protein"
 unwrap_starters = None
 # Put the molecule COM back into the box (ignored if not unwrapping).
 # Only considers atoms in unwrap_sel
-mols_in_box = False
+mols_in_box = True
 
 
 ############################## Coordinate fitting ##############################
 
-# whether to translate clustering coordinates to initial structure
-clust_centre = True
 # whether to fit clustering coordinates to initial structure, rotationally AND translationally
 clust_superpos = True
 
 
 ############################## Advanced options ################################
 maxwarn_add=True
-
-
-# Histogram building
-# At least this much data in each bin of the histogram
-data_per_bin = 100
-# Maximum amount of bins between boundaries
-maxbins = 10
-
-# Cluster histogram
-clust_data_per_bin=100
-clust_maxbins=10
-
-#Max number of clusters per bin
-maxclust=15
-# choose at most this fraction of choices from clustering
-clust_choice_frac=0.5
-# Tolerace for number of clusters in clustering
-clust_tol=0.1
-# Number of epoch before clustering
-epochs_pre_clust=3

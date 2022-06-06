@@ -75,6 +75,9 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
             - frm : Length N array of the frame within the rep each new rep comes from
     """
 
+    # The grompping itself will be done asynchronously in the worker pool
+    # No point in having more than 4 workers, since reading the frame from file is done
+    # in the main process. Only exception is initialization, as there is no need to read a trajectory. 
     numproc = min(os.cpu_count(),4,cfg.N) if(nextepoch!=1) else min(os.cpu_count(),cfg.N)
 
     with Pool(numproc) as p:
@@ -88,7 +91,7 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
                     if(rc.ready()):
                         break
                         
-                res.append(init_rep(i,cfg,p))
+                res.append(init_rep(cfg.first_rep_num + i,cfg,p))
         elif(np.any([d is None for d in (val,epc,rep,frm)])):
             raise ValueError("val, epc, rep or frm cannot be None if nextepoch!=1")
         else:
@@ -100,7 +103,7 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
                     if(rc.ready()):
                         break
                     
-                res.append(next_rep(i+1,cfg, nextepoch, e, r, f, v, p))
+                res.append(next_rep(cfg.first_rep_num + i,cfg, nextepoch, e, r, f, v, p))
         
         print("Waiting for grompping to finish")
         p.close()

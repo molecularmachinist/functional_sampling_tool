@@ -32,6 +32,9 @@ class FrameChooser():
             self.u_reps.append(np.unique(reps[self.epcs==e]))
 
         self.nextepoch = self.u_epcs[-1]+1
+        # make sure this is not an ignored epoch
+        while (self.nextepoch in cfg.ignore_epcs):
+            self.nextepoch+=1
 
         self._make_hist()
 

@@ -83,6 +83,9 @@ clust_choice_frac=0.5
 # Tolerace for number of clusters in clustering
 clust_tol=0.1
 
-
+# These options allow running multiple runs with separate configs suing the same data
 # Name of archivefile
 npz_file_name = "fval_data.npz"
+# number of first rep
+first_rep_num = 1
+

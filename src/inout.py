@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 import os
 import numpy as np
+import re
 
 from . import utils
 
 class LoadError(ValueError):
     pass
 
+
 def check_num(prefix):
     """
-    Checks filenames prefix01, prefix02, etc and returns the highest found (0 if none found)
+    Checks filenames prefix01, prefix02, etc and returns a list of integers that were found.
     """
     parts = prefix.split("/")
     dir = "/".join(prefix.split("/")[:-1])
@@ -20,11 +22,18 @@ def check_num(prefix):
         dir="./"
     fprefix = parts[-1]
     files = os.listdir(dir)
-    i=0
-    while(True):
-        i+=1
-        if("%s%02d"%(fprefix,i) not in files):
-            return i-1
+
+    prog = re.compile("%s(?P<num>[0-9]+)$"%fprefix)
+
+    nums = []
+
+    for f in files:
+        m = prog.match(f) 
+        if(m):
+            nums.append(int(m.group("num")))
+
+    nums.sort()
+    return nums
 
 def get_data_from_archive(d, cfg):
     with np.load(d+cfg.npz_file_name) as npz:
@@ -110,11 +119,11 @@ def load_from_dir(d, cfg, load_fval):
     return get_data_from_xtc(d, cfg)
 
 def load_epoch_data(epoch, cfg, load_fval):
-    N = check_num("epoch%02d/rep"%epoch)
+    rep_nums = check_num("epoch%02d/rep"%epoch)
     fval = []
     crd  = []
     reps = []
-    for i in range(1,N+1):
+    for i in rep_nums:
         if((epoch,i) in cfg.ignore_reps):
             continue
         d="epoch%02d/rep%02d/"%(epoch, i)
@@ -135,7 +144,7 @@ def load_data(cfg, load_fval):
     frms = []
     crds = []
     epcs = []
-    for i in range(1,epochs+1):
+    for i in epochs:
         if (i in cfg.ignore_epcs):
             continue
         r,f,fr,crd = load_epoch_data(i, cfg, load_fval)

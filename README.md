@@ -15,7 +15,7 @@ If you have conda, you can make sure all dependencies are met by running
 conda install -c conda-forge numpy matplotlib numba mdanalysis scikit-learn
 ```
 
-The tool has been tested and developed with python 3.7. Please let us if you are using other versions, whether everything works (and especially if it doesn't).
+The tool has been tested with python 3.7 and 3.9. Please let us know if you are using other versions, whether everything works (and especially if it doesn't).
 
 ## How it works
 

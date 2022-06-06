@@ -92,11 +92,11 @@ The next most important settings to change are the selections, where you should 
 Lastly you should define the function itself in `function_val`. As the only parameter it will get the positions of one repetition at a time as a `ndarray(n,m,3)`, for n frames and a selection of m atoms. As per MDAnalysis default units, the positions will be in ångströms.
 
 
-#### Configuration variables
+### Configuration options
 
 Here is a listing of all the variables you should need in normal usage. The default values are defined in `src/default_config.py`. If there is no default value, this means that it must be defined in the config file. For now there is no check that everything is defined, and the program will simply crash at some point.
 
-##### Remote options
+#### Remote options
 
 | Variable | Description | Default value |
 | --- | - | - |
@@ -110,7 +110,7 @@ By default the rsync excludes are
 rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", ".*.xtc_offsets.npz", "figs", "fst", "src"]
 ```
 
-##### Sbatch template variables
+#### Sbatch template variables
 
 These variables are copied into the `sbatch_launch.sh` script when it is copied for each epoch.
 
@@ -120,7 +120,7 @@ These variables are copied into the `sbatch_launch.sh` script when it is copied 
 | `account` | The account to be billed (project on CSC). | - |
 
 
-##### Sampling variables
+#### Sampling variables
 
 
 | Variable | Description | Default value |
@@ -129,7 +129,7 @@ These variables are copied into the `sbatch_launch.sh` script when it is copied 
 
 
 
-##### Simulations grompping
+#### Simulations grompping
 
 
 | Variable | Description | Default value |
@@ -142,7 +142,7 @@ These variables are copied into the `sbatch_launch.sh` script when it is copied 
 
 
 
-##### Function calculations
+#### Function calculations
 
 
 | Variable | Description | Default value |
@@ -154,10 +154,10 @@ These variables are copied into the `sbatch_launch.sh` script when it is copied 
 | `function_val` | The function to be sampled. | - |
 
 
-##### Trajectory transformations
+#### Trajectory transformations
 
 
-###### General
+##### General
 
 These options change the on-the-fly transformations that are done to the trajectory as it is being read.
 
@@ -168,7 +168,7 @@ These options change the on-the-fly transformations that are done to the traject
 | `unwrap_starters` | `None` or the selection string (or index group) used as "starters". These atoms will be the starting points of making the molecules whole. In effect, they are guaranteed to be inside the box after the process. If `None`, or if a molecule does not have any atoms in the group, the atom with the smallest index will be used. | `None` |
 | `mols_in_box` | Whether to put centre of mas of molecules back in box after unwrapping. Only the coordinates in `unwrap_sel` are moved and considered for the centre of mass, **however**, unlike for unwrapping, molecules are moved as a whole, even if they are missing parts in between. This option is ignored if `unwrap_mols=False`.| |
 
-###### Clustering
+##### Clustering
 
 These options only affect the coordinates used for clustering. The transformations are added after the fval coordinates are read, but before the clustering coordinates.
 
@@ -177,7 +177,7 @@ These options only affect the coordinates used for clustering. The transformatio
 | `clust_centre` | Whether to move the centre of mass of the clustering coordinates to match the inital structure. Ignored if `clust_superpos=True` | `True` |
 | `clust_superpos` | Whether to move the centre of mass of the clustering coordinates to match the inital structure **and** rotate for optimal fit (minimum mass weighted RMSD). | `False` |
 
-##### Advanced options
+#### Advanced options
 
 In most cases you should not need these, but may be helpful in others.
 

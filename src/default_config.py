@@ -69,6 +69,9 @@ minchoice = data_per_bin
 # In some edge cases of multiple choices within a region of low sampling,
 # the minchoice values might overlap and still produce duplicates.
 allow_choice_duplicates=False
+# A dictionary of keyword arguments for scipy.signal.find_peaks https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html
+peak_options = {"width":5, "distance":10}
+
 
 # Cluster histogram
 clust_data_per_bin=1000

@@ -187,7 +187,8 @@ In most cases you should not need these, but may be helpful in others.
 | `data_per_bin` | On average, at least this much data should be in the histogram bins within the boundaries. | 100 |
 | `maxbins` | Maximum number of histogram bins within the boundaries. | 100 |
 | `minchoice` | Minimum number of frames, from which a choice will be made. If the chosen bin has less frames, this many of the closest frames in function value are used as the pool of frames to choose from. | 100 |
-| `allow_choice_duplicates` | Whether to allow choosing the same frame during the same epoch more than once. If this is False, minchoice **must** be greater than, or equal to N. In edge cases of multiple choices within a region of low sampling, the minchoice values might overlap and still produce duplicates. | `False` |
+| `peak_options` | A dictionary of keyword arguments for [scipy.signal.find_peaks](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html), which will be used for dfinding the local minima and maxima from the distributions. | `{"width":5, "distance":10}` |
+| `allow_choice_duplicates` | Whether to allow choosing the same frame during the same epoch more than once. If this is False, minchoice **must** be greater than, or equal to N. This only affects duplicates from a single choice, so edge cases of multiple choices within a region of low sampling, the minchoice values might overlap and still produce duplicates. | `False` |
 | `clust_data_per_bin` | Same as `data_per_bin`, but for the histogram when clustering. | 1000 |
 | `clust_maxbins` | Same as `maxbins`, but for the histogram when clustering. | 10 |
 | `epochs_pre_clust` | Run this many epochs without clustering. | 3 |

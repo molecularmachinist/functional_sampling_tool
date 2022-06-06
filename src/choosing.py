@@ -111,8 +111,8 @@ class FrameChooser():
         """
         smoothed = utils.rolling_mean(self.hist)
         nanmask = np.isfinite(smoothed)*self.hist_mask
-        maxims,max_crit = find_peaks(smoothed[nanmask], width=5, distance=10)
-        minims,min_crit = find_peaks(-smoothed[nanmask], width=5, distance=10)
+        maxims,max_crit = find_peaks(smoothed[nanmask], **self.cfg.peak_options)
+        minims,min_crit = find_peaks(-smoothed[nanmask], **self.cfg.peak_options)
 
 
         maxh = np.max(self.hist[self.hist_mask])

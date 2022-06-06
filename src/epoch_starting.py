@@ -86,23 +86,29 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
             # Initial structures and first epoch
             os.makedirs("epoch01", exist_ok=True)
 
-            for i in range(1,cfg.N+1):
+            for i in range(cfg.N):
+                dostop=False
                 for d,rc in res:
-                    if(rc.ready()):
+                    if(rc.ready() and rc.get()!=0):
+                        dostop=True
                         break
-                        
+
+                if(dostop): break                        
                 res.append(init_rep(cfg.first_rep_num + i,cfg,p))
         elif(np.any([d is None for d in (val,epc,rep,frm)])):
             raise ValueError("val, epc, rep or frm cannot be None if nextepoch!=1")
         else:
 
-            os.makedirs("epoch%02d"%(nextepoch))
+            os.makedirs("epoch%02d"%(nextepoch),exist_ok=True)
 
             for i, (v, e, r, f) in enumerate(zip(val,epc,rep,frm)):
+                dostop=False
                 for d,rc in res:
-                    if(rc.ready()):
+                    if(rc.ready() and rc.get()!=0):
+                        dostop=True
                         break
-                    
+
+                if(dostop): break
                 res.append(next_rep(cfg.first_rep_num + i,cfg, nextepoch, e, r, f, v, p))
         
         print("Waiting for grompping to finish")

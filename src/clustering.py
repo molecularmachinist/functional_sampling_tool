@@ -38,7 +38,8 @@ class ClusterChooser(choosing.FrameChooser):
 
         self.nextepoch = self.u_epcs[-1]+1
 
-        self._make_hist()
+        if(len(self.u_epcs)>self.cfg.epochs_pre_clust):
+            self._make_hist()
 
         self.plain_chooser = choosing.FrameChooser(cfg, fval, frms, reps, epcs)
 
@@ -64,7 +65,7 @@ class ClusterChooser(choosing.FrameChooser):
 
 
     def make_choices(self,prechoices=0,plot=True):
-        if(self.u_epcs[-1]<=self.cfg.epochs_pre_clust):
+        if(len(self.u_epcs)<=self.cfg.epochs_pre_clust):
             return self.plain_chooser.make_choices(prechoices,plot)
         if(plot):
             os.makedirs("figs/epoch%02d"%(self.u_epcs[-1]),exist_ok=True)
@@ -155,7 +156,7 @@ class ClusterChooser(choosing.FrameChooser):
 
     def plot_hist(self):
         self.plain_chooser.plot_hist()
-        if(self.u_epcs[-1]<=self.cfg.epochs_pre_clust):
+        if(len(self.u_epcs)<=self.cfg.epochs_pre_clust):
             return
         clust_hist_indexes = np.digitize(self.fval, bins=self.bin_edges)
         clust_unique_bins,clust_unique_bin_counts = np.unique(clust_hist_indexes, return_counts=True)

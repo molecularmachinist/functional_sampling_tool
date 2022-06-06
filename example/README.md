@@ -2,9 +2,9 @@
 
 ## Setup
 
-To begin, you should have downloaded this repo, and installed all the required python packages. To start of `cd` into the `initialize` folder and take a look around. This is how you should set up your own project, when you start running one. You'll notice the `config.py` is already set up, a starting structure is in `initial/start.gro`, along with a corresponding topology in `topol.top`.
+To begin, you should have downloaded this repo, and installed all the required python packages. To start off, `cd` into the `initialize` folder and take a look around. This is how you should set up your own project, when you start running one. You'll notice the `config.py` is already set up, a starting structure is in `initial/start.gro`, along with a corresponding topology in `topol.top`.
 
-As in the root README, the commands here assume the tool to be in your PATH as `fst`. If this example folder is in the repo still, just use `../../fst` instead.
+As in the root README, the commands here assume the tool to be in your PATH and can be run as `fst`. If this example folder is in the repo still, you can just use `../../fst` instead.
 
 
 ## System initialization

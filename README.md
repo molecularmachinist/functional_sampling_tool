@@ -84,7 +84,7 @@ Then go to the remote machine and run the sbatch script under the epoch folder. 
 
 ### Configuration
 
-At the top of the config file you can setup the remote options, eg. the directory on the remote machine to be synced, and the remote name. The syncing will be done using `rsync`, to `<remote_name>:<remote_path>/`, so remote name should either be the full url (with `<username>@` prepended if username is not the same as on local machine), or just the hostname if you've defined it in `~/.ssh/config`.
+At the top of the config file (well, really anywhere in the file, but at the top in the examples) you can setup the remote options, eg. the directory on the remote machine to be synced, and the remote name. The syncing will be done using `rsync`, to `<remote_name>:<remote_path>/`, so remote name should either be the full url (with `<username>@` prepended if username is not the same as on local machine), or just the hostname if you've defined it in `~/.ssh/config`.
 
 
 The next most important settings to change are the selections, where you should define the selections to be used firstly to calculate the function, and secondly to calculate the clustering. Both can be either an MDAnalysis selection string, or if the `index_file` variable points to a gromacs index file, optionally an index group in the file. Note though, when using atom names in the selection, that in order to get the chain information properly, the initial gro file will be made into a PDB file, which will be used as the structure file when reading trajectory info, and this process sometimes may change the atom naming scheme.
@@ -94,59 +94,64 @@ Lastly you should define the function itself in `function_val`. As the only para
 
 #### Configuration variables
 
-Here is a listing of all the variables you should need in normal usage.
+Here is a listing of all the variables you should need in normal usage. The default values are defined in `src/default_config.py`. If there is no default value, this means that it must be defined in the config file. For now there is no check that everything is defined, and the program will simply crash at some point.
 
 ##### Remote options
 
-| variable | description |
-| --- | - |
-| `remote_dir` | Remote dir to sync the project to |
-| `remote_name` | Hostname of the remote machine |
-| `rsync_excludes` | A list of patterns to exclude from the syncing process. |
+| Variable | Description | Default value |
+| --- | - | - |
+| `remote_dir` | Remote dir to sync the project to |  - |
+| `remote_name` | Hostname of the remote machine | - |
+| `rsync_excludes` | A list of patterns to exclude from the syncing process. | *See below* |
 
+By default the rsync excludes are
+
+```
+rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", ".*.xtc_offsets.npz", "figs", "fst", "src"]
+```
 
 ##### Sbatch template variables
 
 These variables are copied into the `sbatch_launch.sh` script when it is copied for each epoch.
 
-| variable | description |
-| --- | - |
-| `email` | Where to send an email after the job finishes on the remote |
-| `account` | The account to be billed (project on CSC). |
+| Variable | Description | Default value |
+| --- | - | - |
+| `email` | Where to send an email after the job finishes on the remote | - |
+| `account` | The account to be billed (project on CSC). | - |
 
 
 ##### Sampling variables
 
 
-| variable | description |
-| --- | - |
-| `N` | The number of repetitions per epoch. Changing it asfter a few epochs, will only affect new epochs being run. |
+| Variable | Description | Default value |
+| --- | - | - |
+| `N` | The number of repetitions per epoch. Changing it asfter a few epochs, will only affect new epochs being run. | - |
 
 
 
 ##### Simulations grompping
 
 
-| variable | description |
-| --- | - |
-| `gmx` | The name (including the path if it is not in your `PATH`) of the gromacs binary. |
-| `mdp` | The name of the `.mdp` file. |
-| `topol` | The name of the topology file. |
-| `ndx` | The name of the index file used for grompping. |
-| `maxwarn` | How many warning to ignore. |
+| Variable | Description | Default value |
+| --- | - | - |
+| `gmx` | The name (including the path if it is not in your `PATH`) of the gromacs binary. | `"gmx"` |
+| `mdp` | The name of the `.mdp` file. | `"mdrun.mdp"` |
+| `topol` | The name of the topology file. | `"topol.top"` |
+| `ndx` | The name of the index file used for grompping. | `"index_grompp.ndx"` |
+| `maxwarn` | How many warnings to ignore. Can be useful, e.g. when generating velocities while using Nosé-Hoover thermostat. | 0 |
 
 
 
 ##### Function calculations
 
 
-| variable | description |
-| --- | - |
-| `select_str` | The selection string (or index group) used for the function calculation. |
-| `select_str_clust` | The selection string (or index group) used for the clustering. |
-| `index_file` | `None` or the name of the index file, where the index groups of the selections are. |
-| `minval`/`maxval` | The boundaries for the functional sampling. One of them can be the string "start", to use the initial value, and either can be `None` to use no boundary (only useful at the beginning). |
-| `function_val` | The function to be sampled. |
+| Variable | Description | Default value |
+| --- | - | - |
+| `select_str` | The selection string (or index group) used for the function calculation. | - |
+| `select_str_clust` | The selection string (or index group) used for the clustering. | - |
+| `index_file` | `None` or the name of the index file, where the index groups of the selections are. | `None` |
+| `minval`/`maxval` | The boundaries for the functional sampling. One of them can be the string "start", to use the initial value, and either can be `None` to use no boundary (only useful at the beginning). | - |
+| `function_val` | The function to be sampled. | - |
 
 
 ##### Trajectory transformations
@@ -156,34 +161,36 @@ These variables are copied into the `sbatch_launch.sh` script when it is copied 
 
 These options change the on-the-fly transformations that are done to the trajectory as it is being read.
 
-| variable | description |
-| --- | - |
-| `unwrap_mols` | Whether to unwrap molecules (make them whole if broken over the PBC). |
-| `unwrap_sel` | The selection string (or index group) used for unwrapping. Only atoms within this selection will be considered, so if parts of a chain are missing, only those parts that have unbroken bonded graphs will be made whole, each of them separately. In general you should make a selection with at least the backbone connecting whichever parts you want whole. This should be fast enough even with large proteins, but including the water can effect performance badly. The default selection of "protein" should work in most cases.|
-| `unwrap_starters` | `None` or the selection string (or index group) used as "starters". These atoms will be the starting points of making the molecules whole. In effect, they are guaranteed to be inside the box after the process. If `None`, or if a molecule does not have any atoms in the group, the atom with the smallest index will be used. |
-| `mols_in_box` | Whether to put centre of mas of molecules back in box after unwrapping. Only the coordinates in `unwrap_sel` are moved and considered for the centre of mass, **however**, unlike for unwrapping, molecules are moved as a whole, even if they are missing parts in between. This is option is ignored if `unwrap_mols=False`.|
+| Variable | Description | Default value |
+| --- | - | - |
+| `unwrap_mols` | Whether to unwrap molecules (make them whole if broken over the PBC). | `False` |
+| `unwrap_sel` | The selection string (or index group) used for unwrapping. Only atoms within this selection will be considered, so if parts of a chain are missing, only those parts that have unbroken bonded graphs will be made whole, each of them separately. In general you should make a selection with at least the backbone connecting whichever parts you want whole. This should be fast enough even with large proteins, but including the water can effect performance badly. The default selection of "protein" should work in most cases.| `"protein"` |
+| `unwrap_starters` | `None` or the selection string (or index group) used as "starters". These atoms will be the starting points of making the molecules whole. In effect, they are guaranteed to be inside the box after the process. If `None`, or if a molecule does not have any atoms in the group, the atom with the smallest index will be used. | `None` |
+| `mols_in_box` | Whether to put centre of mas of molecules back in box after unwrapping. Only the coordinates in `unwrap_sel` are moved and considered for the centre of mass, **however**, unlike for unwrapping, molecules are moved as a whole, even if they are missing parts in between. This option is ignored if `unwrap_mols=False`.| |
 
 ###### Clustering
 
 These options only affect the coordinates used for clustering. The transformations are added after the fval coordinates are read, but before the clustering coordinates.
 
-| variable | description |
-| --- | - |
-| `clust_centre` | Whether to move the centre of mass of the clustering coordinates to match the inital structure. Ignored if `clust_superpos=True` |
-| `clust_superpos` | Whether to move the centre of mass of the clustering coordinates to match the inital structure **and** rotate for optimal fit (minimum mass weighted RMSD). |
+| Variable | Description | Default value |
+| --- | - | - |
+| `clust_centre` | Whether to move the centre of mass of the clustering coordinates to match the inital structure. Ignored if `clust_superpos=True` | `True` |
+| `clust_superpos` | Whether to move the centre of mass of the clustering coordinates to match the inital structure **and** rotate for optimal fit (minimum mass weighted RMSD). | `False` |
 
 ##### Advanced options
 
 In most cases you should not need these, but may be helpful in others.
 
-| variable | description |
-| --- | - |
-| `maxwarn_add` | In case the atom naming has changed between the topology and the structure (eg when making it into a PDB file), one more warning might be issued by grompp. In that case setting this to `True` will add one more to the number of warnings ignored, in all but the first epoch. |
-| `data_per_bin` | On average, at least this much data should be in the histogram bins within the boundaries. |
-| `maxbins` | Maximum number of histogram bins within the boundaries. |
-| `clust_data_per_bin` | Same as `data_per_bin`, but for the histogram when clustering. |
-| `clust_maxbins` | Same as `maxbins`, but for the histogram when clustering. |
-| `epochs_pre_clust` | Run this many epochs without clustering. |
-| `maxclust` | Maximum number of clusters in bin. |
-| `clust_choice_frac` | Fraction of the choices to be made from clustering. |
-| `clust_tol` | Tolerance to choose the number of clusters. |
+| Variable | Description | Default value |
+| --- | - | - |
+| `maxwarn_add` | In case the atom naming has changed between the topology and the structure (eg when making it into a PDB file), one more warning might be issued by grompp. In that case setting this to `True` will add one more to the number of warnings ignored, in all but the first epoch. | `False` |
+| `data_per_bin` | On average, at least this much data should be in the histogram bins within the boundaries. | 100 |
+| `maxbins` | Maximum number of histogram bins within the boundaries. | 100 |
+| `minchoice` | Minimum number of frames, from which a choice will be made. If the chosen bin has less frames, this many of the closest frames in function value are used as the pool of frames to choose from. | 100 |
+| `allow_choice_duplicates` | Whether to allow choosing the same frame during the same epoch more than once. If this is False, minchoice **must** be greater than, or equal to N. In edge cases of multiple choices within a region of low sampling, the minchoice values might overlap and still produce duplicates. | `False` |
+| `clust_data_per_bin` | Same as `data_per_bin`, but for the histogram when clustering. | 1000 |
+| `clust_maxbins` | Same as `maxbins`, but for the histogram when clustering. | 10 |
+| `epochs_pre_clust` | Run this many epochs without clustering. | 3 |
+| `maxclust` | Maximum number of clusters in bin. | 15 |
+| `clust_choice_frac` | Fraction of the choices to be made from clustering. | 0.5 |
+| `clust_tol` | Tolerance to choose the number of clusters. | 0.1 |

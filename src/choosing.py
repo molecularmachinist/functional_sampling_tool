@@ -245,8 +245,8 @@ class FrameChooser():
         plt.axvline(self.cfg.minval, linestyle="-.", color="C2", label="Boundaries")
         plt.axvline(self.cfg.maxval, linestyle="-.", color="C2")
         plt.legend()
-        os.makedirs("figs/epoch%02d"%(self.u_epcs[-1]),exist_ok=True)
-        plt.savefig("figs/epoch%02d/hist.png"%(self.u_epcs[-1]))
+        os.makedirs("%s/epoch%02d"%(self.cfg.fig_output_dir, self.u_epcs[-1]),exist_ok=True)
+        plt.savefig("%s/epoch%02d/hist.png"%(self.cfg.fig_output_dir, self.u_epcs[-1]))
         plt.clf()
 
 
@@ -259,6 +259,6 @@ class FrameChooser():
         plt.plot(self.bin_centers[nanmask][maxims], smoothed[nanmask][maxims], "bv", label="Maxima")
         plt.plot(self.bin_centers[choices], self.hist[choices], "g^", label="Choices")
         plt.legend()
-        os.makedirs("figs/epoch%02d"%(self.u_epcs[-1]),exist_ok=True)
-        plt.savefig("figs/epoch%02d/choices.png"%(self.u_epcs[-1]))
+        os.makedirs("%s/epoch%02d"%(self.cfg.fig_output_dir, self.u_epcs[-1]),exist_ok=True)
+        plt.savefig("%s/epoch%02d/choices.png"%(self.cfg.fig_output_dir, self.u_epcs[-1]))
         plt.clf()

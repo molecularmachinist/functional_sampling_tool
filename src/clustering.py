@@ -174,8 +174,8 @@ class ClusterChooser(choosing.FrameChooser):
             plt.axvline(c, linestyle="-.", alpha=.1, color="k")
 
         plt.legend()
-        os.makedirs("figs/epoch%02d"%(self.u_epcs[-1]),exist_ok=True)
-        plt.savefig("figs/epoch%02d/hist_clust.png"%(self.u_epcs[-1]))
+        os.makedirs("%s/epoch%02d"%(self.cfg.fig_output_dir, self.u_epcs[-1]),exist_ok=True)
+        plt.savefig("%s/epoch%02d/hist_clust.png"%(self.cfg.fig_output_dir, self.u_epcs[-1]))
         plt.clf()
 
 def make_clusters(coords, plot=False, plotname="plot.png", maxclust=15, tol=0.1):

@@ -88,4 +88,6 @@ clust_tol=0.1
 npz_file_name = "fval_data.npz"
 # number of first rep
 first_rep_num = 1
+# figure output dir
+fig_output_dir = "figs"
 

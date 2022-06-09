@@ -21,7 +21,7 @@ ndx   = "index_grompp.ndx"
 # file for -r option for grompping. False to not use the option, "initial" to use
 # the inital structure, "start" to use the starting structrue of the repetition and any
 # other string to give the file manually (relative to the repetition folder)
-restrain_file = False
+restraint_file = False
 maxwarn = 0
 
 ############################## Function calcs ##################################

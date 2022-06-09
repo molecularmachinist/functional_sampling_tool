@@ -19,14 +19,26 @@ def init_rep(i,cfg,pool,d="epoch01"):
     shutil.copyfile("initial/start.gro", "%s/rep%02d/start.gro"%(d,i))
     print("Copied initial/start.gro to rep%02d, starting to grompp..."%(i))
 
-    # Do the gromacs job asynchronously in the worker pool
-    rc=pool.apply_async(utils.gromacs_command,
-                        args=(cfg.gmx, "grompp"),
-                        kwds={"c": "start.gro", "f": "../../"+cfg.mdp,
+    kwargs = {"c": "start.gro", "f": "../../"+cfg.mdp,
                                 "n": "../../"+cfg.ndx, "p": "../../"+cfg.topol,
                                 "o": "mdrun.tpr", "maxwarn": str(cfg.maxwarn),
                                 "directory": "%s/rep%02d"%(d, i)
                                 }
+
+    if(cfg.restraint_file=="initial"):
+        kwargs["r"] = "../../initial/start.gro"
+    elif(cfg.restraint_file=="start"):
+        kwargs["r"] = "start.gro"
+    elif(cfg.restraint_file):
+        kwargs["r"] = cfg.restraint_file
+
+
+
+
+    # Do the gromacs job asynchronously in the worker pool
+    rc=pool.apply_async(utils.gromacs_command,
+                        args=(cfg.gmx, "grompp"),
+                        kwds=kwargs
                         )
 
 

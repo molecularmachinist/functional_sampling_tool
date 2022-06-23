@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 import MDAnalysis as mda
 import importlib
+from importlib_resources import files as import_files
 import argparse
 import pathlib
-import sys,os
+import sys,os, shutil
 import numpy as np
 
 from . import inout
@@ -14,12 +15,13 @@ from . import utils
 from . import transformations
 from . import default_config
 
-def import_cfg(cfgname):
+def import_cfg(cfgpath):
     """
     Only import the config, does not load structs or do anything with it.
     """
-    print("Loading config from %s"%cfgname)
-    spec = importlib.util.spec_from_file_location("config", cfgname)
+    assert cfgpath.exists(), "Config file does not exist at %s."%cfgpath
+    print("Loading config from %s"%cfgpath)
+    spec = importlib.util.spec_from_file_location("config", cfgpath)
     writebytecode = sys.dont_write_bytecode
     sys.dont_write_bytecode = True
     cfg = importlib.util.module_from_spec(spec)
@@ -44,11 +46,11 @@ def load_sel(sel_str, struct, ndx):
         sel = struct.select_atoms(sel_str)
     return sel
 
-def load_options(cfgname):
+def load_options(cfgpath):
     """
     Imports the config, and loads the structs and selections
     """
-    cfg    = import_cfg(cfgname)
+    cfg    = import_cfg(cfgpath)
     print("Loading structure")
     if(not os.path.isfile("initial/start.pdb")):
         utils.make_pdb(cfg)
@@ -135,6 +137,16 @@ def choose(args):
         utils.rsync_up(args.cfg)
 
 
+def copy_templates(args):
+    if(not args.no_config):
+        fin = import_files("%s.templates"%__package__).joinpath("config_example.py.txt")
+        print("Making "+args.config_out)
+        shutil.copyfile(fin, args.config_out)
+    if(not args.no_sbatch):
+        fin = import_files("%s.templates"%__package__).joinpath("sbatch_template.sh")
+        print("Making "+args.sbatch_out)
+        shutil.copyfile(fin, args.sbatch_out)
+
 def argP():
     """
     Define command line arguments. For each
@@ -179,10 +191,16 @@ def argP():
     pull_parser = subparsers.add_parser("pull", help="rsync from remote to local")
     pull_parser.set_defaults(func=pushpull,config_func=import_cfg,pull=True)
 
+    # Template commands
+    templ_parser = subparsers.add_parser("make_templates", help="Copy default config.py and sbatch_template.sh files")
+    templ_parser.set_defaults(func=copy_templates,config_func=(lambda cfgpath: None))
+    templ_parser.add_argument("--config_out", default="config.py",          help="Filename of produced config file (default: %(default)s)")
+    templ_parser.add_argument("--sbatch_out", default="sbatch_launch.sh", help="Filename of produced sbatch file (default: %(default)s)")
+    templ_parser.add_argument("--no_config",  action="store_true", help="Do not produce config file (default: %(default)s)")
+    templ_parser.add_argument("--no_sbatch",  action="store_true", help="Do not produce sbatch file (default: %(default)s)")
+
 
     arguments = parser.parse_args()
-    assert arguments.config.exists(), "Config file does not exist at %s."%arguments.config
-
     arguments.cfg = arguments.config_func(arguments.config)
 
     return arguments

@@ -6,7 +6,7 @@
 #SBATCH --partition=medium
 #SBATCH --account={account}
 #SBATCH -o output.txt
-#SBATCH -J ampa_epoch{i}
+#SBATCH -J fst_epoch{i}
 #SBATCH --mail-type=END
 #SBATCH --mail-user={email}
 

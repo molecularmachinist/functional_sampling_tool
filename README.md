@@ -24,6 +24,7 @@ Since the project is in pure Python, you can use it without any compilation. You
 ### Installing as a package
 
 This first part is optional and if you are happy with installing the tool and dependencies in you default environment, then skip straight to the next part.
+
 First, we will make a new conda environment dedicated just for the tool and activate it:
 
 ```
@@ -33,7 +34,8 @@ conda activate fst_env
 
 This will also install the needed dependencies.
 
-Second, we run the command to install the package. From the project root folder run
+Second, we run the command to install the package. 
+Here I assume that you have downloaded the project and are within its root folder. From there run
 
 ```
 pip install .

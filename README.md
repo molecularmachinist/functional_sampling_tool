@@ -15,7 +15,38 @@ If you have conda, you can make sure all dependencies are met by running
 conda install -c conda-forge numpy matplotlib numba mdanalysis scikit-learn
 ```
 
-The tool has been tested with python 3.7 and 3.9. Please let us know if you are using other versions, whether everything works (and especially if it doesn't).
+The tool has been tested with python 3.7 to 3.10. Please let us know if you are using other versions, whether everything works (and especially if it doesn't).
+
+## Installation
+
+Since the project is in pure Python, you can use it without any compilation. You can simply clone this repo and run the tool as `/path/to/project/functional_sampling_tool/fst`. If you want it in your path to run as `fst` you have two choices, either add the project repo to your path, or install the project as a python package as explained below. In the latter case you can also use the code directly form your own scripts, e.g. with `from functional_sampling_tool import inout` (though, for now, there is no documentation on using the code in that way).
+
+### Installing as a package
+
+This first part is optional and if you are happy with installing the tool and dependencies in you default environment, then skip straight to the next part.
+First, we will make a new conda environment dedicated just for the tool and activate it:
+
+```
+conda create -c conda-forge -n fst_env numpy matplotlib numba mdanalysis scikit-learn
+conda activate fst_env
+```
+
+This will also install the needed dependencies.
+
+Second, we run the command to install the package. From the project root folder run
+
+```
+pip install .
+```
+
+When the command finishes, it should be all done. If you ever want to uninstall it just run (with the `fst_env` environment activated).
+
+```
+pip uninstall functional_sampling_tool
+```
+
+**Remember** that in this way you need to run `conda activate fst_env` once in every new terminal before using the tool. If you did skip the first step it will be installed in your default environment, which does not explicitly need to be activated each time.
+
 
 ## How it works
 
@@ -35,7 +66,11 @@ After a set amount of epochs, the tool will start to use a clustering method on 
 
 ## Setup
 
-At minimum you will need to copy the templates folder from `rsc/`, and the `config.py` file to your project folder. You should then modify both the config file and `sbatch_launch.sh` template to fit your particular use case.
+At minimum you will need to copy the templates for `config.py` and  `sbatch_launch.sh` to your project folder. This can be done with
+```
+fst make_templates
+```
+after which you should make sure the sbatch launch script matches your workflow and simulation methods. The parts in curly brackets will be populated with the info from `config.py` for email and account, and  the epoch number in the job name.
 
 You will also need to have a starting structure, which should be put into `initil/start.gro`. You will also need a topology in `topol.top`, mdrun options in `mdrun.mdp` and an index file for grompping in `index_grompp.ndx` (for now this is required, in future version might only be needed if special groups are used in the `mdp`-file). Here is a tree view of how you project folder should look like to begin:
 
@@ -45,12 +80,11 @@ You will also need to have a starting structure, which should be put into `initi
 ├── initial
 │   └── start.gro
 ├── mdrun.mdp
-├── templates
-│   └── sbatch_launch.sh *
-└── topol.top
+├── topol.top
+└── sbatch_launch.sh *
 ```
 
-The files marked with an asterisk can be copied and modified, while the rest you should provide yourself. The names of the index, topology and mdp files can differ from these and are defined in the config. The config name can also differ and can be given as a command line argument.
+The files marked with an asterisk can be copied and modified from templates, while the rest you should provide yourself. The names of the index, topology and mdp files can differ from these and are defined in the config. The config name can also differ and can be given as a command line argument **before the command** (e.g. `fst -c myconfig.py choose`).
 
 ## Usage
 

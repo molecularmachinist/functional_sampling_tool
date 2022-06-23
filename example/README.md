@@ -4,7 +4,7 @@
 
 To begin, you should have downloaded this repo, and installed all the required python packages. To start off, `cd` into the `initialize` folder and take a look around. This is how you should set up your own project, when you start running one. You'll notice the `config.py` is already set up, a starting structure is in `initial/start.gro`, along with a corresponding topology in `topol.top`.
 
-As in the root README, the commands here assume the tool to be in your PATH and can be run as `fst`. If this example folder is in the repo still, you can just use `../../fst` instead.
+As in the root README, the commands here assume the tool to be in your PATH and can be run as `fst`. If this example folder is in the repo still, you also use `../../fst` instead.
 
 
 ## System initialization
@@ -15,9 +15,9 @@ The first step in the project is of course to make the first epoch. The command 
 fst init
 ```
 
-This make a folder `epoch01`, copy the necessary files for each repetition into `epoch/repNN` and grompp the the system. It will also copy the `sbatch_launch.sh` into `epoch01`.
+This makes a folder `epoch01`, copies the necessary files for each repetition into `epoch/repNN` and grompps the the systems. It will also copy the `sbatch_launch.sh` into `epoch01`.
 
-At this point, you would usually push these to a supercomputer where you actually run the simulations. You can try to do the push command, and if you can ssh onto localhost, it will copy these to a subfolder. The command would be
+At this point, you would usually push these to a supercomputer where you actually run the simulations. You can try to do the push command, and (if you can ssh onto localhost) it will copy these to a subfolder. The command would be
 
 ```
 fst push
@@ -30,7 +30,7 @@ If, for whatever reason, you want to remake a specific repetition, just remove t
 
 ## Choosing frames for next epoch
 
-Now `cd` into the other folder, `after_e1`. It is just as the other folder was after initialization, but also has simulated trajectories. To not make this repo any more bloated, the trajectories have very little frames and the edr, log, and cpt files have been removed. However these do not affect the behaviour and usage of the tool, so no problem, though teh resulting figures will look a bit horrific.
+Now `cd` into the other folder, `after_e1`. It is just as the other folder was after initialization, but also has simulated trajectories. To not make this repo any more bloated, the trajectories have very little frames and the `edr`, `log`, and `cpt` files have been removed. As these do not affect the behaviour and usage of the tool, no problem there. The resulting figures will look a bit horrific due to the low number of samples.
 
 Normally to begin, we'd first pull the changes with
 
@@ -51,3 +51,12 @@ fst choose --choose_only
 ```
 
 After you are satisfied in these results (for the sake of this example, ignoring the minuscule amount of data the first epoch has generated), push the new epoch to the remote just as before.
+
+
+## Cleaning up after ourselves
+
+If you want to redo the example, or simply keep the folder tidy, `cd` back to the `example/` folder and run
+```
+./clean_example
+```
+Now any files the example run produced will have been deleted.

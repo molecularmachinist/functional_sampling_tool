@@ -186,3 +186,9 @@ def argP():
     arguments.cfg = arguments.config_func(arguments.config)
 
     return arguments
+
+
+def _run_tool():
+    args = argP()
+    args.func(args)
+

@@ -5,5 +5,4 @@ from src import cmd_line
 
 
 if __name__ == '__main__':
-    args = cmd_line.argP()
-    args.func(args)
+    cmd_line._run_tool()

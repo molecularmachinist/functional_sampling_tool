@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, shutil
 import numpy as np
+import warnings
 from multiprocessing import Pool
 
 from . import utils
@@ -136,6 +137,12 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
         assert rc.get() == 0, "Nonzero returncode from grompp, see %s/output_grompp.txt for more detail."%(d)
 
     # copy sbatch template
-    with open("templates/sbatch_launch.sh") as fin:
+    sbatch_file = "sbatch_launch.sh"
+    if(os.path.isfile("templates/sbatch_launch.sh") and not os.path.isfile(sbatch_file)):
+        warnings.warn("'templates/sbatch_launch.sh' should be moved to 'sbatch_launch.sh'." +
+                      "It will now be used from the templates folder, but this will be " +
+                      "deprecated in the future.", DeprecationWarning)
+        sbatch_file = "templates/sbatch_launch.sh"
+    with open(sbatch_file) as fin:
         with open("epoch%02d/sbatch_launch.sh"%nextepoch, "w") as fout:
             fout.write(fin.read().format(i=nextepoch, account=cfg.account, email=cfg.email))

@@ -132,8 +132,10 @@ dmypy.json
 ##################### Project specific additions ###############################
 # just throw anything in a dump-folder to not add to git
 dump
-# example output
+# example making and output
+/example/making*
 /example/initialize/epoch01
+/example/remote_dir
 /example/after_e1/epoch02
 /example/after_e1/figs
 /example/after_e1/epoch01/rep*/fval_data.npz

@@ -9,15 +9,15 @@ import numpy as np
 
 
 ########################### Remote options #####################################
-# remote dir corresponding to dir of this notebook
+# remote dir corresponding to dir of this project
 # For the example case we just make a local subfolder
 # DO NOT use in production
 import os
-remote_dir=os.getcwd()+"/remote_dir"
-# remote name, either "host" or "user@host". Must be setup for passwordless connect.
+remote_dir=os.getcwd()+"/../remote_dir"
+# remote name, either "<host>" or "<user>@<host>".
 remote_name="localhost"
-# Set dirs/files/patterns to exclude from rsync command
-rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", "dump", "figs", "fst", "src", "remote_dir"]
+# Set dirs/files/patterns to exclude from rsync command (uncomment to override defaults)
+#rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", "dump", "figs", "fst", "src", "remote_dir"]
 
 
 ########################### sbatch template variables ##########################
@@ -31,7 +31,7 @@ N = 16
 
 
 ########################### Running simulations
-maxwarn=1
+#maxwarn=1
 
 ############################## Function calcs ##################################
 # To make next run faster we save this selection to disk
@@ -47,8 +47,8 @@ index_file = None
 
 # Minimum and maximum values to sample from between. None to ignore boundary, "start" string to use the
 # initial value of the starting structure
-minval=7.9
-maxval=14
+minval=0
+maxval="start"
 
 
 def function_val(positions):
@@ -98,4 +98,4 @@ clust_superpos = True
 
 
 ############################## Advanced options ################################
-maxwarn_add=True
+#maxwarn_add=True

@@ -1,17 +1,21 @@
-                      :-) GROMACS - gmx grompp, 2020.6 (-:
+                      :-) GROMACS - gmx grompp, 2021.5 (-:
 
                             GROMACS is written by:
-     Emile Apol      Rossen Apostolov      Paul Bauer     Herman J.C. Berendsen
-    Par Bjelkmar      Christian Blau   Viacheslav Bolnykh     Kevin Boyd    
- Aldert van Buuren   Rudi van Drunen     Anton Feenstra       Alan Gray     
-  Gerrit Groenhof     Anca Hamuraru    Vincent Hindriksen  M. Eric Irrgang  
-  Aleksei Iupinov   Christoph Junghans     Joe Jordan     Dimitrios Karkoulis
-    Peter Kasson        Jiri Kraus      Carsten Kutzner      Per Larsson    
-  Justin A. Lemkul    Viveca Lindahl    Magnus Lundborg     Erik Marklund   
-    Pascal Merz     Pieter Meulenhoff    Teemu Murtola       Szilard Pall   
-    Sander Pronk      Roland Schulz      Michael Shirts    Alexey Shvetsov  
-   Alfons Sijbers     Peter Tieleman      Jon Vincent      Teemu Virolainen 
- Christian Wennberg    Maarten Wolf      Artem Zhmurov   
+     Andrey Alekseenko              Emile Apol              Rossen Apostolov     
+         Paul Bauer           Herman J.C. Berendsen           Par Bjelkmar       
+       Christian Blau           Viacheslav Bolnykh             Kevin Boyd        
+     Aldert van Buuren           Rudi van Drunen             Anton Feenstra      
+    Gilles Gouaillardet             Alan Gray               Gerrit Groenhof      
+       Anca Hamuraru            Vincent Hindriksen          M. Eric Irrgang      
+      Aleksei Iupinov           Christoph Junghans             Joe Jordan        
+    Dimitrios Karkoulis            Peter Kasson                Jiri Kraus        
+      Carsten Kutzner              Per Larsson              Justin A. Lemkul     
+       Viveca Lindahl            Magnus Lundborg             Erik Marklund       
+        Pascal Merz             Pieter Meulenhoff            Teemu Murtola       
+        Szilard Pall               Sander Pronk              Roland Schulz       
+       Michael Shirts            Alexey Shvetsov             Alfons Sijbers      
+       Peter Tieleman              Jon Vincent              Teemu Virolainen     
+     Christian Wennberg            Maarten Wolf              Artem Zhmurov       
                            and the project leaders:
         Mark Abraham, Berk Hess, Erik Lindahl, and David van der Spoel
 
@@ -26,17 +30,15 @@ under the terms of the GNU Lesser General Public License
 as published by the Free Software Foundation; either version 2.1
 of the License, or (at your option) any later version.
 
-GROMACS:      gmx grompp, version 2020.6
-Executable:   /home/group/cubbli/opt/gromacs-2020.6/bin/gmx
-Data prefix:  /home/group/cubbli/opt/gromacs-2020.6
-Working dir:  /home/work2/paajasan/functional_sampling_tool/prod/epoch01/rep01
+GROMACS:      gmx grompp, version 2021.5
+Executable:   /home/group/cubbli/opt/gromacs-2021.2/2021.5/bin/gmx
+Data prefix:  /home/group/cubbli/opt/gromacs-2021.2/2021.5
+Working dir:  /wrk/paajasan/functional_sampling_tool/example/initialize/epoch01/rep01
 Command line:
   gmx grompp -c start.gro -f ../../mdrun.mdp -n ../../index_grompp.ndx -p ../../topol.top -o mdrun.tpr -maxwarn 1
 
-
-NOTE 1 [file ../../mdrun.mdp]:
-  leapfrog does not yet support Nose-Hoover chains, nhchainlength reset to 1
-
+Ignoring obsolete mdp entry 'title'
+Ignoring obsolete mdp entry 'ns_type'
 
 WARNING 1 [file ../../mdrun.mdp]:
   You are generating velocities so I am assuming you are equilibrating a
@@ -45,39 +47,46 @@ WARNING 1 [file ../../mdrun.mdp]:
   first with Berendsen pressure coupling. If you are not equilibrating the
   system, you can probably ignore this warning.
 
-Setting the LD random seed to -1956725255
-Generated 3223 of the 3240 non-bonded parameter combinations
-Generating 1-4 interactions: fudge = 1
-Generated 1700 of the 3240 1-4 parameter combinations
-Excluding 3 bonded neighbours molecule type 'PROA'
-Excluding 3 bonded neighbours molecule type 'HETA'
-Excluding 3 bonded neighbours molecule type 'POPC'
-Excluding 2 bonded neighbours molecule type 'TIP3'
-Excluding 1 bonded neighbours molecule type 'SOD'
-Excluding 1 bonded neighbours molecule type 'CLA'
-Setting gen_seed to -143134990
-Velocities were taken from a Maxwell distribution at 310.15 K
-Number of degrees of freedom in T-Coupling group SOLU is 56967.29
-Number of degrees of freedom in T-Coupling group MEMB is 182110.72
-Number of degrees of freedom in T-Coupling group SOLV is 650265.00
-Estimate for the relative computational load of the PME mesh part: 0.16
-
-There was 1 note
+Generating 1-4 interactions: fudge = 0.5
+Number of degrees of freedom in T-Coupling group Protein is 551.78
+Number of degrees of freedom in T-Coupling group non-Protein is 7020.22
 
 There was 1 warning
 
-GROMACS reminds you: "Wild Pointers Couldn't Drag Me Away" (K.A. Feenstra)
+GROMACS reminds you: "If it's all right with Dirac, it's all right with me." (Enrico Fermi, on being told that there was experimental evidence He-3 nuclei obey Fermi-Dirac statistics.)
 
-turning all bonds into constraints...
-turning all bonds into constraints...
-turning all bonds into constraints...
-turning all bonds into constraints...
-turning all bonds into constraints...
-turning all bonds into constraints...
-Determining Verlet buffer for a tolerance of 0.005 kJ/mol/ps at 310.15 K
-Calculated rlist for 1x1 atom pair-list as 1.377 nm, buffer size 0.177 nm
-Set rlist, assuming 4x4 atom pair-list, to 1.259 nm, buffer size 0.059 nm
+Setting the LD random seed to -2624161
+
+Generated 330891 of the 330891 non-bonded parameter combinations
+
+Generated 330891 of the 330891 1-4 parameter combinations
+
+Excluding 3 bonded neighbours molecule type 'Protein_chain_A'
+
+turning H bonds into constraints...
+
+Excluding 2 bonded neighbours molecule type 'SOL'
+
+turning H bonds into constraints...
+
+Excluding 1 bonded neighbours molecule type 'NA'
+
+turning H bonds into constraints...
+
+Setting gen_seed to -18372290
+
+Velocities were taken from a Maxwell distribution at 300 K
+
+Determining Verlet buffer for a tolerance of 0.005 kJ/mol/ps at 300 K
+
+Calculated rlist for 1x1 atom pair-list as 1.035 nm, buffer size 0.035 nm
+
+Set rlist, assuming 4x4 atom pair-list, to 1.000 nm, buffer size 0.000 nm
+
 Note that mdrun will redetermine rlist based on the actual pair-list setup
 Calculating fourier grid dimensions for X Y Z
-Using a fourier grid of 144x144x160, spacing 0.108 0.108 0.112
-This run will generate roughly 34 Mb of data
+Using a fourier grid of 24x24x24, spacing 0.156 0.156 0.156
+
+Estimate for the relative computational load of the PME mesh part: 0.22
+
+This run will generate roughly 8 Mb of data

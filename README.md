@@ -4,7 +4,6 @@
 
 1. Python 3 with NumPy and matplotlib
 1. [MDAnalysis](https://docs.mdanalysis.org/stable/index.html)
-1. [Numba](https://numba.pydata.org/)
 1. [scikit-learn](https://scikit-learn.org/stable/)
 1. GROMACS
 
@@ -13,23 +12,20 @@
 If you have conda, you can make sure all dependencies are met by running
 
 ```
-conda install -c conda-forge numpy matplotlib numba mdanalysis scikit-learn
+conda install -c conda-forge numpy matplotlib mdanalysis scikit-learn
 ```
 
 The tool has been tested with python 3.7 to 3.10. Please let us know if you are using other versions, whether everything works (and especially if it doesn't).
 
 ## Installation
 
-Since the project is in pure Python, you can use it without any compilation. You can simply clone this repo and run the tool as `/path/to/project/functional_sampling_tool/fst`. If you want it in your path to run as `fst` you have two choices, either add the project repo to your path, or install the project as a python package as explained below. In the latter case you can also use the code directly form your own scripts, e.g. with `from functional_sampling_tool import inout` (though, for now, there is no documentation on using the code in that way).
-
-### Installing as a package
 
 This first part is optional and if you are happy with installing the tool and dependencies in you default environment, then skip straight to the next part.
 
-First, we will make a new conda environment dedicated just for the tool and activate it:
+First, we will make a new conda environment dedicated just for the tool and activate it (if you have [mamba](https://mamba.readthedocs.io/en/latest/) installed, use it for the first command to speed up the process):
 
 ```
-conda create -c conda-forge -n fst_env numpy matplotlib numba mdanalysis scikit-learn
+conda create -c conda-forge -n fst_env numpy matplotlib mdanalysis scikit-learn
 conda activate fst_env
 ```
 
@@ -42,7 +38,7 @@ Here I assume that you have downloaded the project and are within its root folde
 pip install .
 ```
 
-When the command finishes, it should be all done. If you ever want to uninstall it just run (with the `fst_env` environment activated).
+When the command finishes, it should be all done and the tool usable as `fst`. If you ever want to uninstall it just run (with the `fst_env` environment activated).
 
 ```
 pip uninstall functional_sampling_tool
@@ -91,7 +87,7 @@ The files marked with an asterisk can be copied and modified from templates, whi
 
 ## Usage
 
-Assuming the tool is in your path, run `fst -h` for help or `fst <cmd> -h` for help on specific command. If it is not in your path run the rest of the commands as `/path/to/fst` instead of just `fst`.
+Run `fst -h` for help or `fst <cmd> -h` for help on specific command.
 
 Almost all configuration should be done in the `config.py` file. The tool does have a few command line tools, but in principle these should only affect what is being done, not how it is being done.
 

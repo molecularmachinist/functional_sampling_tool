@@ -13,7 +13,7 @@ The `sbatch_launch.sh` is where you would normally add you SLURM commands to run
 echo q | gmx make_ndx -f initial/start.gro -o index_grompp.ndx
 ```
 
-As in the root README, the commands here assume the tool to be in your PATH and can be run as `fst`. If this example folder is in the repo still, you can also use `../../fst` instead. If your gromacs installation is not in your path as `gmx`, you will need to edit the config with
+As in the root README, the commands here assume the tool to be in your PATH and can be run as `fst`. If your gromacs installation is not in your path as `gmx`, you will need to edit the config with
 
 ```
 gmx = "/path/to/gmx"

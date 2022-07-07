@@ -158,7 +158,7 @@ These variables are copied into the `sbatch_launch.sh` script when it is copied 
 
 | Variable | Description | Default value |
 | --- | - | - |
-| `N` | The number of repetitions per epoch. Changing it asfter a few epochs, will only affect new epochs being run. | - |
+| `N` | The number of repetitions per epoch. Changing it after a few epochs, will only affect new epochs being run. | - |
 
 
 

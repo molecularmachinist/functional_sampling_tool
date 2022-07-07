@@ -143,15 +143,6 @@ By default the rsync excludes are
 rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", ".*.xtc_offsets.npz", "figs", "fst", "src"]
 ```
 
-#### Sbatch template variables
-
-These variables are copied into the `sbatch_launch.sh` script when it is copied for each epoch.
-
-| Variable | Description | Default value |
-| --- | - | - |
-| `email` | Where to send an email after the job finishes on the remote | - |
-| `account` | The account to be billed (project on CSC). | - |
-
 
 #### Sampling variables
 

@@ -1,14 +1,6 @@
 #!/bin/bash
-#SBATCH --nodes=20
-#SBATCH --ntasks-per-node=128
-#SBATCH --cpus-per-task=1
-#SBATCH --time=36:00:00
-#SBATCH --partition=medium
-#SBATCH --account={account}
-#SBATCH -o output.txt
-#SBATCH -J ampa_epoch{i}
-#SBATCH --mail-type=END
-#SBATCH --mail-user={email}
+
+# Launch script for epoch {epoch_num}
 
 set -e
 

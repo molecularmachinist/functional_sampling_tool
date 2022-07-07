@@ -141,8 +141,7 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
     if(os.path.isfile("templates/sbatch_launch.sh") and not os.path.isfile(sbatch_file)):
         warnings.warn("'templates/sbatch_launch.sh' should be moved to 'sbatch_launch.sh'." +
                       "It will now be used from the templates folder, but this will be " +
-                      "deprecated in the future.", DeprecationWarning)
+                      "deprecated in the future.", utils.DeprecatedUsageWarning)
         sbatch_file = "templates/sbatch_launch.sh"
-    with open(sbatch_file) as fin:
-        with open("epoch%02d/sbatch_launch.sh"%nextepoch, "w") as fout:
-            fout.write(fin.read().format(i=nextepoch, account=cfg.account, email=cfg.email))
+    
+    utils.copy_sbatch_template(sbatch_file, "epoch%02d/sbatch_launch.sh"%nextepoch, nextepoch,cfg)

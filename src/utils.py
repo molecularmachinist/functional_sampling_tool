@@ -3,7 +3,11 @@ import subprocess as subp
 import numpy as np
 import math, os
 import inspect, hashlib
+import warnings
 
+
+class DeprecatedUsageWarning(UserWarning):
+    pass
 
 
 def rolling_mean(data, window=10, center = True, fill=np.nan):
@@ -125,6 +129,38 @@ def make_pdb(cfg):
         # Whatever happens, we go back to the original working dir
         os.chdir(prevdir)
 
+def __depr_copy_sbatch_template(fin,fout,enum,cfg):
+    """
+    To be deprecated. Gets email and account from config.
+    """
+    warnings.warn("email and account for 'sbatch_launch.sh' should no longer come from config. " +
+                    "It will now be filled in as before, but this will be " +
+                    "deprecated in the future.", DeprecatedUsageWarning)
+    with open(fin) as f:
+        with open(fout, "w") as fo:
+            fo.write(f.read().format(i=enum, account=cfg.account, email=cfg.email))
+
+def copy_sbatch_template(fin,fout,enum,cfg=None):
+    """
+    Copies the sbatch template from fin to fout.
+
+    To be depracated: if the template has {account} {email} and {i}, it will be filled as before, from cfg
+    """
+    use_depr = False
+    with open(fin) as fi:
+        templ = fi.read()
+        if("{i}" in templ and "{account}" in templ and "{email}" in templ):
+            use_depr = True
+    if(use_depr):
+        __depr_copy_sbatch_template(fin,fout,enum,cfg)
+        return
+    with open(fin) as fi:
+        with open(fout,"w") as fo:
+            for line in fi:
+                if(line.startswith("##")):
+                    continue
+
+                fo.write(line.replace("{epoch_num}", str(enum)))
 
 def hash_func(f):
     """

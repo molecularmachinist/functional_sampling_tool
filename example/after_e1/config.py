@@ -20,11 +20,6 @@ remote_name="localhost"
 #rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", "dump", "figs", "fst", "src", "remote_dir"]
 
 
-########################### sbatch template variables ##########################
-email= "erkki.esimerkki@helsinki.fi"
-account="project_12345"
-
-
 ########################### Sampling variables
 # number of simulations per epoch, only affects new epochs
 N = 16

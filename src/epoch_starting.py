@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
-import os, shutil
+import os, time
 import numpy as np
 import warnings
 from multiprocessing import Pool
 
 from . import utils
+from . import inout
 
 
-def init_rep(i,cfg,pool,d="epoch01"):
-    """ Initializes rep i
+
+def init_rep(i,cfg,atoms,pool,d="epoch01"):
+    """ Initializes rep i from atom group atoms
     """
     os.makedirs("%s/rep%02d"%(d,i))
 
     # If not found, just load the default
-    shutil.copyfile("initial/start.gro", "%s/rep%02d/start.gro"%(d,i))
-    print("Copied initial/start.gro to rep%02d, starting to grompp..."%(i))
+    atoms.write("%s/rep%02d/start.gro"%(d,i))
+
+    print("Wrote start.gro to rep%02d, starting to grompp..."%(i))
 
     kwargs = {"c": "start.gro", "f": "../../"+cfg.mdp,
                                 "n": "../../"+cfg.ndx, "p": "../../"+cfg.topol,
@@ -102,6 +105,16 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
         res = []
         if(nextepoch==1):
             # Initial structures and first epoch
+            struct = inout.load_starter_structures()
+            num_frames = len(struct.trajectory)
+            if(num_frames>cfg.N):
+                warnings.warn(f"{num_frames} starting structures found, but only {cfg.N} " \
+                              f"repetitions will be started. Only the first {cfg.N} struc" \
+                                "tures will be used. If this was intentional, feel free t" \
+                                "o ignore this warning.\nContinuing in 2 seconds.",
+                                UserWarning)
+                time.sleep(2)
+                
             os.makedirs("epoch01", exist_ok=True)
 
             for i in range(cfg.N):
@@ -111,8 +124,10 @@ def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
                         dostop=True
                         break
 
-                if(dostop): break                        
-                res.append(init_rep(cfg.first_rep_num + i,cfg,p))
+                if(dostop): break
+
+                struct.trajectory[i%num_frames]
+                res.append(init_rep(cfg.first_rep_num + i,cfg,struct.atoms,p))
         elif(np.any([d is None for d in (val,epc,rep,frm)])):
             raise ValueError("val, epc, rep or frm cannot be None if nextepoch!=1")
         else:

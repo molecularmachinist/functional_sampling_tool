@@ -2,6 +2,7 @@
 import os
 import numpy as np
 import re
+import MDAnalysis as mda
 
 from . import utils
 
@@ -161,3 +162,27 @@ def load_data(cfg, load_fval):
     frms = np.concatenate(frms)
     crds = np.concatenate(crds)
     return fval, crds, frms, reps, epcs
+
+
+def load_starter_structures():
+    """
+    Checks for starter structures as initial/start*.gro (not including start.gro) or initial/start*.xtc
+    Returns a universe with the frames loaded if some are found, otherwise just the initial/start.gro.
+    """
+    univ = mda.Universe("initial/start.gro")
+    starter_gros = []
+    starter_xtcs = []
+    for fname in os.listdir("initial"):
+        if(fname.startswith("start") and fname.endswith(".gro") and fname != "start.gro"):
+            starter_gros.append(fname)
+        elif(fname.startswith("start") and fname.endswith(".xtc")):
+            starter_xtcs.append(fname)
+    
+    starter_gros.sort()
+    starter_xtcs.sort()
+    starters = starter_gros+starter_xtcs
+    if(starters):
+        univ.load_new(["initial/"+f for f in starters])
+        
+    return univ
+    

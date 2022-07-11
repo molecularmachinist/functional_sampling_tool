@@ -10,6 +10,8 @@ from . import inout
 from . import epoch_starting
 from . import clustering
 from . import utils
+from . import analysis
+
 
 def init(args):
     print("Initializing first epoch")
@@ -93,7 +95,7 @@ def argP():
     pull_parser = subparsers.add_parser("pull", help="rsync from remote to local")
     pull_parser.set_defaults(func=pushpull,config_func=inout.import_cfg,pull=True)
 
-    # Template commands
+    # Template command
     templ_parser = subparsers.add_parser("make_templates", help="Copy default config.py and sbatch_template.sh files")
     templ_parser.set_defaults(func=copy_templates,config_func=(lambda cfgpath: None))
     templ_parser.add_argument("--config_out", default="config.py",          help="Filename of produced config file (default: %(default)s)")
@@ -101,6 +103,9 @@ def argP():
     templ_parser.add_argument("--no_config",  action="store_true", help="Do not produce config file (default: %(default)s)")
     templ_parser.add_argument("--no_sbatch",  action="store_true", help="Do not produce sbatch file (default: %(default)s)")
 
+    # Analysis command
+    analysis_parser = subparsers.add_parser("analysis", help="Utilities to help with analysis")
+    analysis.analysis_subparser(analysis_parser)
 
     arguments = parser.parse_args()
     arguments.cfg = arguments.config_func(arguments.config)

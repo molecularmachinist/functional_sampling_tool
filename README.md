@@ -11,7 +11,7 @@
 
 If you have conda, you can make sure all dependencies are met by running
 
-```
+```sh
 conda install -c conda-forge numpy matplotlib mdanalysis scikit-learn
 ```
 
@@ -24,7 +24,7 @@ This first part is optional and if you are happy with installing the tool and de
 
 First, we will make a new conda environment dedicated just for the tool and activate it (if you have [mamba](https://mamba.readthedocs.io/en/latest/) installed, use it for the first command to speed up the process):
 
-```
+```sh
 conda create -c conda-forge -n fst_env numpy matplotlib mdanalysis scikit-learn
 conda activate fst_env
 ```
@@ -34,13 +34,13 @@ This will also install the needed dependencies.
 Second, we run the command to install the package. 
 Here I assume that you have downloaded the project and are within its root folder. From there run
 
-```
+```sh
 pip install .
 ```
 
 When the command finishes, it should be all done and the tool usable as `fst`. If you ever want to uninstall it just run (with the `fst_env` environment activated).
 
-```
+```sh
 pip uninstall functional_sampling_tool
 ```
 
@@ -66,7 +66,7 @@ After a set amount of epochs, the tool will start to use a clustering method on 
 ## Setup
 
 At minimum you will need to copy the templates for `config.py` and  `sbatch_launch.sh` to your project folder. This can be done with
-```
+```sh
 fst make_templates
 ```
 after which you should make sure the sbatch launch script matches your workflow and simulation methods. The parts in curly brackets will be populated with the info from `config.py` for email and account, and  the epoch number in the job name.
@@ -97,19 +97,19 @@ If you have the configuration file in the same directory, as `config.py`, just r
 
 To initialize the first epoch and rsync it to the remote
 
-```
+```sh
 fst init --push
 ```
 
 After an epoch has finished, sync down from remote and make the choices for next epoch
 
-```
+```sh
 fst choose --pull
 ```
 
 Check the figure and if everything is fine, sync up to remote
 
-```
+```sh
 fst push
 ```
 
@@ -139,7 +139,7 @@ Here is a listing of all the variables you should need in normal usage. The defa
 
 By default the rsync excludes are
 
-```
+```python
 rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", ".*.xtc_offsets.npz", "figs", "fst", "src"]
 ```
 

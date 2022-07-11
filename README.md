@@ -219,3 +219,13 @@ In most cases you should not need these, but may be helpful in others.
 | `maxclust` | Maximum number of clusters in bin. | 15 |
 | `clust_choice_frac` | Fraction of the choices to be made from clustering. | 0.5 |
 | `clust_tol` | Tolerance to choose the number of clusters. | 0.1 |
+
+
+### Specific use cases and tips
+
+#### Multiple starting structure
+
+If you want to have multiple different starting points, or even different starting points for each repetition this is noe possible. All gro files matching `start*.gro` (excluding `start.gro`), or any xtc files matching `start*.xtc` under the `initial` folder will be used as starting frames. To have a diffferent starting structure for 16 repetitions, just include gro files named `start01.gro`,`start02.gro`,...,`start16.gro`, or a single xtc file as `start.xtc` with 16 frames, or any mix of these. The frames will be read in alphabetic order, `gro` files before `xtc`. If there are in total more frames than repetitions, a warning will be produced and the N first frames willbe used (for N repetitions). If there are less frames than repetitions, they will be read in order and filled in "round robin" fashion (e.g.for three frames and 8 repetitions, the repetiton startingopoints would be [1,2,3,1,2,3,1,2]).
+
+**Note** that you do then also need the `start.gro` to be used as a structure file, but not as a starting frame. If you have three gro files under `initial`: `start.gro`, `start1.gro`, `start2.gro`, this will be counted as two starting frames, the first from `start1.gro` and secodn from `start2.gro`
+

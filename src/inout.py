@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
-import os
+import os,sys
 import numpy as np
 import re
 import MDAnalysis as mda
+import importlib
 
 from . import utils
+from . import transformations
+from . import default_config
 
 class LoadError(ValueError):
     pass
@@ -186,3 +189,92 @@ def load_starter_structures():
         
     return univ
     
+
+
+
+def import_cfg(cfgpath):
+    """
+    Only import the config, does not load structs or do anything with it.
+    """
+    assert cfgpath.exists(), "Config file does not exist at %s."%cfgpath
+    print("Loading config from %s"%cfgpath)
+    spec = importlib.util.spec_from_file_location("config", cfgpath)
+    writebytecode = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
+    cfg = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cfg)
+    sys.dont_write_bytecode = writebytecode
+
+    #Load defaults
+    for item in dir(default_config):
+        if(item.startswith("__")):
+            continue
+        if(not hasattr(cfg, item)):
+            setattr(cfg,item,getattr(default_config,item))
+
+    cfg.ignore_epcs = set(cfg.ignore_epcs)
+    cfg.ignore_reps = set(cfg.ignore_reps)
+    return cfg
+
+def load_options(cfgpath):
+    """
+    Imports the config, and loads the structs and selections
+    """
+    cfg    = import_cfg(cfgpath)
+    print("Loading structure")
+    if(not os.path.isfile("initial/start.pdb")):
+        utils.make_pdb(cfg)
+    cfg.struct = mda.Universe("initial/start.pdb")
+    if(not cfg.index_file is None):
+        cfg.indexes = utils.read_ndx(cfg.index_file)
+    else:
+        cfg.indexes = {}
+    cfg.sel = utils.load_sel(cfg.select_str, cfg.struct, cfg.indexes)
+    cfg.sel_clust = utils.load_sel(cfg.select_str_clust, cfg.struct, cfg.indexes)
+
+    print("Selected %d atoms"%len(cfg.sel))
+    print("Selected %d atoms for clustering"%len(cfg.sel_clust))
+
+    if(cfg.unwrap_mols):
+        # Preparing molecule unwrapper
+        bonded_struct = mda.Universe("epoch01/rep01/mdrun.tpr", "initial/start.pdb")
+        unwrap_sel = utils.load_sel(cfg.unwrap_sel, cfg.struct, cfg.indexes)
+        unwrap_sel = bonded_struct.atoms[unwrap_sel.indices]
+        if(cfg.unwrap_starters is None):
+            unwrap_starters = []
+        else:
+            unwrap_starters = utils.load_sel(cfg.unwrap_starters, unwrap_sel, cfg.indexes)
+        cfg.traj_transforms = [transformations.Unwrapper(unwrap_sel,unwrap_starters)]
+        print("Selected %d atoms for unwrapping"%len(unwrap_sel))
+        if(cfg.mols_in_box):
+            print("Also putting mol COMs back in box")
+            cfg.traj_transforms.append(transformations.MolWrapper(unwrap_sel))
+
+    else:
+        cfg.traj_transforms = []
+    cfg.startval = cfg.function_val(np.array([cfg.sel.positions]))[0]
+    print("Initial function value %g"%cfg.startval)
+
+    if(cfg.clust_superpos):
+        print("Clustering coordinates will be superpositioned")
+    elif(cfg.clust_centre):
+        print("Clustering coordinates will be centred")
+
+    cfg.clust_transform = transformations.Superpos(cfg.sel_clust,
+                                                   cfg.clust_centre,
+                                                   cfg.clust_superpos)
+
+
+    # Min and maxvals
+    if(cfg.minval=="start"):
+        cfg.minval=cfg.startval
+    elif(cfg.minval is None):
+        cfg.minval=-float("inf")
+
+    if(cfg.maxval=="start"):
+        cfg.maxval=cfg.startval
+    elif(cfg.maxval is None):
+        cfg.maxval=float("inf")
+
+    return cfg
+

@@ -168,3 +168,13 @@ def hash_func(f):
     """
     fstr = inspect.getsource(f)
     return hashlib.md5(fstr.encode('utf-8')).hexdigest()
+
+
+
+
+def load_sel(sel_str, struct, ndx):
+    if(sel_str in ndx):
+        sel = struct.atoms[np.array(ndx[sel_str])-1]
+    else:
+        sel = struct.select_atoms(sel_str)
+    return sel

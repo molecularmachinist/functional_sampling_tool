@@ -235,16 +235,41 @@ class FrameChooser():
             print(f"frm {f}, rep {r}, epc {e}, fval={v}")
 
     def plot_hist(self):
+        """
+        Make a histogram of the current total data, as well as maxepochs latest
+        OR cumulative histograms after each epoch, with labels in legend only for
+        maxepoch latest.
+        """
+        maxepochs = -self.cfg.histogram_max_epochs
+        if(maxepochs==1):
+            maxepochs = 0
+        #if doing cumulative, also plot the epochs previous to maxepochs, but without labels
+        if(self.cfg.cumulative_histogram):
+            for i in self.u_epcs[:maxepochs]:
+                _ep_hist, _ = np.histogram(self.fval[self.epcs<=i], bins=self.bin_edges)
+                plt.plot(self.bin_centers, _ep_hist, "--", color="C0", alpha=0.5)
 
-        for i in self.u_epcs:
-            _ep_hist, _ = np.histogram(self.fval[self.epcs==i], bins=self.bin_edges)
+        # Plot maxepochs latest epochs
+        for i in self.u_epcs[maxepochs:]:
+            # The mask is <= for cumulative and == for non cumulative
+            _mask = self.epcs<=i if (self.cfg.cumulative_histogram) else self.epcs==i
+            # histogram of masked values
+            _ep_hist, _ = np.histogram(self.fval[_mask], bins=self.bin_edges)
+            # Plot with label
             plt.plot(self.bin_centers, _ep_hist, "--", color="C%d"%(i+2), label="Epoch %d"%i)
+
+        # Total histogram, with alpha=0.5 to make it lighter
         plt.plot(self.bin_centers, self.hist, color="C0", alpha=0.5)
+        # Total histogram only within teh boundaries without alpha
         plt.plot(self.bin_centers[self.hist_mask], self.hist[self.hist_mask], color="C0", label="Total")
+        # Show starting value and boundaries
         plt.axvline(self.cfg.startval, linestyle="-.", color="C1", label="Start", alpha=0.5)
         plt.axvline(self.cfg.minval, linestyle="-.", color="C2", label="Boundaries")
         plt.axvline(self.cfg.maxval, linestyle="-.", color="C2")
-        plt.legend()
+        # legend, on teh right side outside of plot
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.tight_layout()
+        # Make directory and save fig
         os.makedirs("%s/epoch%02d"%(self.cfg.fig_output_dir, self.u_epcs[-1]),exist_ok=True)
         plt.savefig("%s/epoch%02d/hist.png"%(self.cfg.fig_output_dir, self.u_epcs[-1]))
         plt.clf()

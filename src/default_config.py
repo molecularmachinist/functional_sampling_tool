@@ -75,6 +75,11 @@ minchoice = data_per_bin
 allow_choice_duplicates=False
 # A dictionary of keyword arguments for scipy.signal.find_peaks https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html
 peak_options = {"width":5, "distance":10}
+# Make plot histogram as cumulative, or each epoch separately
+cumulative_histogram=True
+# Maximum number of (latest) epochs to plot in histogram, for cumulative only changes
+# how many are added to legend. 
+histogram_max_epochs=15
 
 
 # Cluster histogram

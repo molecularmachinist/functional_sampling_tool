@@ -229,3 +229,40 @@ If you want to have multiple different starting points, or even different starti
 
 **Note** that you do then also need the `start.gro` to be used as a structure file, but not as a starting frame. If you have three gro files under `initial`: `start.gro`, `start1.gro`, `start2.gro`, this will be counted as two starting frames, the first from `start1.gro` and secodn from `start2.gro`
 
+
+#### Using the MDAnalysis selection objects in the calculation of the function
+
+To use the selection object, use the variable `sel` in the function (make sure that you do not overwrite it making it local, or use `global sel` at the beginning of the function). Similarily you can access the universe with `struct`.
+
+As an example consider the external comand `command` that reads in a single frame from "tmp_analysis.pdb" and outputs the result to stdout. The function could then be
+
+
+```python
+import subprocess as subp
+
+def function_val(positions):
+    results = []
+    # Iterate over the first axis (time)
+    for p in positions:
+        # Set the selection positions
+        sel.positions = p
+        # Write the selection
+        sel.write("tmp_analysis.pdb")
+        # Run external command
+        compProc = subp.run(command, capture_output=True, text=True)
+        # get output
+        results.append(float(compProc.stdout))
+    
+    return results
+```
+
+For now the program only makes a  single selection. However, do remember that the config file is a python script, so you can write any arbitrary code. This means you can make your own selection objects by adding the following lines anywhere in the config:
+
+```python
+_univ  = mda.Universe("initial/start.pdb")
+_mysel   = univ.select_atoms("protein and resid 200-300 and backbone")
+```
+
+Here we used a leading underscore, so that we do not accidentally overwrite any variables the program adds to the module, like `sel` and `struct`. Also here we cannot yet use those variables, since they are of course not added yet when the config is imported. Another note about this is that the choose command has to be run, or a PDB produced manually before this works, since the automatic PDB maker only runs after the config is imported. You can also just use the gro file as structure, but then make sure the atom naming is correct and you do not need chain info.
+
+In the future multiple selection might be supprted and this will become less 

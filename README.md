@@ -2,7 +2,7 @@
 
 ## Requirements
 
-1. Python 3 with NumPy and matplotlib
+1. Python 3.10 (or higher) with NumPy and matplotlib
 1. [MDAnalysis](https://docs.mdanalysis.org/stable/index.html)
 1. [scikit-learn](https://scikit-learn.org/stable/)
 1. GROMACS
@@ -15,7 +15,7 @@ If you have conda, you can make sure all dependencies are met by running
 conda install -c conda-forge numpy matplotlib mdanalysis scikit-learn
 ```
 
-The tool has been tested with python 3.7 to 3.10. Please let us know if you are using other versions, whether everything works (and especially if it doesn't).
+The tool has been developed with python 3.10 and tested with 3.7 (requires also `importlib_resources`). The anlysis module will not work as expected with python version prior to 3.7. Please let us know if you are using other versions, whether everything works (and especially if it doesn't).
 
 ## Installation
 
@@ -25,7 +25,7 @@ This first part is optional and if you are happy with installing the tool and de
 First, we will make a new conda environment dedicated just for the tool and activate it (if you have [mamba](https://mamba.readthedocs.io/en/latest/) installed, use it for the first command to speed up the process):
 
 ```sh
-conda create -c conda-forge -n fst_env numpy matplotlib mdanalysis scikit-learn
+conda create -c conda-forge -n fst_env python=3.10 numpy matplotlib mdanalysis scikit-learn
 conda activate fst_env
 ```
 

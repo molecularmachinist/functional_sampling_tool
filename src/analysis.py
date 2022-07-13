@@ -1,15 +1,23 @@
 import os
+from typing import Callable, Any, Tuple, Optional, TypeAlias
 import MDAnalysis as mda
+import argparse
 import pathlib
 import numpy as np
+from numpy.typing import ArrayLike
 import warnings
 
 from . import inout
 from . import utils
 from . import transformations
 
+# Types for typing
+ts_type:TypeAlias = mda.coordinates.base.Timestep
+transform_type:TypeAlias = Callable[[ts_type],ts_type]
+ag_type:TypeAlias = mda.core.groups.AtomGroup
 
-def get_cfg_sel(sel,cfg, default=None):
+
+def get_cfg_sel(sel: str, cfg: Any, default: Optional[str]=None) -> str:
     if(sel is None):
         return default
     if(sel == "select_str"):
@@ -19,7 +27,7 @@ def get_cfg_sel(sel,cfg, default=None):
     return sel
 
 
-def load_struct(args):
+def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, ag_type, list[transform_type]]:
     if(args.index is None):
         args.index = args.cfg.index_file
     indexes = utils.read_ndx(args.index)
@@ -74,7 +82,7 @@ def load_struct(args):
     return u, sel, traj_transforms
 
 
-def analysis_subparser(parser):
+def analysis_subparser(parser: argparse.ArgumentParser) -> None:
     """
     Add the analysis options to the provided parser
     """
@@ -134,7 +142,7 @@ def analysis_subparser(parser):
     extr_parser.set_defaults(func=extract, config_func=inout.import_cfg)
 
 
-def extract_around(u, sel, transforms, args):
+def extract_around(u: mda.Universe, sel: ag_type, transforms: list[transform_type], args: argparse.Namespace) -> dict[str,ArrayLike]:
     data, files = inout.load_flat_extract_data(args.cfg, args.doignore)
     mask = (data["frms"]>= args.beginning)*(data["frms"]%args.stride==0)
 
@@ -155,13 +163,15 @@ def extract_around(u, sel, transforms, args):
                 prev_r = r
                 prev_e = e
             
-            u.trajectory[f]
+            ts = u.trajectory[f]
+            data["time"].append(ts.time)
             writer.write(sel)
 
+    data["time"] = np.array(data["time"])
     return data
     
 
-def extract_all(u, sel, transforms, args):
+def extract_all(u: mda.Universe, sel: ag_type, transforms: list[transform_type], args: argparse.Namespace) -> dict[str,ArrayLike]:
     data = inout.load_extract_data(args.cfg, args.doignore)
     data_out = {"frame":[],"time":[],"epoch":[],"rep":[],"fval":[]}
     ntrajs = np.sum([len(data["fnames"][e]) for e in data["fnames"]])
@@ -182,11 +192,12 @@ def extract_all(u, sel, transforms, args):
                     data_out["epoch"].append(e)
                     data_out["rep"].append(r)
                     data_out["fval"].append(data["fval"][e][r][ts.frame])
+    
 
     return data_out
 
 
-def extract(args):
+def extract(args: argparse.Namespace) -> None:
     u, sel, transforms = load_struct(args)
 
     u.trajectory.add_transformations(*transforms)

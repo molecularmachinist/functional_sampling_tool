@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 import os,sys
+from typing import Any, Tuple, Union
 import numpy as np
 import re
 import MDAnalysis as mda
-import importlib
+import importlib,pathlib
+
+from numpy.typing import NDArray
 
 from . import utils
 from . import transformations
@@ -13,7 +16,7 @@ class LoadError(ValueError):
     pass
 
 
-def check_num(prefix):
+def check_num(prefix:str) -> list[int]:
     """
     Checks filenames prefix01, prefix02, etc and returns a list of integers that were found.
     """
@@ -39,7 +42,7 @@ def check_num(prefix):
     nums.sort()
     return nums
 
-def get_data_from_archive(d, cfg):
+def get_data_from_archive(d:str, cfg:Any) -> Tuple[NDArray[np.float_],NDArray[np.float_]]:
     with np.load(d+cfg.npz_file_name) as npz:
         dat = dict(npz)
 
@@ -71,7 +74,7 @@ def get_data_from_archive(d, cfg):
     crd = dat["crd"]
     return fval, crd
 
-def get_data_from_xtc(d, cfg):
+def get_data_from_xtc(d:str, cfg:Any) -> Tuple[NDArray[np.float_],NDArray[np.float_]]:
     cfg.struct.load_new(d+"mdrun.xtc")
     cfg.struct.trajectory.add_transformations(*cfg.traj_transforms)
     fval_crd = np.empty([len(cfg.struct.trajectory), len(cfg.sel), 3])
@@ -103,7 +106,7 @@ def get_data_from_xtc(d, cfg):
 
     return fval, crd
 
-def load_from_dir(d, cfg, load_fval):
+def load_from_dir(d:str, cfg:Any, load_fval:bool) -> Tuple[NDArray[np.float_],NDArray[np.float_]]:
     if(not load_fval):
         try:
             fval,crd = get_data_from_archive(d, cfg)
@@ -122,7 +125,7 @@ def load_from_dir(d, cfg, load_fval):
 
     return get_data_from_xtc(d, cfg)
 
-def load_epoch_data(epoch, cfg, load_fval):
+def load_epoch_data(epoch:int, cfg:Any, load_fval:bool) -> Tuple[NDArray[np.int_],NDArray[np.float_],NDArray[np.int_],NDArray[np.int_]]:
     rep_nums = check_num("epoch%02d/rep"%epoch)
     fval = []
     crd  = []
@@ -141,7 +144,7 @@ def load_epoch_data(epoch, cfg, load_fval):
     return np.concatenate(reps), np.concatenate(fval), np.concatenate(frms), np.concatenate(crd)
 
 
-def load_extract_data(cfg,doignore=True):
+def load_extract_data(cfg:Any,doignore:bool=True) -> dict[str,dict[int,dict[int,Union[str,NDArray[np.float_]]]]]:
     epochs = check_num("epoch")
     data = {"fval":{},"fnames":{}}
     for e in epochs:
@@ -168,7 +171,7 @@ def load_extract_data(cfg,doignore=True):
     return data
 
 
-def load_flat_extract_data(cfg,doignore=True):
+def load_flat_extract_data(cfg:Any,doignore:bool=True) -> Tuple[dict[str,NDArray[Union[np.float_,np.int_]]],dict[int,dict[int,str]]]:
     data = load_extract_data(cfg,doignore)
     
     flat_data = {"fval":[],"frms":[],"reps":[],"epcs":[]}
@@ -188,7 +191,7 @@ def load_flat_extract_data(cfg,doignore=True):
 
 
 
-def load_data(cfg, load_fval):
+def load_data(cfg:Any, load_fval:bool):
     epochs = check_num("epoch")
     fval = []
     reps = []
@@ -214,7 +217,7 @@ def load_data(cfg, load_fval):
     return fval, crds, frms, reps, epcs
 
 
-def load_starter_structures():
+def load_starter_structures() -> mda.Universe:
     """
     Checks for starter structures as initial/start*.gro (not including start.gro) or initial/start*.xtc
     Returns a universe with the frames loaded if some are found, otherwise just the initial/start.gro.
@@ -239,7 +242,7 @@ def load_starter_structures():
 
 
 
-def import_cfg(cfgpath):
+def import_cfg(cfgpath:Union[str,pathlib.Path]) -> Any:
     """
     Only import the config, does not load structs or do anything with it.
     """
@@ -263,7 +266,7 @@ def import_cfg(cfgpath):
     cfg.ignore_reps = set(cfg.ignore_reps)
     return cfg
 
-def load_options(cfgpath):
+def load_options(cfgpath:Union[str,pathlib.Path]) -> Any:
     """
     Imports the config, and loads the structs and selections
     """

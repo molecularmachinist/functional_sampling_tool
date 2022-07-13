@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
 import os, time
+from typing import Any, Tuple
 import numpy as np
 import warnings
 from multiprocessing import Pool
+from multiprocessing.pool import AsyncResult
+from numpy.typing import NDArray
+
+from pyparsing import Optional
 
 from . import utils
 from . import inout
+from .utils import ag_type
 
 
-
-def init_rep(i,cfg,atoms,pool,d="epoch01"):
+def init_rep(i: int,cfg: Any, atoms: ag_type, pool: Pool, d: str="epoch01") -> Tuple[str,AsyncResult]:
     """ Initializes rep i from atom group atoms
     """
     os.makedirs("%s/rep%02d"%(d,i))
@@ -45,7 +50,7 @@ def init_rep(i,cfg,atoms,pool,d="epoch01"):
     return ("%s/rep%02d"%(d,i),rc)
 
 
-def next_rep(i,cfg,newepoch,oldepoch,rep,frm, val, pool):
+def next_rep(i: int, cfg: Any, newepoch: int, oldepoch: int, rep: int, frm: int, val: float, pool: Pool) -> Tuple[str,AsyncResult]:
     """ Initializes rep i of newepoch, taking the frame frm from rep of oldepoch
     """
     os.makedirs("epoch%02d/rep%02d"%(newepoch, i))
@@ -86,7 +91,11 @@ def next_rep(i,cfg,newepoch,oldepoch,rep,frm, val, pool):
     return ("epoch%02d/rep%02d"%(newepoch,i),rc)
 
 
-def start_epoch(nextepoch, cfg, val=None, epc=None, rep=None, frm=None):
+def start_epoch(nextepoch: int, cfg: Any,
+                val: Optional[NDArray[np.float_]] = None,
+                epc: Optional[NDArray[np.int_]]   = None,
+                rep: Optional[NDArray[np.int_]]   = None,
+                frm: Optional[NDArray[np.int_]]   = None) -> None:
     """ Start epoch nextepoch. If it is one, the initial epoch is started,
           otherwise the following parameters should be supplied. cfg is the config.
        "Optional" input parameters:

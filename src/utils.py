@@ -1,16 +1,24 @@
 # -*- coding: utf-8 -*-
 import subprocess as subp
+import MDAnalysis as mda
 import numpy as np
+from typing import Any, Callable, TypeAlias,Union, Optional
 import math, os
 import inspect, hashlib
 import warnings
+
+# Types for typing
+ts_type:TypeAlias = mda.coordinates.base.Timestep
+transform_type:TypeAlias = Callable[[ts_type],ts_type]
+ag_type:TypeAlias = mda.core.groups.AtomGroup
+a_type:TypeAlias = mda.core.groups.Atom
 
 
 class DeprecatedUsageWarning(UserWarning):
     pass
 
 
-def rolling_mean(data, window=10, center = True, fill=np.nan):
+def rolling_mean(data: np.ndarray, window:int=10, center:bool = True, fill:float=np.nan) -> np.ndarray:
     if(center):
         start_offset = math.floor(window/2)
         end_offset   = -math.ceil(window/2)+1
@@ -29,7 +37,7 @@ def rolling_mean(data, window=10, center = True, fill=np.nan):
     return mean
 
 
-def read_ndx(ndx):
+def read_ndx(ndx:str) -> dict[str,list[int]]:
     # Return empty dictionary if ndx is None
     if(ndx is None):
         return {}
@@ -59,7 +67,7 @@ def read_ndx(ndx):
     return indexes
 
 
-def gromacs_command(gmx, cmd, *args, directory=".", input=None, **kwargs):
+def gromacs_command(gmx:str, cmd:str, *args:str, directory:str=".", input:Optional[bytes]=None, **kwargs:str):
     """ Call the gromacs subcommand cmd in directory. Both args and keys of kwargs should be without the leading dash.
         output is redirected to output_<cmd>.txt. Returns the return code of the command.
     """
@@ -84,7 +92,7 @@ def gromacs_command(gmx, cmd, *args, directory=".", input=None, **kwargs):
 
 
 
-def rsync_command(send_from, send_to, excludes=[]):
+def rsync_command(send_from:str, send_to:str, excludes:list[str]=[]):
     """ A utility function for keeping the remote dir in sync.
         Basically run rsync with given source and target, and given excludes.
         Uses -ravP by default.
@@ -97,7 +105,7 @@ def rsync_command(send_from, send_to, excludes=[]):
 
 
 
-def rsync_down(cfg):
+def rsync_down(cfg:Any) -> None:
     """ Wrapper function for rsync_command, to sync the local dir to the remote,
         ie. "pull down"
     """
@@ -105,14 +113,14 @@ def rsync_down(cfg):
     print("Process returned %d"%rc)
 
 
-def rsync_up(cfg):
+def rsync_up(cfg:Any) -> None:
     """ Wrapper function for rsync_command, to sync the remote dir to the local,
         ie. "push up"
     """
     rc = rsync_command( "./", "%s:%s/"%(cfg.remote_name,cfg.remote_dir), excludes=cfg.rsync_excludes)
     print("Process returned %d"%rc)
 
-def make_pdb(cfg):
+def make_pdb(cfg:Any) -> None:
     """
     Makes the pdb to load mdtraj
     """
@@ -132,7 +140,7 @@ def make_pdb(cfg):
         # Whatever happens, we go back to the original working dir
         os.chdir(prevdir)
 
-def __depr_copy_sbatch_template(fin,fout,enum,cfg):
+def __depr_copy_sbatch_template(fin:str,fout:str,enum:int,cfg:Any) -> None:
     """
     To be deprecated. Gets email and account from config.
     """
@@ -143,7 +151,7 @@ def __depr_copy_sbatch_template(fin,fout,enum,cfg):
         with open(fout, "w") as fo:
             fo.write(f.read().format(i=enum, account=cfg.account, email=cfg.email))
 
-def copy_sbatch_template(fin,fout,enum,cfg=None):
+def copy_sbatch_template(fin:str,fout:str,enum:int,cfg:Any=None) -> None:
     """
     Copies the sbatch template from fin to fout.
 
@@ -165,7 +173,7 @@ def copy_sbatch_template(fin,fout,enum,cfg=None):
 
                 fo.write(line.replace("{epoch_num}", str(enum)))
 
-def hash_func(f):
+def hash_func(f:Callable) -> str:
     """
     Reads function as string and calulates the md5sum as a hex string
     """
@@ -175,7 +183,7 @@ def hash_func(f):
 
 
 
-def load_sel(sel_str, struct, ndx):
+def load_sel(sel_str:str, struct:Union[mda.Universe,ag_type], ndx:dict[str,list[int]]) -> ag_type:
     if(sel_str in ndx):
         sel = struct.atoms[np.array(ndx[sel_str])-1]
     else:

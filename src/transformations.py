@@ -1,20 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from typing import Union,Optional
 import numpy as np
 from MDAnalysis.analysis import align
 import warnings
 
+from numpy.typing import NDArray
+
 from . import _ctransformations
+
+from .utils import ts_type,ag_type,a_type
+
 
 """
 This module includes functions to make on the fly transformations for MDAnalysis trajectories
 """
 
-def make_whole(ts, bonds, sel):
+
+
+def make_whole(ts:ts_type, bonds:NDArray[np.int_], sel:NDArray[np.int_]):
     box = ts.triclinic_dimensions
     ts.positions[sel] = _ctransformations.make_whole(ts.positions[sel], bonds,box)
 
     return ts
+
 
 class Unwrapper:
     """ Make molecules in ag whole over the pbc. only considers
@@ -33,7 +42,7 @@ class Unwrapper:
         returns:
             transformation function
     """
-    def __init__(self, ag, starters=[], initsetup=False):
+    def __init__(self, ag:ag_type, starters:Union[list[a_type],ag_type]=[], initsetup:bool=False):
         self.starters = starters
         self.ag  = ag
         self.sel = self.ag.indices
@@ -41,7 +50,7 @@ class Unwrapper:
         if(initsetup):
             self._setup()
 
-    def _setup(self):
+    def _setup(self) -> None:
         if(self.__setup_run):
             warnings.warn("Unwrapper setup being run after __setup_run is already. " \
                           "Continuing without new setup.", RuntimeWarning)
@@ -54,7 +63,7 @@ class Unwrapper:
         del self.starters
 
 
-    def __call__(self, ts):
+    def __call__(self, ts:ts_type) -> ts_type:
         if(not self.__setup_run):
             self._setup()
         return make_whole(ts, self.bonds, self.sel)
@@ -71,7 +80,7 @@ class MolWrapper:
     returns:
         transformation function
     """
-    def __init__(self,ag, initsetup=False):
+    def __init__(self,ag:ag_type, initsetup:bool=False):
         self.ag  = ag
         self.selection = self.ag.indices
         self.__setup_run=False
@@ -79,7 +88,7 @@ class MolWrapper:
             self._setup()
 
 
-    def _setup(self):
+    def _setup(self) -> None:
         if(self.__setup_run):
             warnings.warn("Unwrapper setup being run after __setup_run is already True." \
                           "Continuing without new setup.", RuntimeWarning)
@@ -93,7 +102,7 @@ class MolWrapper:
         # No need to remember atom group after setup
         del self.ag
 
-    def __call__(self,ts):
+    def __call__(self, ts:ts_type) -> ts_type:
         if(not self.__setup_run):
             self._setup()
 
@@ -120,7 +129,7 @@ class Superpos:
     returns:
         transformation function
     """
-    def __init__(self,ag, centre, superposition, subselection=None):
+    def __init__(self,ag:ag_type, centre:bool, superposition:bool, subselection:Optional[ag_type]=None):
         self.seli = ag.indices.copy()
         self.ref = ag.positions.copy()
         self.ref_com = ag.center_of_mass()
@@ -137,10 +146,10 @@ class Superpos:
         else:
             self.func = self.nothing
 
-    def __call__(self, *args, **kwargs):
-        return self.func(*args, **kwargs)
+    def __call__(self, ts:ts_type) -> ts_type:
+        return self.func(ts)
 
-    def superpos(self,ts):
+    def superpos(self,ts:ts_type) -> ts_type:
         sel = ts.positions[self.seli].copy()
         sel_com = np.sum(self.w*sel.T, axis=-1)/self.totw
         sel -= sel_com
@@ -149,11 +158,11 @@ class Superpos:
         ts.positions[self.subsel] = ((ts.positions[self.subsel]-sel_com) @ R.T)+self.ref_com
         return ts
 
-    def centre(self,ts):
+    def centre(self,ts:ts_type) -> ts_type:
         sel = ts.positions[self.seli]
         sel_com = np.sum(self.w*sel.T, axis=-1)/self.totw
         ts.positions[self.subsel] += self.ref_com-sel_com
         return ts
 
-    def nothing(self,ts):
+    def nothing(self,ts:ts_type) -> ts_type:
         return ts

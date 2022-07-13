@@ -30,6 +30,9 @@ def rolling_mean(data, window=10, center = True, fill=np.nan):
 
 
 def read_ndx(ndx):
+    # Return empty dictionary if ndx is None
+    if(ndx is None):
+        return {}
     print("\nReading index groups from %s"%ndx)
     indexes = {}
     groups  = []

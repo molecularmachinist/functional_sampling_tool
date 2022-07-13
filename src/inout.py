@@ -141,6 +141,53 @@ def load_epoch_data(epoch, cfg, load_fval):
     return np.concatenate(reps), np.concatenate(fval), np.concatenate(frms), np.concatenate(crd)
 
 
+def load_extract_data(cfg,doignore=True):
+    epochs = check_num("epoch")
+    data = {"fval":{},"fnames":{}}
+    for e in epochs:
+        if (doignore and (e in cfg.ignore_epcs)):
+            continue
+        
+        for key in data:
+            data[key][e] = {}
+        
+        rep_nums = check_num("epoch%02d/rep"%e)
+
+        for r in rep_nums:
+            if(doignore and ((e,r) in cfg.ignore_reps)):
+                continue
+            d="epoch%02d/rep%02d/"%(e, r)
+            if(not os.path.isfile(d+cfg.npz_file_name)):
+                continue
+            
+            # mdrun filename
+            data["fnames"][e][r] = d+"mdrun.xtc"
+            with np.load(d+cfg.npz_file_name) as npz:
+                data["fval"][e][r] = npz["fval"]
+        
+    return data
+
+
+def load_flat_extract_data(cfg,doignore=True):
+    data = load_extract_data(cfg,doignore)
+    
+    flat_data = {"fval":[],"frms":[],"reps":[],"epcs":[]}
+    for e in data["fval"]:
+        for r in data["fval"][e]:
+            flat_data["fval"].append(data["fval"][e][r])
+            ndat = len(data["fval"][e][r])
+            flat_data["frms"].append(np.arange(ndat))
+            flat_data["reps"].append(np.full(ndat,r))
+            flat_data["epcs"].append(np.full(ndat,e))
+            
+    for key in flat_data:
+        flat_data[key] = np.concatenate(flat_data[key])
+
+    return flat_data, data["fnames"]
+            
+
+
+
 def load_data(cfg, load_fval):
     epochs = check_num("epoch")
     fval = []
@@ -225,10 +272,7 @@ def load_options(cfgpath):
     if(not os.path.isfile("initial/start.pdb")):
         utils.make_pdb(cfg)
     cfg.struct = mda.Universe("initial/start.pdb")
-    if(not cfg.index_file is None):
-        cfg.indexes = utils.read_ndx(cfg.index_file)
-    else:
-        cfg.indexes = {}
+    cfg.indexes = utils.read_ndx(cfg.index_file)
     cfg.sel = utils.load_sel(cfg.select_str, cfg.struct, cfg.indexes)
     cfg.sel_clust = utils.load_sel(cfg.select_str_clust, cfg.struct, cfg.indexes)
 

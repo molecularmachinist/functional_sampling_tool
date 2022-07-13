@@ -98,8 +98,8 @@ def argP():
     # Template command
     templ_parser = subparsers.add_parser("make_templates", help="Copy default config.py and sbatch_template.sh files")
     templ_parser.set_defaults(func=copy_templates,config_func=(lambda cfgpath: None))
-    templ_parser.add_argument("--config_out", default="config.py",          help="Filename of produced config file (default: %(default)s)")
-    templ_parser.add_argument("--sbatch_out", default="sbatch_launch.sh", help="Filename of produced sbatch file (default: %(default)s)")
+    templ_parser.add_argument("--config_out", metavar="<name>.py", default="config.py",          help="Filename of produced config file (default: %(default)s)")
+    templ_parser.add_argument("--sbatch_out", metavar="<name>.sh", default="sbatch_launch.sh", help="Filename of produced sbatch file (default: %(default)s)")
     templ_parser.add_argument("--no_config",  action="store_true", help="Do not produce config file (default: %(default)s)")
     templ_parser.add_argument("--no_sbatch",  action="store_true", help="Do not produce sbatch file (default: %(default)s)")
 

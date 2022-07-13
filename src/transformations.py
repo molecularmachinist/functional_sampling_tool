@@ -116,15 +116,20 @@ class Superpos:
         ag:            Atom group of atoms to fit, from the reference universe
         centre:        Boolean of whether to centre the selection
         superposition: Boolean of whether to centre the selection and fit rotationally
+        subselection:  The atom group to move and/or rotate, None to use ag. [default: None]
     returns:
         transformation function
     """
-    def __init__(self,ag, centre, superposition):
+    def __init__(self,ag, centre, superposition, subselection=None):
         self.seli = ag.indices.copy()
         self.ref = ag.positions.copy()
         self.ref_com = ag.center_of_mass()
         self.w   = ag.masses.copy()
         self.totw = self.w.sum()
+        if(subselection is None):
+            self.subsel = self.seli
+        else:
+            self.subsel = subselection.indices
         if(superposition):
             self.func = self.superpos
         elif(centre):
@@ -136,18 +141,18 @@ class Superpos:
         return self.func(*args, **kwargs)
 
     def superpos(self,ts):
-        sel = ts.positions[self.seli]
+        sel = ts.positions[self.seli].copy()
         sel_com = np.sum(self.w*sel.T, axis=-1)/self.totw
         sel -= sel_com
         R, rmsd = align.rotation_matrix(sel, self.ref-self.ref_com, weights=self.w)
         sel = sel @ R.T
-        ts.positions[self.seli] = sel+self.ref_com
+        ts.positions[self.subsel] = ((ts.positions[self.subsel]-sel_com) @ R.T)+self.ref_com
         return ts
 
     def centre(self,ts):
         sel = ts.positions[self.seli]
         sel_com = np.sum(self.w*sel.T, axis=-1)/self.totw
-        ts.positions[self.seli] += self.ref_com-sel_com
+        ts.positions[self.subsel] += self.ref_com-sel_com
         return ts
 
     def nothing(self,ts):

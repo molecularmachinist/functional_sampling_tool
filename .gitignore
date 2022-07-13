@@ -81,6 +81,7 @@ dump
 /example/remote_dir
 /example/after_e1/epoch02
 /example/after_e1/figs
+/example/after_e1/analysis
 /example/after_e1/epoch01/rep*/fval_data.npz
 /example/after_e1/epoch01/rep*/.mdrun.xtc_offsets.npz
 /example/after_e1/epoch01/rep*/.mdrun.xtc_offsets.lock

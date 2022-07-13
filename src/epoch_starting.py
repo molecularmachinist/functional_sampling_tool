@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 import os, time
-from typing import Any, Tuple
 import numpy as np
 import warnings
 from multiprocessing import Pool
-from multiprocessing.pool import AsyncResult
-from numpy.typing import NDArray
-
-from pyparsing import Optional
 
 from . import utils
 from . import inout
-from .utils import ag_type
+
+# Type hints
+from typing import Any, Tuple, Optional
+from MDAnalysis.core.groups import AtomGroup
+from multiprocessing.pool import AsyncResult
+from numpy.typing import NDArray
 
 
-def init_rep(i: int,cfg: Any, atoms: ag_type, pool: Pool, d: str="epoch01") -> Tuple[str,AsyncResult]:
+def init_rep(i: int,cfg: Any, atoms: AtomGroup, pool: Pool, d: str="epoch01") -> Tuple[str,AsyncResult]:
     """ Initializes rep i from atom group atoms
     """
     os.makedirs("%s/rep%02d"%(d,i))

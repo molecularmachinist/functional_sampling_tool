@@ -1,5 +1,6 @@
+import pathlib
 import numpy as np
-import matplotlib as mpl
+import matplotlib.colors as mpl_colors
 import matplotlib.pyplot as plt
 import os
 import math
@@ -8,6 +9,10 @@ from sklearn.mixture import GaussianMixture
 
 from . import choosing
 from . import inout
+
+# Type hints
+from typing import Any, Tuple, Union, List
+from numpy.typing import NDArray
 
 colors  = ['r','b','g','orange','cyan','indigo','purple','magenta','brown','k','y']
 colors += ["sandybrown", "deeppink","darkslategrey","indianred","lawngreen","lightseagreen"]
@@ -18,7 +23,7 @@ rng = np.random.default_rng()
 class ClusterChooser(choosing.FrameChooser):
 
 
-    def __init__(self, cfg, fval, coords, frms, reps, epcs):
+    def __init__(self, cfg: Any, fval: NDArray[np.float_], coords: NDArray[np.float_], frms: NDArray[np.int_], reps: NDArray[np.int_], epcs: NDArray[np.int_]):
         """
         Takes the config and data as 4 N-length arrays with the rep, fval, epoch
         and frame number (within teh specific epoch and rep) of each datapoint/frame.
@@ -44,7 +49,7 @@ class ClusterChooser(choosing.FrameChooser):
         self.plain_chooser = choosing.FrameChooser(cfg, fval, frms, reps, epcs)
 
     @classmethod
-    def fromReadData(cls,cfg,load_fval):
+    def fromReadData(cls, cfg: Any, load_fval: bool):
         """
         Factory method to easily load data and make the object
         """
@@ -52,7 +57,7 @@ class ClusterChooser(choosing.FrameChooser):
         return cls(cfg, fval, crds, frms, reps, epcs)
 
 
-    def _make_hist(self):
+    def _make_hist(self) -> None:
         self._make_hist_no_cfg(
                 self.cfg.clust_maxbins,
                 self.cfg.clust_data_per_bin,
@@ -64,7 +69,7 @@ class ClusterChooser(choosing.FrameChooser):
         self.clust_unique_bins,self.clust_unique_bin_counts = np.unique(self.clust_hist_indexes,return_counts=True)
 
 
-    def make_choices(self,prechoices=0,plot=True):
+    def make_choices(self, prechoices: int = 0, plot: bool = True) -> Tuple[NDArray[np.float_],NDArray[np.int_],NDArray[np.int_],NDArray[np.int_]]:
         if(len(self.u_epcs)<=self.cfg.epochs_pre_clust):
             return self.plain_chooser.make_choices(prechoices,plot)
         if(plot):
@@ -118,9 +123,9 @@ class ClusterChooser(choosing.FrameChooser):
 
         return fval, epcs, reps, frms
 
-    def choose_frames(self, chosen_clusts,clusters):
+    def choose_frames(self, chosen_clusts: List[int], clusters: NDArray[np.int_]) -> Tuple[NDArray[np.float_],NDArray[np.int_],NDArray[np.int_],NDArray[np.int_]]:
         """ Input parameters:
-                - chosen_clusts : Length N list of the indices of the bins that have been chosen.
+                - chosen_clusts : Length N list of the indices of the clusters that have been chosen.
                                   Duplicates (starting from the same bin) are simply many times in the list.
                 - clusters      : Array of the cluster indices for all simulated frames
             Output:
@@ -154,7 +159,7 @@ class ClusterChooser(choosing.FrameChooser):
         return v,e,r,f
 
 
-    def plot_hist(self):
+    def plot_hist(self) -> None:
         self.plain_chooser.plot_hist()
         if(len(self.u_epcs)<=self.cfg.epochs_pre_clust):
             return
@@ -179,7 +184,9 @@ class ClusterChooser(choosing.FrameChooser):
         plt.savefig("%s/epoch%02d/hist_clust.png"%(self.cfg.fig_output_dir, self.u_epcs[-1]))
         plt.clf()
 
-def make_clusters(coords, plot=False, plotname="plot.png", maxclust=15, tol=0.1):
+
+
+def make_clusters(coords: NDArray[np.float_], plot: bool = False, plotname: Union[str,pathlib.Path] = "plot.png", maxclust: int = 15, tol: float = 0.1) ->  NDArray[np.int_]:
     global colors
     """
     Takes a shape(n,m) array of coordinates and return shape(n) labels of clusters.
@@ -252,9 +259,9 @@ def make_clusters(coords, plot=False, plotname="plot.png", maxclust=15, tol=0.1)
         fig.tight_layout()
 
         if(nclust<len(colors)):
-            cmap = mpl.colors.ListedColormap(colors[:nclust],N=nclust)
+            cmap = mpl_colors.ListedColormap(colors[:nclust],N=nclust)
         else:
-            cmap = mpl.colors.ListedColormap(colors,N=nclust)
+            cmap = mpl_colors.ListedColormap(colors,N=nclust)
 
         labels = gm.predict(first_2)
         axes[1,1].scatter(first_2[:,0],first_2[:,1],s=1,c=labels, cmap=cmap)

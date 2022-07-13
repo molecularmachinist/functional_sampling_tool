@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from importlib_resources import files as import_files
 import argparse
 import pathlib
 import shutil
-import numpy as np
+import sys
 
 from . import inout
 from . import epoch_starting
@@ -12,22 +11,28 @@ from . import clustering
 from . import utils
 from . import analysis
 
+# For python 3.10 (or higher) import from standard lib, older releases use importlib_resources.
+if(sys.version_info>=(3,10)):
+    from importlib.resources import files as import_files
+else:
+    from importlib_resources import files as import_files
 
-def init(args):
+
+def init(args: argparse.Namespace) -> None:
     print("Initializing first epoch")
     epoch_starting.start_epoch(1, args.cfg)
     if(args.push):
         utils.rsync_up(args.cfg)
 
 
-def pushpull(args):
+def pushpull(args: argparse.Namespace) -> None:
     if(args.pull):
         utils.rsync_down(args.cfg)
     else:
         utils.rsync_up(args.cfg)
 
 
-def choose(args):
+def choose(args: argparse.Namespace) -> None:
     if(args.pull):
         utils.rsync_down(args.cfg)
     chooser = clustering.ClusterChooser.fromReadData(args.cfg, args.reload_fval)
@@ -41,7 +46,7 @@ def choose(args):
         utils.rsync_up(args.cfg)
 
 
-def copy_templates(args):
+def copy_templates(args: argparse.Namespace) -> None:
     if(not args.no_config):
         fin = import_files("%s.templates"%__package__).joinpath("config_example.py.txt")
         print("Making "+args.config_out)
@@ -51,7 +56,8 @@ def copy_templates(args):
         print("Making "+args.sbatch_out)
         shutil.copyfile(fin, args.sbatch_out)
 
-def argP():
+
+def argP() -> argparse.Namespace:
     """
     Define command line arguments. For each
     """
@@ -113,7 +119,7 @@ def argP():
     return arguments
 
 
-def _run_tool():
+def _run_tool() -> None:
     args = argP()
     args.func(args)
 

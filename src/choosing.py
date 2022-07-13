@@ -7,6 +7,10 @@ from scipy.signal import find_peaks
 from . import utils
 from . import inout
 
+# Type hints
+from typing import Any, Tuple, List
+from numpy.typing import NDArray
+
 """
 This module includes a class that holds the loaded data, histograms and some
 methods for choosing frames.
@@ -14,7 +18,7 @@ methods for choosing frames.
 
 class FrameChooser():
 
-    def __init__(self, cfg, fval, frms, reps, epcs):
+    def __init__(self, cfg: Any, fval: NDArray[np.float_], frms: NDArray[np.int_], reps: NDArray[np.int_], epcs: NDArray[np.int_]):
         """
         Takes the config and data as 4 N-length arrays with the rep, fval, epoch
         and frame number (within teh specific epoch and rep) of each datapoint/frame.
@@ -39,7 +43,7 @@ class FrameChooser():
         self._make_hist()
 
     @classmethod
-    def fromReadData(cls,cfg,load_fval):
+    def fromReadData(cls,cfg: Any, load_fval: bool):
         """
         Factory method to easily load data and make the object
         """
@@ -47,7 +51,7 @@ class FrameChooser():
         return cls(cfg, fval, frms, reps, epcs)
 
 
-    def update(self, reps, fval, epcs, frms):
+    def update(self, fval: NDArray[np.float_], frms: NDArray[np.int_], reps: NDArray[np.int_], epcs: NDArray[np.int_]) -> None:
         """
         Update the new data and recalculates histogram
         """
@@ -63,13 +67,13 @@ class FrameChooser():
 
         self.make_hist()
 
-    def _make_hist_no_cfg(self,maxbins,data_per_bin,minval,maxval,hard_boundaries=False):
+    def _make_hist_no_cfg(self, maxbins: int, data_per_bin: int, minval: float, maxval: float, hard_boundaries: bool = False) -> None:
         """
         The function that actually makes the histogram. Does not read values from cfg,
         but gets them as parameters. This way different implementations can use
         different values.
         hard_boundaries=True means that bins are calculated strictly between the boundaries only.
-        Otherwise teh bin edges do not have to got with the boundaries and bins exist outside boundries also.
+        Otherwise the bin edges do not have to got with the boundaries and bins exist outside boundries also.
         """
         print(f"Making histogram with total {len(self.fval)} data")
         # Get extent of data and boundaries
@@ -95,7 +99,7 @@ class FrameChooser():
         self.hist_mask = (self.bin_edges[1:]>minval)*(self.bin_edges[:-1]<maxval)
 
 
-    def _make_hist(self):
+    def _make_hist(self) -> None:
         self._make_hist_no_cfg(
                 self.cfg.maxbins,
                 self.cfg.data_per_bin,
@@ -104,7 +108,7 @@ class FrameChooser():
             )
 
 
-    def make_choices(self,prechoices=0,plot=True):
+    def make_choices(self, prechoices: int = 0, plot: bool = True) -> Tuple[NDArray[np.float_],NDArray[np.int_],NDArray[np.int_],NDArray[np.int_]]:
         """
         Uses the histogram to choose bins and returns the bin indices of the choices.
         prechoices is the number of choices already done.
@@ -177,7 +181,7 @@ class FrameChooser():
         return self.choose_frames(choices)
 
 
-    def choose_frames(self, chosen_bins):
+    def choose_frames(self, chosen_bins: List[int]) -> Tuple[NDArray[np.float_],NDArray[np.int_],NDArray[np.int_],NDArray[np.int_]]:
         """ Input parameters:
                 - chosen_bins : Length N list of the indices of the bins that have been chosen.
                                 Duplicates (starting from the same bin) are simply many times in the list.
@@ -229,12 +233,14 @@ class FrameChooser():
 
         return v,e,r,f
 
-    def print_choices(self,val, epc, rep, frm):
+
+    def print_choices(self,val: NDArray[np.float_], epc: NDArray[np.int_], rep: NDArray[np.int_], frm: NDArray[np.int_]) -> None:
         print("Final choices:")
         for v,e,r,f in zip(val, epc, rep, frm):
             print(f"frm {f}, rep {r}, epc {e}, fval={v}")
 
-    def plot_hist(self):
+
+    def plot_hist(self) -> None:
         """
         Make a histogram of the current total data, as well as maxepochs latest
         OR cumulative histograms after each epoch, with labels in legend only for
@@ -275,7 +281,7 @@ class FrameChooser():
         plt.clf()
 
 
-    def _plot_choices(self,crith,smoothed,choices,nanmask,maxims,minims):
+    def _plot_choices(self,crith,smoothed,choices,nanmask,maxims,minims) -> None:
         plt.axhline(crith, linestyle="--", c="r", alpha=0.5, label="Max height for choices")
         plt.plot(self.bin_centers, self.hist, color="C0", alpha=0.5)
         plt.plot(self.bin_centers[self.hist_mask], self.hist[self.hist_mask], color="C0", label="data")

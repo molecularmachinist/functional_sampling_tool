@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from typing import Union,Optional
 import numpy as np
 from MDAnalysis.analysis import align
 import warnings
@@ -9,7 +8,10 @@ from numpy.typing import NDArray
 
 from . import _ctransformations
 
-from .utils import ts_type,ag_type,a_type
+# Type hints
+from typing import Union, Optional, List
+from MDAnalysis.core.groups import AtomGroup, Atom
+from MDAnalysis.coordinates.base import Timestep
 
 
 """
@@ -18,7 +20,7 @@ This module includes functions to make on the fly transformations for MDAnalysis
 
 
 
-def make_whole(ts:ts_type, bonds:NDArray[np.int_], sel:NDArray[np.int_]):
+def make_whole(ts: Timestep, bonds:NDArray[np.int_], sel:NDArray[np.int_]):
     box = ts.triclinic_dimensions
     ts.positions[sel] = _ctransformations.make_whole(ts.positions[sel], bonds,box)
 
@@ -42,7 +44,7 @@ class Unwrapper:
         returns:
             transformation function
     """
-    def __init__(self, ag:ag_type, starters:Union[list[a_type],ag_type]=[], initsetup:bool=False):
+    def __init__(self, ag: AtomGroup, starters: Union[List[Atom],AtomGroup] = [], initsetup: bool = False):
         self.starters = starters
         self.ag  = ag
         self.sel = self.ag.indices
@@ -63,7 +65,7 @@ class Unwrapper:
         del self.starters
 
 
-    def __call__(self, ts:ts_type) -> ts_type:
+    def __call__(self, ts:Timestep) -> Timestep:
         if(not self.__setup_run):
             self._setup()
         return make_whole(ts, self.bonds, self.sel)
@@ -80,7 +82,7 @@ class MolWrapper:
     returns:
         transformation function
     """
-    def __init__(self,ag:ag_type, initsetup:bool=False):
+    def __init__(self, ag: AtomGroup, initsetup: bool = False):
         self.ag  = ag
         self.selection = self.ag.indices
         self.__setup_run=False
@@ -102,7 +104,7 @@ class MolWrapper:
         # No need to remember atom group after setup
         del self.ag
 
-    def __call__(self, ts:ts_type) -> ts_type:
+    def __call__(self, ts: Timestep) -> Timestep:
         if(not self.__setup_run):
             self._setup()
 
@@ -129,7 +131,7 @@ class Superpos:
     returns:
         transformation function
     """
-    def __init__(self,ag:ag_type, centre:bool, superposition:bool, subselection:Optional[ag_type]=None):
+    def __init__(self, ag: AtomGroup, centre: bool, superposition: bool, subselection: Optional[AtomGroup] = None):
         self.seli = ag.indices.copy()
         self.ref = ag.positions.copy()
         self.ref_com = ag.center_of_mass()
@@ -146,10 +148,10 @@ class Superpos:
         else:
             self.func = self.nothing
 
-    def __call__(self, ts:ts_type) -> ts_type:
+    def __call__(self, ts: Timestep) -> Timestep:
         return self.func(ts)
 
-    def superpos(self,ts:ts_type) -> ts_type:
+    def superpos(self, ts: Timestep) -> Timestep:
         sel = ts.positions[self.seli].copy()
         sel_com = np.sum(self.w*sel.T, axis=-1)/self.totw
         sel -= sel_com
@@ -158,11 +160,11 @@ class Superpos:
         ts.positions[self.subsel] = ((ts.positions[self.subsel]-sel_com) @ R.T)+self.ref_com
         return ts
 
-    def centre(self,ts:ts_type) -> ts_type:
+    def centre(self, ts: Timestep) -> Timestep:
         sel = ts.positions[self.seli]
         sel_com = np.sum(self.w*sel.T, axis=-1)/self.totw
         ts.positions[self.subsel] += self.ref_com-sel_com
         return ts
 
-    def nothing(self,ts:ts_type) -> ts_type:
+    def nothing(self, ts:Timestep) -> Timestep:
         return ts

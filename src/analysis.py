@@ -1,20 +1,19 @@
 import os
-from typing import Callable, Any, Tuple, Optional, TypeAlias
 import MDAnalysis as mda
 import argparse
 import pathlib
 import numpy as np
-from numpy.typing import ArrayLike
 import warnings
 
 from . import inout
 from . import utils
 from . import transformations
 
-# Types for typing
-ts_type:TypeAlias = mda.coordinates.base.Timestep
-transform_type:TypeAlias = Callable[[ts_type],ts_type]
-ag_type:TypeAlias = mda.core.groups.AtomGroup
+# Type hints
+from typing import Any, Tuple, Optional, List, Dict
+from numpy.typing import ArrayLike
+from MDAnalysis.core.groups import AtomGroup
+from .utils import transform_type
 
 
 def get_cfg_sel(sel: str, cfg: Any, default: Optional[str]=None) -> str:
@@ -27,7 +26,7 @@ def get_cfg_sel(sel: str, cfg: Any, default: Optional[str]=None) -> str:
     return sel
 
 
-def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, ag_type, list[transform_type]]:
+def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List[transform_type]]:
     if(args.index is None):
         args.index = args.cfg.index_file
     indexes = utils.read_ndx(args.index)
@@ -142,7 +141,7 @@ def analysis_subparser(parser: argparse.ArgumentParser) -> None:
     extr_parser.set_defaults(func=extract, config_func=inout.import_cfg)
 
 
-def extract_around(u: mda.Universe, sel: ag_type, transforms: list[transform_type], args: argparse.Namespace) -> dict[str,ArrayLike]:
+def extract_around(u: mda.Universe, sel: AtomGroup, transforms: List[transform_type], args: argparse.Namespace) -> Dict[str,ArrayLike]:
     data, files = inout.load_flat_extract_data(args.cfg, args.doignore)
     mask = (data["frms"]>= args.beginning)*(data["frms"]%args.stride==0)
 
@@ -171,7 +170,7 @@ def extract_around(u: mda.Universe, sel: ag_type, transforms: list[transform_typ
     return data
     
 
-def extract_all(u: mda.Universe, sel: ag_type, transforms: list[transform_type], args: argparse.Namespace) -> dict[str,ArrayLike]:
+def extract_all(u: mda.Universe, sel: AtomGroup, transforms: List[transform_type], args: argparse.Namespace) -> Dict[str,ArrayLike]:
     data = inout.load_extract_data(args.cfg, args.doignore)
     data_out = {"frame":[],"time":[],"epoch":[],"rep":[],"fval":[]}
     ntrajs = np.sum([len(data["fnames"][e]) for e in data["fnames"]])

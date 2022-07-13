@@ -1,24 +1,26 @@
 # -*- coding: utf-8 -*-
 import subprocess as subp
-import MDAnalysis as mda
 import numpy as np
-from typing import Any, Callable, TypeAlias,Union, Optional
 import math, os
 import inspect, hashlib
 import warnings
 
-# Types for typing
-ts_type:TypeAlias = mda.coordinates.base.Timestep
-transform_type:TypeAlias = Callable[[ts_type],ts_type]
-ag_type:TypeAlias = mda.core.groups.AtomGroup
-a_type:TypeAlias = mda.core.groups.Atom
+# Type hinting
+from typing import Any, Callable,Union, Optional,List,Dict
+import MDAnalysis as mda
+from MDAnalysis.core.groups import AtomGroup
+from MDAnalysis.coordinates.base import Timestep
+from numpy.typing import ArrayLike, NDArray
+# Type alias
+transform_type = Callable[[Timestep],Timestep]
 
 
 class DeprecatedUsageWarning(UserWarning):
     pass
 
 
-def rolling_mean(data: np.ndarray, window:int=10, center:bool = True, fill:float=np.nan) -> np.ndarray:
+def rolling_mean(data: ArrayLike, window: int = 10,
+                 center: bool = True, fill: float = np.nan) -> NDArray[np.float_]:
     if(center):
         start_offset = math.floor(window/2)
         end_offset   = -math.ceil(window/2)+1
@@ -37,7 +39,7 @@ def rolling_mean(data: np.ndarray, window:int=10, center:bool = True, fill:float
     return mean
 
 
-def read_ndx(ndx:str) -> dict[str,list[int]]:
+def read_ndx(ndx: str) -> Dict[str,List[int]]:
     # Return empty dictionary if ndx is None
     if(ndx is None):
         return {}
@@ -67,7 +69,8 @@ def read_ndx(ndx:str) -> dict[str,list[int]]:
     return indexes
 
 
-def gromacs_command(gmx:str, cmd:str, *args:str, directory:str=".", input:Optional[bytes]=None, **kwargs:str):
+def gromacs_command(gmx: str, cmd: str, *args: str, directory: str=".",
+                    input: Optional[bytes] = None, **kwargs: str) -> int:
     """ Call the gromacs subcommand cmd in directory. Both args and keys of kwargs should be without the leading dash.
         output is redirected to output_<cmd>.txt. Returns the return code of the command.
     """
@@ -92,7 +95,7 @@ def gromacs_command(gmx:str, cmd:str, *args:str, directory:str=".", input:Option
 
 
 
-def rsync_command(send_from:str, send_to:str, excludes:list[str]=[]):
+def rsync_command(send_from: str, send_to: str, excludes: List[str] = []) -> int:
     """ A utility function for keeping the remote dir in sync.
         Basically run rsync with given source and target, and given excludes.
         Uses -ravP by default.
@@ -105,7 +108,7 @@ def rsync_command(send_from:str, send_to:str, excludes:list[str]=[]):
 
 
 
-def rsync_down(cfg:Any) -> None:
+def rsync_down(cfg: Any) -> None:
     """ Wrapper function for rsync_command, to sync the local dir to the remote,
         ie. "pull down"
     """
@@ -113,14 +116,15 @@ def rsync_down(cfg:Any) -> None:
     print("Process returned %d"%rc)
 
 
-def rsync_up(cfg:Any) -> None:
+def rsync_up(cfg: Any) -> None:
     """ Wrapper function for rsync_command, to sync the remote dir to the local,
         ie. "push up"
     """
     rc = rsync_command( "./", "%s:%s/"%(cfg.remote_name,cfg.remote_dir), excludes=cfg.rsync_excludes)
     print("Process returned %d"%rc)
 
-def make_pdb(cfg:Any) -> None:
+
+def make_pdb(cfg: Any) -> None:
     """
     Makes the pdb to load mdtraj
     """
@@ -140,6 +144,7 @@ def make_pdb(cfg:Any) -> None:
         # Whatever happens, we go back to the original working dir
         os.chdir(prevdir)
 
+
 def __depr_copy_sbatch_template(fin:str,fout:str,enum:int,cfg:Any) -> None:
     """
     To be deprecated. Gets email and account from config.
@@ -151,7 +156,7 @@ def __depr_copy_sbatch_template(fin:str,fout:str,enum:int,cfg:Any) -> None:
         with open(fout, "w") as fo:
             fo.write(f.read().format(i=enum, account=cfg.account, email=cfg.email))
 
-def copy_sbatch_template(fin:str,fout:str,enum:int,cfg:Any=None) -> None:
+def copy_sbatch_template(fin: str, fout: str, enum: int, cfg: Any = None) -> None:
     """
     Copies the sbatch template from fin to fout.
 
@@ -173,7 +178,8 @@ def copy_sbatch_template(fin:str,fout:str,enum:int,cfg:Any=None) -> None:
 
                 fo.write(line.replace("{epoch_num}", str(enum)))
 
-def hash_func(f:Callable) -> str:
+
+def hash_func(f: Callable) -> str:
     """
     Reads function as string and calulates the md5sum as a hex string
     """
@@ -182,8 +188,7 @@ def hash_func(f:Callable) -> str:
 
 
 
-
-def load_sel(sel_str:str, struct:Union[mda.Universe,ag_type], ndx:dict[str,list[int]]) -> ag_type:
+def load_sel(sel_str: str, struct: Union[mda.Universe,AtomGroup], ndx: Dict[str,List[int]]) -> AtomGroup:
     if(sel_str in ndx):
         sel = struct.atoms[np.array(ndx[sel_str])-1]
     else:

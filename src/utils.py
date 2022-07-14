@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pathlib
 import subprocess as subp
 import numpy as np
 import math, os
@@ -124,54 +125,29 @@ def rsync_up(cfg: Any) -> None:
     print("Process returned %d"%rc)
 
 
-def make_pdb(cfg: Any) -> None:
-    """
-    Makes the pdb to load mdtraj
-    """
-    print("Making initial/start.pdb")
-
-    # Save original working dir to come back to
-    prevdir = os.getcwd()
-    try:
-        os.chdir("initial")
-
-        rc=gromacs_command(cfg.gmx, "trjconv", f="start.gro",
-        s="../epoch01/rep01/mdrun.tpr", o="start.pdb", input=b"System")
-
-        print("Process returned %d"%rc)
-        assert rc == 0, "Nonzero returncode from trjconv, see initial/output_trjconv.txt for more detail."
-    finally:
-        # Whatever happens, we go back to the original working dir
-        os.chdir(prevdir)
-
-
-def __depr_copy_sbatch_template(fin:str,fout:str,enum:int,cfg:Any) -> None:
+def __depr_copy_sbatch_template(fin:pathlib.Path,fout:pathlib.Path,enum:int,cfg:Any) -> None:
     """
     To be deprecated. Gets email and account from config.
     """
     warnings.warn("email and account for 'sbatch_launch.sh' should no longer come from config. " +
                     "It will now be filled in as before, but this will be " +
                     "deprecated in the future.", DeprecatedUsageWarning)
-    with open(fin) as f:
-        with open(fout, "w") as fo:
+    with fin.open() as f:
+        with fout.open("w") as fo:
             fo.write(f.read().format(i=enum, account=cfg.account, email=cfg.email))
 
-def copy_sbatch_template(fin: str, fout: str, enum: int, cfg: Any = None) -> None:
+def copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: Any = None) -> None:
     """
     Copies the sbatch template from fin to fout.
 
     To be depracated: if the template has {account} {email} and {i}, it will be filled as before, from cfg
     """
-    use_depr = False
-    with open(fin) as fi:
-        templ = fi.read()
-        if("{i}" in templ and "{account}" in templ and "{email}" in templ):
-            use_depr = True
-    if(use_depr):
+    templ = fin.read_text()
+    if("{i}" in templ and "{account}" in templ and "{email}" in templ):
         __depr_copy_sbatch_template(fin,fout,enum,cfg)
         return
-    with open(fin) as fi:
-        with open(fout,"w") as fo:
+    with fin.open() as fi:
+        with fout.open("w") as fo:
             for line in fi:
                 if(line.startswith("##")):
                     continue

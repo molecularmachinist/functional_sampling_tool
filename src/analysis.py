@@ -40,8 +40,6 @@ def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List
         args.unwrap_starters = args.cfg.unwrap_starters
     
     print("Loading structure")
-    if(not os.path.isfile(args.cfg.pdbpath)):
-        utils.make_pdb(args.cfg)
     u   = mda.Universe(str(args.cfg.pdbpath))
     sel = utils.load_sel(args.selection, u, indexes)
     print("Selected %d atoms for extraction"%len(sel))

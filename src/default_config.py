@@ -105,6 +105,6 @@ fig_output_dir = "figs"
 
 
 # Misc options
-initial_dir = "initial"
-initial_pdb = "start.pdb"
+initial_dir    = ""
+initial_struct = "start.gro"
 

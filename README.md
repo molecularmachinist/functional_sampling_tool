@@ -2,25 +2,33 @@
 
 ## Requirements
 
-1. Python 3.10 (or higher) with NumPy and matplotlib
+1. Python 3.7 or higher (3.10 recommended)
+1. NumPy and matplotlib (with python<3.10, also importlib_resources)
 1. [MDAnalysis](https://docs.mdanalysis.org/stable/index.html)
 1. [scikit-learn](https://scikit-learn.org/stable/)
 1. GROMACS
 
 
 
-If you have conda, you can make sure all dependencies are met by running
+Either install them manually, or follow the instructions below to let pip take care of that for you. GROMACS does of course need to be manualy installed.
 
-```sh
-conda install -c conda-forge numpy matplotlib mdanalysis scikit-learn
-```
-
-The tool has been developed with python 3.10 and tested with 3.7 (requires also `importlib_resources`). The anlysis module will not work as expected with python version prior to 3.7. Please let us know if you are using other versions, whether everything works (and especially if it doesn't).
+The tool has only been tested on linux, so it might or might not work with other OS.
 
 ## Installation
 
 
-This first part is optional and if you are happy with installing the tool and dependencies in you default environment, then skip straight to the next part.
+### Quick and easy
+
+Just run
+```sh
+pip install .
+```
+in the project root. This will install all dependencies and compile and install the package.
+
+### Recommended way
+
+In the recommended way we will use conda to make a new envirnonment. This way works independent of which Python version you use by default. If you do not already have it, [install conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
+
 
 First, we will make a new conda environment dedicated just for the tool and activate it (if you have [mamba](https://mamba.readthedocs.io/en/latest/) installed, use it for the first command to speed up the process):
 
@@ -29,7 +37,7 @@ conda create -c conda-forge -n fst_env python=3.10 numpy matplotlib mdanalysis s
 conda activate fst_env
 ```
 
-This will also install the needed dependencies.
+This will also install the needed dependencies, so that they are handled by conda rather than pip.
 
 Second, we run the command to install the package. 
 Here I assume that you have downloaded the project and are within its root folder. From there run
@@ -44,7 +52,7 @@ When the command finishes, it should be all done and the tool usable as `fst`. I
 pip uninstall functional_sampling_tool
 ```
 
-**Remember** that in this way you need to run `conda activate fst_env` once in every new terminal before using the tool. If you did skip the first step it will be installed in your default environment, which does not explicitly need to be activated each time.
+**Remember** that in this way you need to run `conda activate fst_env` once in every new terminal before using the tool. If you want to use this environment by default, add `conda activate fst_env` at the end of your `.bashrc`
 
 
 ## How it works

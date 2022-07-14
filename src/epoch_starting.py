@@ -56,7 +56,9 @@ def next_rep(i: int, cfg: Any, newepoch: int, oldepoch: int, rep: int, frm: int,
     os.makedirs("epoch%02d/rep%02d"%(newepoch, i))
 
     print("Reading frame %d of epoch %d, rep %d, fval %f"%(frm, oldepoch, rep, val))
-    cfg.struct.load_new("epoch%02d/rep%02d/mdrun.xtc"%(oldepoch, rep))
+    new_xtc = "epoch%02d/rep%02d/mdrun.xtc"%(oldepoch, rep)
+    if(new_xtc != cfg.struct.filename):
+        cfg.struct.load_new(new_xtc)
     cfg.struct.trajectory[frm]
 
     cfg.struct.atoms.write("epoch%02d/rep%02d/start.gro"%(newepoch, i))
@@ -69,11 +71,11 @@ def next_rep(i: int, cfg: Any, newepoch: int, oldepoch: int, rep: int, frm: int,
         f.write("%d %d %d %f\n"%(oldepoch,rep,frm, val))
 
     kwargs = {"c": "start.gro", "f": "../../"+cfg.mdp,
-                                "n": "../../"+cfg.ndx, "p": "../../"+cfg.topol,
-                                "o": "mdrun.tpr", "maxwarn": str(cfg.maxwarn+cfg.maxwarn_add),
-                                "directory": "epoch%02d/rep%02d"%(newepoch, i)
-                                }
+              "n": "../../"+cfg.ndx, "p": "../../"+cfg.topol,
+              "o": "mdrun.tpr", "directory": "epoch%02d/rep%02d"%(newepoch, i) }
 
+    if(cfg.maxwarn or cfg.maxwarn_add):
+        kwargs["maxwarn"] = str(cfg.maxwarn or cfg.maxwarn_add)
     if(cfg.restraint_file=="initial"):
         kwargs["r"] = "../../initial/start.gro"
     elif(cfg.restraint_file=="start"):
@@ -114,7 +116,7 @@ def start_epoch(nextepoch: int, cfg: Any,
         res = []
         if(nextepoch==1):
             # Initial structures and first epoch
-            struct = inout.load_starter_structures()
+            struct = inout.load_starter_structures(cfg.initial_dir, cfg.pdbpath)
             num_frames = len(struct.trajectory)
             if(num_frames>cfg.N):
                 warnings.warn(f"{num_frames} starting structures found, but only {cfg.N} " \

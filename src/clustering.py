@@ -1,8 +1,8 @@
-import pathlib
 import numpy as np
 import matplotlib.colors as mpl_colors
 import matplotlib.pyplot as plt
 import os
+import pathlib
 import math
 from sklearn.decomposition import PCA
 from sklearn.mixture import GaussianMixture
@@ -73,8 +73,8 @@ class ClusterChooser(choosing.FrameChooser):
         if(len(self.u_epcs)<=self.cfg.epochs_pre_clust):
             return self.plain_chooser.make_choices(prechoices,plot)
         if(plot):
-            os.makedirs("figs/epoch%02d"%(self.u_epcs[-1]),exist_ok=True)
-            os.makedirs("figs/epoch%02d/clusters"%(self.u_epcs[-1]),exist_ok=True)
+            os.makedirs(self.cfg.fig_output_dir / ("epoch%02d"%self.u_epcs[-1]), exist_ok=True)
+            os.makedirs(self.cfg.fig_output_dir / ("epoch%02d"%self.u_epcs[-1]) / "clusters", exist_ok=True)
         clusters = np.full(self.fval.shape, -1,dtype=int)
 
         natoms = self.coords.shape[1]
@@ -87,7 +87,7 @@ class ClusterChooser(choosing.FrameChooser):
                 clusters[indxs] = make_clusters(
                     coords=crds,
                     plot=plot,
-                    plotname="figs/epoch%02d/clusters/choices_%d.png"%(self.u_epcs[-1],ci),
+                    plotname=self.cfg.fig_output_dir / ("epoch%02d"%(self.u_epcs[-1])) / "clusters" / ("choices_%d.png"%ci),
                     maxclust=self.cfg.maxclust,
                     tol=self.cfg.clust_tol
                     ) + ci*(self.cfg.maxclust)*2
@@ -180,13 +180,14 @@ class ClusterChooser(choosing.FrameChooser):
             plt.axvline(c, linestyle="-.", alpha=.1, color="k")
 
         plt.legend()
-        os.makedirs("%s/epoch%02d"%(self.cfg.fig_output_dir, self.u_epcs[-1]),exist_ok=True)
-        plt.savefig("%s/epoch%02d/hist_clust.png"%(self.cfg.fig_output_dir, self.u_epcs[-1]))
+        os.makedirs(self.cfg.fig_output_dir / ("epoch%02d"%self.u_epcs[-1]), exist_ok=True)
+        plt.savefig(self.cfg.fig_output_dir / ("epoch%02d"%self.u_epcs[-1]) / "hist_clust.png"%(self.cfg.fig_output_dir, self.u_epcs[-1]))
         plt.clf()
 
 
 
-def make_clusters(coords: NDArray[np.float_], plot: bool = False, plotname: Union[str,pathlib.Path] = "plot.png", maxclust: int = 15, tol: float = 0.1) ->  NDArray[np.int_]:
+def make_clusters(coords: NDArray[np.float_], plot: bool = False, plotname: pathlib.Path = pathlib.Path("plot.png"),
+                  maxclust: int = 15, tol: float = 0.1) ->  NDArray[np.int_]:
     global colors
     """
     Takes a shape(n,m) array of coordinates and return shape(n) labels of clusters.

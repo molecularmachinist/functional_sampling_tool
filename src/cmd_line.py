@@ -49,11 +49,11 @@ def choose(args: argparse.Namespace) -> None:
 def copy_templates(args: argparse.Namespace) -> None:
     if(not args.no_config):
         fin = import_files("%s.templates"%__package__).joinpath("config_example.py.txt")
-        print("Making "+args.config_out)
+        print("Making", args.config_out)
         shutil.copyfile(fin, args.config_out)
     if(not args.no_sbatch):
         fin = import_files("%s.templates"%__package__).joinpath("sbatch_template.sh")
-        print("Making "+args.sbatch_out)
+        print("Making", args.sbatch_out)
         shutil.copyfile(fin, args.sbatch_out)
 
 
@@ -104,8 +104,8 @@ def argP() -> argparse.Namespace:
     # Template command
     templ_parser = subparsers.add_parser("make_templates", help="Copy default config.py and sbatch_template.sh files")
     templ_parser.set_defaults(func=copy_templates,config_func=(lambda cfgpath: None))
-    templ_parser.add_argument("--config_out", metavar="<name>.py", default="config.py",          help="Filename of produced config file (default: %(default)s)")
-    templ_parser.add_argument("--sbatch_out", metavar="<name>.sh", default="sbatch_launch.sh", help="Filename of produced sbatch file (default: %(default)s)")
+    templ_parser.add_argument("--config_out", metavar="<name>.py", default=pathlib.Path("config.py"),        help="Filename of produced config file (default: %(default)s)", type=pathlib.Path)
+    templ_parser.add_argument("--sbatch_out", metavar="<name>.sh", default=pathlib.Path("sbatch_launch.sh"), help="Filename of produced sbatch file (default: %(default)s)", type=pathlib.Path)
     templ_parser.add_argument("--no_config",  action="store_true", help="Do not produce config file (default: %(default)s)")
     templ_parser.add_argument("--no_sbatch",  action="store_true", help="Do not produce sbatch file (default: %(default)s)")
 

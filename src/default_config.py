@@ -103,3 +103,8 @@ first_rep_num = 1
 # figure output dir
 fig_output_dir = "figs"
 
+
+# Misc options
+initial_dir = "initial"
+initial_pdb = "start.pdb"
+

@@ -276,8 +276,8 @@ class FrameChooser():
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         plt.tight_layout()
         # Make directory and save fig
-        os.makedirs("%s/epoch%02d"%(self.cfg.fig_output_dir, self.u_epcs[-1]),exist_ok=True)
-        plt.savefig("%s/epoch%02d/hist.png"%(self.cfg.fig_output_dir, self.u_epcs[-1]))
+        os.makedirs(self.cfg.fig_output_dir / ("epoch%02d"%self.u_epcs[-1]),exist_ok=True)
+        plt.savefig(self.cfg.fig_output_dir / ("epoch%02d"%self.u_epcs[-1]) / "hist.png")
         plt.clf()
 
 
@@ -290,6 +290,6 @@ class FrameChooser():
         plt.plot(self.bin_centers[nanmask][maxims], smoothed[nanmask][maxims], "bv", label="Maxima")
         plt.plot(self.bin_centers[choices], self.hist[choices], "g^", label="Choices")
         plt.legend()
-        os.makedirs("%s/epoch%02d"%(self.cfg.fig_output_dir, self.u_epcs[-1]),exist_ok=True)
-        plt.savefig("%s/epoch%02d/choices.png"%(self.cfg.fig_output_dir, self.u_epcs[-1]))
+        os.makedirs(self.cfg.fig_output_dir / ("epoch%02d"%self.u_epcs[-1]),exist_ok=True)
+        plt.savefig(self.cfg.fig_output_dir / ("epoch%02d"%self.u_epcs[-1]) / "choices.png")
         plt.clf()

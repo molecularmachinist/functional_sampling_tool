@@ -40,16 +40,16 @@ def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List
         args.unwrap_starters = args.cfg.unwrap_starters
     
     print("Loading structure")
-    if(not os.path.isfile("initial/start.pdb")):
+    if(not os.path.isfile(args.cfg.pdbpath)):
         utils.make_pdb(args.cfg)
-    u   = mda.Universe("initial/start.pdb")
+    u   = mda.Universe(str(args.cfg.pdbpath))
     sel = utils.load_sel(args.selection, u, indexes)
     print("Selected %d atoms for extraction"%len(sel))
     sel_superpos = utils.load_sel(args.sel_superpos, u, indexes)
 
     if(args.unwrap or args.wrap):
         # Preparing molecule unwrapper
-        bonded_struct = mda.Universe("epoch01/rep01/mdrun.tpr", "initial/start.pdb")
+        bonded_struct = mda.Universe("epoch01/rep01/mdrun.tpr", str(args.cfg.pdbpath))
         unwrap_sel = utils.load_sel(args.sel_unwrap, u, indexes)
         unwrap_sel = bonded_struct.atoms[unwrap_sel.indices]
         print("Selected %d atoms for unwrapping"%len(unwrap_sel))

@@ -4,6 +4,7 @@ import numpy as np
 import re
 import MDAnalysis as mda
 import importlib
+import pathlib
 
 from . import utils
 from . import transformations
@@ -12,57 +13,44 @@ from . import default_config
 # Type hints
 from numpy.typing import NDArray
 from typing import Any, Tuple, Union, List, Dict
-import pathlib
 
 
 class LoadError(ValueError):
     pass
 
 
-def check_num(prefix: str) -> List[int]:
+def check_num(prefix: pathlib.Path) -> List[int]:
     """
     Checks filenames prefix01, prefix02, etc and returns a list of integers that were found.
     """
-    parts = prefix.split("/")
-    dir = "/".join(prefix.split("/")[:-1])
-    # if dir is not empty, add trailing slash
-    if(dir):
-        dir+="/"
-    else:
-        dir="./"
-    fprefix = parts[-1]
-    files = os.listdir(dir)
-
-    prog = re.compile("%s(?P<num>[0-9]+)$"%fprefix)
-
+    prog = re.compile("%s(?P<num>[0-9]+)$"%prefix.name)
     nums = []
-
-    for f in files:
-        m = prog.match(f) 
+    for f in prefix.parent.iterdir():
+        m = prog.match(f.name) 
         if(m):
             nums.append(int(m.group("num")))
 
     nums.sort()
     return nums
 
-def get_data_from_archive(d:str, cfg:Any) -> Tuple[NDArray[np.float_],NDArray[np.float_]]:
-    with np.load(d+cfg.npz_file_name) as npz:
+def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_],NDArray[np.float_]]:
+    with np.load(d/cfg.npz_file_name) as npz:
         dat = dict(npz)
 
-    if(dat["xtc_mod_t"]!=os.path.getmtime(d+"mdrun.xtc")):
-        raise LoadError("Modification time of %s does not match, reloading"%(d+"mdrun.xtc"))
+    if(dat["xtc_mod_t"]!=(d/"mdrun.xtc").stat().st_mtime):
+        raise LoadError("Modification time of %s does not match, reloading"%str(d/"mdrun.xtc"))
 
     if((not np.array_equal(cfg.sel.indices,dat["sel"])) or (not np.array_equal(cfg.sel_clust.indices,dat["sel_clust"]))):
-        raise LoadError("Selections in %s%s do not match, reloading"%(d,cfg.npz_file_name))
+        raise LoadError("Selections in %s do not match, reloading"%str(d/cfg.npz_file_name))
 
     transform_opt = [cfg.unwrap_mols, cfg.unwrap_mols and cfg.mols_in_box,
                      cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos]
     if(not np.array_equal(transform_opt,dat["transform_opt"])):
-        raise LoadError("Trajetory transformations changed from %s%s, reloading"%(d,cfg.npz_file_name))
+        raise LoadError("Trajetory transformations changed from %s, reloading"%str(d/cfg.npz_file_name))
 
     unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(0,dtype=int)
     if(not np.array_equal(unwrap_sel,dat["unwrap_sel"])):
-        raise LoadError("Unwrapping selection in %s%s does not match, reloading"%(d,cfg.npz_file_name))
+        raise LoadError("Unwrapping selection in %s does not match, reloading"%str(d/cfg.npz_file_name))
 
     if(dat["func_hash"]!=utils.hash_func(cfg.function_val)):
         print("Function hash changed, recalculating fval")
@@ -70,15 +58,15 @@ def get_data_from_archive(d:str, cfg:Any) -> Tuple[NDArray[np.float_],NDArray[np
         dat["fval"] = fval
         print("Saving modified fval to %s"%cfg.npz_file_name)
         dat["func_hash"]=utils.hash_func(cfg.function_val)
-        np.savez_compressed(d+cfg.npz_file_name,**dat)
+        np.savez_compressed(d/cfg.npz_file_name,**dat)
     else:
         fval = dat["fval"]
 
     crd = dat["crd"]
     return fval, crd
 
-def get_data_from_xtc(d:str, cfg:Any) -> Tuple[NDArray[np.float_],NDArray[np.float_]]:
-    cfg.struct.load_new(d+"mdrun.xtc")
+def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_],NDArray[np.float_]]:
+    cfg.struct.load_new(str(d / "mdrun.xtc"))
     cfg.struct.trajectory.add_transformations(*cfg.traj_transforms)
     fval_crd = np.empty([len(cfg.struct.trajectory), len(cfg.sel), 3])
     crd      = np.empty([len(cfg.struct.trajectory), len(cfg.sel_clust), 3])
@@ -91,12 +79,12 @@ def get_data_from_xtc(d:str, cfg:Any) -> Tuple[NDArray[np.float_],NDArray[np.flo
     print("Calculating fval")
     fval = cfg.function_val(fval_crd)
     print("Saving %s"%cfg.npz_file_name)
-    xtc_mod_t = os.path.getmtime(d+"mdrun.xtc")
+    xtc_mod_t = (d/"mdrun.xtc").stat().st_mtime
     func_hash = utils.hash_func(cfg.function_val)
     unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(0,dtype=int)
     transform_opt = [cfg.unwrap_mols, cfg.unwrap_mols and cfg.mols_in_box,
                      cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos]
-    np.savez_compressed(d+cfg.npz_file_name,
+    np.savez_compressed(d/cfg.npz_file_name,
                         fval=fval,
                         fval_crd=fval_crd,
                         crd=crd,
@@ -109,34 +97,36 @@ def get_data_from_xtc(d:str, cfg:Any) -> Tuple[NDArray[np.float_],NDArray[np.flo
 
     return fval, crd
 
-def load_from_dir(d: str, cfg: Any, load_fval: bool) -> Tuple[NDArray[np.float_],NDArray[np.float_]]:
+def load_from_dir(d: pathlib.Path, cfg: Any, load_fval: bool) -> Tuple[NDArray[np.float_],NDArray[np.float_]]:
     if(not load_fval):
         try:
             fval,crd = get_data_from_archive(d, cfg)
-            print("Loaded data from %s%s"%(d,cfg.npz_file_name))
+            print("Loaded data from", d / cfg.npz_file_name)
             return fval, crd
         except FileNotFoundError:
-            print("Did not find %s, loading from xtc"%(d+cfg.npz_file_name))
+            print("Did not find %s, loading from xtc"%str(d/cfg.npz_file_name))
         except LoadError as e:
             print(e)
         except KeyError as e:
-            print(d+cfg.npz_file_name+" missing data:")
+            print(d/cfg.npz_file_name,"missing data:")
             print(e)
             print("reloading from xtc")
 
-    print("Loading trajectory %s"%(d+"mdrun.xtc"))
+    print("Loading trajectory", d / "mdrun.xtc")
 
     return get_data_from_xtc(d, cfg)
 
+
 def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[NDArray[np.int_],NDArray[np.float_],NDArray[np.int_],NDArray[np.int_]]:
-    rep_nums = check_num("epoch%02d/rep"%epoch)
+    edir = pathlib.Path("epoch%02d"%epoch)
+    rep_nums = check_num( edir / "rep")
     fval = []
     crd  = []
     reps = []
     for i in rep_nums:
         if((epoch,i) in cfg.ignore_reps):
             continue
-        d="epoch%02d/rep%02d/"%(epoch, i)
+        d = edir / ("rep%02d"%i)
         fv,cr = load_from_dir(d, cfg, load_fval)
         fval.append(fv)
         crd.append(cr)
@@ -148,7 +138,7 @@ def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[NDArray[np.i
 
 
 def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str,Dict[int,Dict[int,Union[str,NDArray[np.float_]]]]]:
-    epochs = check_num("epoch")
+    epochs = check_num(pathlib.Path("epoch"))
     data = {"fval":{},"fnames":{}}
     for e in epochs:
         if (doignore and (e in cfg.ignore_epcs)):
@@ -157,18 +147,19 @@ def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str,Dict[int,Dict
         for key in data:
             data[key][e] = {}
         
-        rep_nums = check_num("epoch%02d/rep"%e)
+        edir = pathlib.Path("epoch%02d"%e)
+        rep_nums = check_num(edir / "rep")
 
         for r in rep_nums:
             if(doignore and ((e,r) in cfg.ignore_reps)):
                 continue
-            d="epoch%02d/rep%02d/"%(e, r)
-            if(not os.path.isfile(d+cfg.npz_file_name)):
+            d = edir / ("rep%02d"%r)
+            if(not (d/cfg.npz_file_name).is_file()):
                 continue
             
             # mdrun filename
-            data["fnames"][e][r] = d+"mdrun.xtc"
-            with np.load(d+cfg.npz_file_name) as npz:
+            data["fnames"][e][r] = str(d / "mdrun.xtc")
+            with np.load(d/cfg.npz_file_name) as npz:
                 data["fval"][e][r] = npz["fval"]
         
     return data
@@ -195,7 +186,7 @@ def load_flat_extract_data(cfg: Any, doignore: bool = True) -> Tuple[Dict[str,ND
 
 
 def load_data(cfg: Any, load_fval: bool):
-    epochs = check_num("epoch")
+    epochs = check_num(pathlib.Path("epoch"))
     fval = []
     reps = []
     frms = []
@@ -220,30 +211,28 @@ def load_data(cfg: Any, load_fval: bool):
     return fval, crds, frms, reps, epcs
 
 
-def load_starter_structures() -> mda.Universe:
+def load_starter_structures(init_dir: pathlib.Path, pdbpath: pathlib.Path) -> mda.Universe:
     """
     Checks for starter structures as initial/start*.gro (not including start.gro) or initial/start*.xtc
     Returns a universe with the frames loaded if some are found, otherwise just the initial/start.gro.
     """
-    univ = mda.Universe("initial/start.gro")
+    univ = mda.Universe(str(pdbpath))
     starter_gros = []
     starter_xtcs = []
-    for fname in os.listdir("initial"):
-        if(fname.startswith("start") and fname.endswith(".gro") and fname != "start.gro"):
-            starter_gros.append(fname)
-        elif(fname.startswith("start") and fname.endswith(".xtc")):
-            starter_xtcs.append(fname)
+    for f in init_dir.iterdir():
+        if(f.name.startswith("start") and f.suffix == ".gro" and f.name != "start.gro"):
+            starter_gros.append(f)
+        elif(f.name.startswith("start") and f.suffix == ".xtc"):
+            starter_xtcs.append(f)
     
     starter_gros.sort()
     starter_xtcs.sort()
     starters = starter_gros+starter_xtcs
     if(starters):
-        univ.load_new(["initial/"+f for f in starters])
+        univ.load_new([str(f) for f in starters])
         
     return univ
     
-
-
 
 def import_cfg(cfgpath: Union[str, pathlib.Path]) -> Any:
     """
@@ -267,6 +256,13 @@ def import_cfg(cfgpath: Union[str, pathlib.Path]) -> Any:
 
     cfg.ignore_epcs = set(cfg.ignore_epcs)
     cfg.ignore_reps = set(cfg.ignore_reps)
+
+    # Make all path variable into Path obejcts
+    for pathvar in ("npz_file_name", "fig_output_dir", "initial_dir", "initial_pdb"):
+        aspath = pathlib.Path(getattr(cfg,pathvar))
+        setattr(cfg,pathvar,aspath)
+
+    cfg.pdbpath = cfg.initial_dir / cfg.initial_pdb
     return cfg
 
 def load_options(cfgpath: Union[str, pathlib.Path]) -> Any:
@@ -275,9 +271,9 @@ def load_options(cfgpath: Union[str, pathlib.Path]) -> Any:
     """
     cfg    = import_cfg(cfgpath)
     print("Loading structure")
-    if(not os.path.isfile("initial/start.pdb")):
+    if(not os.path.isfile(cfg.pdbpath)):
         utils.make_pdb(cfg)
-    cfg.struct = mda.Universe("initial/start.pdb")
+    cfg.struct = mda.Universe(str(cfg.pdbpath))
     cfg.indexes = utils.read_ndx(cfg.index_file)
     cfg.sel = utils.load_sel(cfg.select_str, cfg.struct, cfg.indexes)
     cfg.sel_clust = utils.load_sel(cfg.select_str_clust, cfg.struct, cfg.indexes)
@@ -287,7 +283,7 @@ def load_options(cfgpath: Union[str, pathlib.Path]) -> Any:
 
     if(cfg.unwrap_mols):
         # Preparing molecule unwrapper
-        bonded_struct = mda.Universe("epoch01/rep01/mdrun.tpr", "initial/start.pdb")
+        bonded_struct = mda.Universe("epoch01/rep01/mdrun.tpr", str(cfg.pdbpath))
         unwrap_sel = utils.load_sel(cfg.unwrap_sel, cfg.struct, cfg.indexes)
         unwrap_sel = bonded_struct.atoms[unwrap_sel.indices]
         if(cfg.unwrap_starters is None):

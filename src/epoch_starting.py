@@ -5,6 +5,8 @@ import warnings
 from multiprocessing import Pool
 import pathlib
 
+from .exceptions import RepExistsError,NonzeroReturnError
+
 from . import utils
 from . import inout
 
@@ -19,6 +21,8 @@ def init_rep(i: int,cfg: Any, atoms: AtomGroup, pool: Pool, d: str="epoch01") ->
     """ Initializes rep i from atom group atoms
     """
     d = pathlib.Path(d) / ("rep%02d"%i)
+    if(d.exists()):
+        raise RepExistsError(f"{d} already exists, will not try to overwrite. Try running \"fst clean\" to remove the latest epoch directory.")
     d.mkdir()
 
     # If not found, just load the default
@@ -59,6 +63,8 @@ def next_rep(i: int, cfg: Any, newepoch: int, oldepoch: int, rep: int, frm: int,
     """ Initializes rep i of newepoch, taking the frame frm from rep of oldepoch
     """
     d = pathlib.Path("epoch%02d"%newepoch) / ("rep%02d"%i)
+    if(d.exists()):
+        raise RepExistsError(f"{d} already exists, will not try to overwrite. Try running \"fst clean\" to remove the latest epoch directory.")
     d.mkdir()
 
     print("Reading frame %d of epoch %d, rep %d, fval %f"%(frm, oldepoch, rep, val))
@@ -116,12 +122,9 @@ def start_epoch(nextepoch: int, cfg: Any,
             - rep : Length N array of the rep within the epoch each new rep comes from
             - frm : Length N array of the frame within the rep each new rep comes from
     """
-    # Check that the epoch does not already exist
+    # Make epoch dir
     edir = pathlib.Path("epoch%02d"%nextepoch)
-    if(edir.exists()):
-        raise FileExistsError(f"{edir} already exists, will not try to overwrite. Try running \"fst clean\" to remove the latest epoch directory.")
-
-    edir.mkdir()
+    edir.mkdir(exist_ok=True)
 
     # The grompping itself will be done asynchronously in the worker pool
     # No point in having more than 4 workers, since reading the frame from file is done
@@ -174,7 +177,8 @@ def start_epoch(nextepoch: int, cfg: Any,
         p.join()
 
     for d,rc in res:
-        assert rc.get() == 0, "Nonzero returncode from grompp, see %s/output_grompp.txt for more detail."%(d)
+        if(rc.get()):
+            raise NonzeroReturnError("Nonzero returncode from grompp, see %s/output_grompp.txt for more detail."%(d))
 
     # copy sbatch template
     utils.copy_sbatch_template(cfg.sbatch, pathlib.Path("epoch%02d"%nextepoch) / cfg.sbatch.name, nextepoch, cfg)

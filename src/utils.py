@@ -6,6 +6,8 @@ import math, os
 import inspect, hashlib
 import warnings
 
+from .exceptions import DeprecatedUsageWarning
+
 # Type hinting
 from typing import Any, Callable, Union, Optional, List, Dict
 import MDAnalysis as mda
@@ -15,9 +17,6 @@ from numpy.typing import ArrayLike, NDArray
 # Type aliases
 transform_type = Callable[[Timestep],Timestep]
 
-
-class DeprecatedUsageWarning(UserWarning):
-    pass
 
 
 def rolling_mean(data: ArrayLike, window: int = 10,

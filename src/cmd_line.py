@@ -10,6 +10,7 @@ from . import epoch_starting
 from . import clustering
 from . import utils
 from . import analysis
+from .exceptions import handle_errors
 
 # For python 3.10 (or higher) import from standard lib, older releases use importlib_resources.
 if(sys.version_info>=(3,10)):
@@ -18,6 +19,7 @@ else:
     from importlib_resources import files as import_files
 
 
+@handle_errors
 def init(args: argparse.Namespace) -> None:
     print("Initializing first epoch")
     epoch_starting.start_epoch(1, args.cfg)
@@ -25,6 +27,7 @@ def init(args: argparse.Namespace) -> None:
         utils.rsync_up(args.cfg)
 
 
+@handle_errors
 def pushpull(args: argparse.Namespace) -> None:
     if(args.pull):
         utils.rsync_down(args.cfg)
@@ -32,6 +35,7 @@ def pushpull(args: argparse.Namespace) -> None:
         utils.rsync_up(args.cfg)
 
 
+@handle_errors
 def choose(args: argparse.Namespace) -> None:
     if(args.pull):
         utils.rsync_down(args.cfg)
@@ -46,6 +50,7 @@ def choose(args: argparse.Namespace) -> None:
         utils.rsync_up(args.cfg)
 
 
+@handle_errors
 def copy_templates(args: argparse.Namespace) -> None:
     if(not args.no_config):
         args.config_out.parent.mkdir(parents=True,exist_ok=True)
@@ -59,6 +64,7 @@ def copy_templates(args: argparse.Namespace) -> None:
         shutil.copyfile(fin, args.sbatch_out)
 
 
+@handle_errors
 def clean(args: argparse.Namespace) -> None:
     print("Running cleanup")
     inout.clean_latest_epoch(args.force)
@@ -128,10 +134,9 @@ def argP() -> argparse.Namespace:
     analysis.analysis_subparser(analysis_parser)
 
     arguments = parser.parse_args()
-    arguments.cfg = arguments.config_func(arguments.config)
+    arguments.cfg = handle_errors(arguments.config_func)(arguments.config)
 
     return arguments
-
 
 def _run_tool() -> None:
     args = argP()

@@ -12,6 +12,8 @@ from . import utils
 from . import transformations
 from . import default_config
 
+from .exceptions import NoConfigError
+
 # Type hints
 from numpy.typing import NDArray
 from typing import Any, Tuple, Union, List, Dict
@@ -251,11 +253,12 @@ def load_starter_structures(intial_struct: pathlib.Path) -> mda.Universe:
     return univ
     
 
-def import_cfg(cfgpath: Union[str, pathlib.Path]) -> Any:
+def import_cfg(cfgpath: pathlib.Path) -> Any:
     """
     Only import the config, does not load structs or do anything with it.
     """
-    assert cfgpath.exists(), "Config file does not exist at %s."%cfgpath
+    if(not cfgpath.exists()):
+        raise NoConfigError("Config file does not exist at %s."%cfgpath)
     print("Loading config from %s"%cfgpath)
     spec = importlib.util.spec_from_file_location("config", cfgpath)
     writebytecode = sys.dont_write_bytecode
@@ -281,7 +284,7 @@ def import_cfg(cfgpath: Union[str, pathlib.Path]) -> Any:
 
     return cfg
 
-def load_options(cfgpath: Union[str, pathlib.Path]) -> Any:
+def load_options(cfgpath: pathlib.Path) -> Any:
     """
     Imports the config, and loads the structs and selections
     """
@@ -342,7 +345,8 @@ def load_options(cfgpath: Union[str, pathlib.Path]) -> Any:
 
 def clean_latest_epoch(force: bool = False) -> None:
     epochs = check_num(pathlib.Path("epoch"))
-
+    if(not epochs):
+        raise FileNotFoundError("No epochs found, are you sure you are in the correct folder?")
     epoch  = epochs[-1]
 
     # First, make sure no rep is already simulated

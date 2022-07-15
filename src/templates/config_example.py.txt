@@ -32,9 +32,11 @@ maxwarn = 0
 
 
 ############################## Function calcs ##################################
+# Initial structure file, used for making the selections
+initial_struct = "start.gro"
 # To make next run faster we save this selection to disk
-# The coordinates of the selction are used in function_val
-# Should be a valid MDAnalysis selection string OR a group in index_file
+# The coordinates of the selection are used in function_val
+# Should be a valid MDAnalysis selection string OR a group name in index_file
 # For MDAnalysis selection strings, see
 # https://docs.mdanalysis.org/stable/documentation_pages/selections.html
 select_str = "protein and resid 638 and not ( type H )"

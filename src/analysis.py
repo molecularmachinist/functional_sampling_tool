@@ -40,7 +40,7 @@ def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List
         args.unwrap_starters = args.cfg.unwrap_starters
     
     print("Loading structure")
-    u   = mda.Universe(str(args.cfg.pdbpath))
+    u   = mda.Universe(str(args.cfg.initial_struct))
     sel = utils.load_sel(args.selection, u, indexes)
     print("Selected %d atoms for extraction"%len(sel))
     sel_superpos = utils.load_sel(args.sel_superpos, u, indexes)

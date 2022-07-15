@@ -211,28 +211,30 @@ def load_data(cfg: Any, load_fval: bool):
     return fval, crds, frms, reps, epcs
 
 
-starter_suffixes = {".gro", ".pdb"}
+starter_suffixes = [".pdb", ".gro", ".xtc"]
 
-def load_starter_structures(init_dir: pathlib.Path, structpath: pathlib.Path) -> mda.Universe:
+def load_starter_structures(intial_struct: pathlib.Path) -> mda.Universe:
     """
     Checks for starter structures as initial/start*.gro (not including start.gro) or initial/start*.xtc
     Returns a universe with the frames loaded if some are found, otherwise just the initial/start.gro.
     """
     global starter_suffixes
-    univ = mda.Universe(str(structpath))
-    starter_gros = []
-    starter_xtcs = []
-    for f in init_dir.iterdir():
-        if(f.name.startswith("start") and f.suffix in starter_suffixes and f != structpath):
-            starter_gros.append(f)
-        elif(f.name.startswith("start") and f.suffix == ".xtc"):
-            starter_xtcs.append(f)
+    univ = mda.Universe(str(intial_struct))
+    starters = {}
+    for key in starter_suffixes:
+        starters[key] = []
+
+    for f in intial_struct.parent.iterdir():
+        if(f.name.startswith(intial_struct.stem) and f.suffix in starters and f != intial_struct):
+            starters[f.suffix].append(f)
     
-    starter_gros.sort()
-    starter_xtcs.sort()
-    starters = starter_gros+starter_xtcs
-    if(starters):
-        univ.load_new([str(f) for f in starters])
+    starters_files = []
+    for key in starter_suffixes:
+        starters[key].sort()
+        starters_files.extend(starters[key])
+        
+    if(starters_files):
+        univ.load_new([str(f) for f in starters_files])
         
     return univ
     
@@ -260,12 +262,11 @@ def import_cfg(cfgpath: Union[str, pathlib.Path]) -> Any:
     cfg.ignore_epcs = set(cfg.ignore_epcs)
     cfg.ignore_reps = set(cfg.ignore_reps)
 
-    # Make all path variable into Path obejcts
-    for pathvar in ("npz_file_name", "fig_output_dir", "initial_dir", "initial_struct"):
+    # Make path variables into Path objects
+    for pathvar in ("npz_file_name", "fig_output_dir", "initial_struct"):
         aspath = pathlib.Path(getattr(cfg,pathvar))
         setattr(cfg,pathvar,aspath)
 
-    cfg.structpath = cfg.initial_dir / cfg.initial_struct
     return cfg
 
 def load_options(cfgpath: Union[str, pathlib.Path]) -> Any:
@@ -274,7 +275,7 @@ def load_options(cfgpath: Union[str, pathlib.Path]) -> Any:
     """
     cfg    = import_cfg(cfgpath)
     print("Loading structure")
-    cfg.struct = mda.Universe(str(cfg.structpath))
+    cfg.struct = mda.Universe(str(cfg.initial_struct))
     cfg.indexes = utils.read_ndx(cfg.index_file)
     cfg.sel = utils.load_sel(cfg.select_str, cfg.struct, cfg.indexes)
     cfg.sel_clust = utils.load_sel(cfg.select_str_clust, cfg.struct, cfg.indexes)

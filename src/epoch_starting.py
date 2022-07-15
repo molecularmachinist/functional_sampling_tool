@@ -120,7 +120,7 @@ def start_epoch(nextepoch: int, cfg: Any,
         res = []
         if(nextepoch==1):
             # Initial structures and first epoch
-            struct = inout.load_starter_structures(cfg.initial_dir, cfg.structpath)
+            struct = inout.load_starter_structures(cfg.initial_struct)
             num_frames = len(struct.trajectory)
             if(num_frames>cfg.N):
                 warnings.warn(f"{num_frames} starting structures found, but only {cfg.N} " \

@@ -25,6 +25,8 @@ restraint_file = False
 maxwarn = 0
 
 ############################## Function calcs ##################################
+# Initial structure file
+initial_struct = "start.gro"
 # index file for selections
 index_file = None
 
@@ -102,9 +104,4 @@ npz_file_name = "fval_data.npz"
 first_rep_num = 1
 # figure output dir
 fig_output_dir = "figs"
-
-
-# Misc options
-initial_dir    = ""
-initial_struct = "start.gro"
 

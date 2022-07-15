@@ -37,7 +37,11 @@ To ignore the warning we add the below line anywhere in the config
 ```
 maxwarn = 1
 ```
-Then, remove the `epoch01` folder (for now this is the only way to clean a failed command) and rerun the init command. Now everything should work just fine.
+Then, remove clean the failed command, run 
+```
+fst clean
+```
+It makes sure no simulation data is in the latest (highest number) epoch, and then removes it. Now you can rerun the init command and everything should work fine. If something is still off, rerun the clean command, fix your system and rerun the init command.
 
 
 At this point, you would usually push these to a supercomputer where you actually run the simulations. You can try to do the push command, and (if you can ssh onto localhost) it will copy these to a local folder (`remote_folder` inside the `example` folder). The command to do it is
@@ -45,8 +49,6 @@ At this point, you would usually push these to a supercomputer where you actuall
 ```
 fst push
 ```
-
-If, for whatever reason, you want to remake a specific repetition, just remove the folder and rerun the previous command. It will simply ignore those repetitions that already have an existing folder. To rerun everything, remove the epoch folder.
 
 
 ## Running the epoch
@@ -69,21 +71,13 @@ We start by using the main command of the program:
 fst choose
 ```
 
-This will read the data from the xtc files, calculate the function values, make the choices and grompp the new repetitions. It will produce, just as before, a folder `epoch02` with everything the folder `epoch01` had after initialization, as well as a file `origin.txt`, which records where the frame was started from. The command also produces a folder `figs`, with a subfolder named after the epoch the frames were made after (in this case `epoch01`). **Always check these figures**, to see what choices the tool made! If you are not satisfied, play with the option in `config.py` and rerun the command. You will have to remove the newly generated epoch folder first. Usually changing the boundaries is enough.
-
-The tool will also make a PDB file of the inital structure. This is because it seems to be the only way to consistently get the residue numbering and chain numbering (up to 27 chains) in MDAnalysis selections. GRO files of course do not have chain info, while using a TPR file with MDAnalysis seems to make the residue numbering iterative, starting from one. If you do not want the tool to automatically make one, you can supply your own and copy it to `initial/start.pdb`. **The selections are always done using the PDB file, not the gro file**, so make sure your atom and residue naming and numbering match the PDB file.
+This will read the data from the xtc files, calculate the function values, make the choices and grompp the new repetitions. It will produce, just as before, a folder `epoch02` with everything the folder `epoch01` had after initialization, as well as a file `origin.txt`, which records where the frame was started from. The command also produces a folder `figs`, with a subfolder named after the epoch the frames were made after (in this case `epoch01`). **Always check these figures**, to see what choices the tool made! If you are not satisfied, use again the `clean` command, play with the options in `config.py` and rerun the `choose` command. In many cases simply changing the boundaries is enough.
 
 To run the choosing, without grompping (so that it is faster and you do not need to remove the folder each time), use
 
 ```
 fst choose --choose_only
 ```
-
-If the tool again fails and complains about nonzero return code from grompp, this **may** be again a warning that can be ignored. The PDB file is made with `gmx editconf` and with some versions of gromacs the atom naming changes when doing this. As it no longer matches the topology, a warning is raised. Only the names and not order has been changed, so this can be safely ignored. Either add one more to the maxwarn variable given before, or to make a config file that works the same for the initialization, add 
-```
-maxwarn_add = True
-```
-anywhere in teh config. It will add one to the previous maxwanr on any subsequent (i.e. not initialization) grompping.
 
 After you are satisfied in these results, push the new epoch to the remote just as before.
 

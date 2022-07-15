@@ -116,6 +116,12 @@ def start_epoch(nextepoch: int, cfg: Any,
             - rep : Length N array of the rep within the epoch each new rep comes from
             - frm : Length N array of the frame within the rep each new rep comes from
     """
+    # Check that the epoch does not already exist
+    edir = pathlib.Path("epoch%02d"%nextepoch)
+    if(edir.exists()):
+        raise FileExistsError(f"{edir} already exists, will not try to overwrite. Try running \"fst clean\" to remove the latest epoch directory.")
+
+    edir.mkdir()
 
     # The grompping itself will be done asynchronously in the worker pool
     # No point in having more than 4 workers, since reading the frame from file is done
@@ -137,7 +143,6 @@ def start_epoch(nextepoch: int, cfg: Any,
                                 UserWarning)
                 time.sleep(2)
                 
-            os.makedirs("epoch01", exist_ok=True)
 
             for i in range(cfg.N):
                 dostop=False
@@ -153,8 +158,6 @@ def start_epoch(nextepoch: int, cfg: Any,
         elif(np.any([d is None for d in (val,epc,rep,frm)])):
             raise ValueError("val, epc, rep or frm cannot be None if nextepoch!=1")
         else:
-
-            os.makedirs("epoch%02d"%(nextepoch),exist_ok=True)
 
             for i, (v, e, r, f) in enumerate(zip(val,epc,rep,frm)):
                 dostop=False

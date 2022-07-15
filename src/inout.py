@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-import os,sys
+import sys
+import shutil
+import time
 import numpy as np
 import re
 import MDAnalysis as mda
@@ -117,7 +119,7 @@ def load_from_dir(d: pathlib.Path, cfg: Any, load_fval: bool) -> Tuple[NDArray[n
     return get_data_from_xtc(d, cfg)
 
 
-def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[NDArray[np.int_],NDArray[np.float_],NDArray[np.int_],NDArray[np.int_]]:
+def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[NDArray[np.int_],NDArray[np.float_],NDArray[np.int_],NDArray[np.float_]]:
     edir = pathlib.Path("epoch%02d"%epoch)
     rep_nums = check_num( edir / "rep")
     fval = []
@@ -127,10 +129,18 @@ def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[NDArray[np.i
         if((epoch,i) in cfg.ignore_reps):
             continue
         d = edir / ("rep%02d"%i)
-        fv,cr = load_from_dir(d, cfg, load_fval)
-        fval.append(fv)
-        crd.append(cr)
-        reps.append(np.full(fv.shape,i))
+        if((d/"mdrun.xtc").exists()):
+            fv,cr = load_from_dir(d, cfg, load_fval)
+            fval.append(fv)
+            crd.append(cr)
+            reps.append(np.full(fv.shape,i))
+        else:
+            print(f"No data loaded from {d}")
+
+    # if nothing was found, we continue with no error
+    if(not fval):
+        print(f"No data loaded from {edir}")
+        return np.zeros(0,dtype=int), np.zeros(0,dtype=float), np.zeros(0,dtype=int), np.zeros((0,len(cfg.sel_clust),3),dtype=float)
 
     frms = [np.arange(len(f)) for f in fval]
 
@@ -176,17 +186,17 @@ def load_flat_extract_data(cfg: Any, doignore: bool = True) -> Tuple[Dict[str,ND
             flat_data["frms"].append(np.arange(ndat))
             flat_data["reps"].append(np.full(ndat,r))
             flat_data["epcs"].append(np.full(ndat,e))
-            
+    
     for key in flat_data:
         flat_data[key] = np.concatenate(flat_data[key])
 
     return flat_data, data["fnames"]
-            
-
 
 
 def load_data(cfg: Any, load_fval: bool):
     epochs = check_num(pathlib.Path("epoch"))
+    if(not epochs):
+        raise FileNotFoundError("No epochs found, cannot load data. Are you sure you are in the correct folder?")
     fval = []
     reps = []
     frms = []
@@ -202,6 +212,8 @@ def load_data(cfg: Any, load_fval: bool):
         crds.append(crd)
         epcs.append(np.full(f.shape,i))
 
+    if(not fval):
+        raise FileNotFoundError("No data loaded, cannot continue. Run some more simulations.")
 
     reps = np.concatenate(reps)
     fval = np.concatenate(fval)
@@ -327,3 +339,28 @@ def load_options(cfgpath: Union[str, pathlib.Path]) -> Any:
 
     return cfg
 
+
+def clean_latest_epoch(force: bool = False) -> None:
+    epochs = check_num(pathlib.Path("epoch"))
+
+    epoch  = epochs[-1]
+
+    # First, make sure no rep is already simulated
+    edir = pathlib.Path("epoch%02d"%epoch)
+    for r in check_num(edir / "rep"):
+        mdrun_path = edir / ("rep%02d"%r) / "mdrun.xtc"
+        if(mdrun_path.is_file()):
+            if(not force):
+                print(f"Found {mdrun_path}, will not clean up epoch {epoch}")
+                print("If you do want it cleaned, use the --force option")
+                return
+            
+            print(f"Found {mdrun_path}, but will still force clean")
+            print("Data in epoch%02d will be lost forever"%epoch)
+            print("You have 5 seconds to cancel with ctrl-C")
+            time.sleep(5)
+            print("Continuing, data in epoch%02d will now be lost forever"%epoch)
+    
+    print(f"Cleaning up epoch {epoch}")
+    # If nothing was found (or force=True), we can just do it
+    shutil.rmtree(edir)

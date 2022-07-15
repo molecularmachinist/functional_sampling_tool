@@ -59,6 +59,11 @@ def copy_templates(args: argparse.Namespace) -> None:
         shutil.copyfile(fin, args.sbatch_out)
 
 
+def clean(args: argparse.Namespace) -> None:
+    print("Running cleanup")
+    inout.clean_latest_epoch(args.force)
+
+
 def argP() -> argparse.Namespace:
     """
     Define command line arguments. For each
@@ -102,6 +107,13 @@ def argP() -> argparse.Namespace:
     push_parser.set_defaults(func=pushpull,config_func=inout.import_cfg,pull=False)
     pull_parser = subparsers.add_parser("pull", help="rsync from remote to local")
     pull_parser.set_defaults(func=pushpull,config_func=inout.import_cfg,pull=True)
+
+    # clean commands
+    push_parser = subparsers.add_parser("clean", help="clean latest epoch")
+    push_parser.set_defaults(func=clean,config_func=(lambda cfgpath: None))
+    push_parser.add_argument("--force", action="store_true", help="Force the removal of the latest epoch dir, " \
+                             "even if a mdrun.xtc file can be found in one of the repetition folders. Note, this " \
+                             "can easily lead to oss of data")
 
     # Template command
     templ_parser = subparsers.add_parser("make_templates", help="Copy default config.py and sbatch_template.sh files")

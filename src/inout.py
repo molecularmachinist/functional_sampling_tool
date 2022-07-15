@@ -263,7 +263,7 @@ def import_cfg(cfgpath: Union[str, pathlib.Path]) -> Any:
     cfg.ignore_reps = set(cfg.ignore_reps)
 
     # Make path variables into Path objects
-    for pathvar in ("npz_file_name", "fig_output_dir", "initial_struct"):
+    for pathvar in ("npz_file_name", "fig_output_dir", "initial_struct", "mdp", "topol", "ndx", "sbatch"):
         aspath = pathlib.Path(getattr(cfg,pathvar))
         setattr(cfg,pathvar,aspath)
 

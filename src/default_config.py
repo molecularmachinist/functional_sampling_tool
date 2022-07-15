@@ -18,6 +18,7 @@ gmx = "gmx"
 mdp   = "mdrun.mdp"
 topol = "topol.top"
 ndx   = "index_grompp.ndx"
+sbatch = "sbatch_launch.sh"
 # file for -r option for grompping. False to not use the option, "initial" to use
 # the inital structure, "start" to use the starting structrue of the repetition and any
 # other string to give the file manually (relative to the repetition folder)

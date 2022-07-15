@@ -174,11 +174,4 @@ def start_epoch(nextepoch: int, cfg: Any,
         assert rc.get() == 0, "Nonzero returncode from grompp, see %s/output_grompp.txt for more detail."%(d)
 
     # copy sbatch template
-    sbatch_file = pathlib.Path("sbatch_launch.sh")
-    if(os.path.isfile("templates" / sbatch_file) and not sbatch_file.is_file()):
-        warnings.warn("'templates/sbatch_launch.sh' should be moved to 'sbatch_launch.sh'." +
-                      "It will now be used from the templates folder, but this will be " +
-                      "deprecated in the future.", utils.DeprecatedUsageWarning)
-        sbatch_file = "templates" / sbatch_file
-    
-    utils.copy_sbatch_template(sbatch_file, pathlib.Path("epoch%02d"%nextepoch) / "sbatch_launch.sh", nextepoch, cfg)
+    utils.copy_sbatch_template(cfg.sbatch, pathlib.Path("epoch%02d"%nextepoch) / cfg.sbatch.name, nextepoch, cfg)

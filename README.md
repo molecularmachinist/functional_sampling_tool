@@ -84,22 +84,21 @@ You will also need to have a starting structure, which should be put into `initi
 ```
 ├── config.py *
 ├── index_grompp.ndx
-├── initial
-│   └── start.gro
+├── start.gro
 ├── mdrun.mdp
 ├── topol.top
 └── sbatch_launch.sh *
 ```
 
-The files marked with an asterisk can be copied and modified from templates, while the rest you should provide yourself. The names of the index, topology and mdp files can differ from these and are defined in the config. The config name can also differ and can be given as a command line argument **before the command** (e.g. `fst -c myconfig.py choose`).
+The files marked with an asterisk can be copied and modified from templates with `fst make_templates`, while the rest you should provide yourself. All the file names can differ from these and are defined in the config (except the config name, of course), these are just the defaults. The config name can be given as a command line argument **before the command** (e.g. `fst -c myconfig.py choose`).
 
 ## Usage
 
 Run `fst -h` for help or `fst <cmd> -h` for help on specific command.
 
-Almost all configuration should be done in the `config.py` file. The tool does have a few command line tools, but in principle these should only affect what is being done, not how it is being done.
+Almost all configuration should be done in the `config.py` file. The tool does have a few command line tools, but in principle these should only affect *what* is being done, not *how* it is being done (e.g. whether data should be pulled from teh remote is a command line argument, but the remote name, excludes and such are in config).
 
-If you have the configuration file in the same directory, as `config.py`, just run as below. Otherwise add `fst -c <path/to/config>.py <cmd>`.
+If you have the configuration file in the same directory, named as `config.py`, just run as below. Otherwise add `fst -c <path/to/config>.py <cmd>`.
 
 ### Basic commands
 
@@ -170,6 +169,7 @@ rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", ".*.xtc_
 | `mdp` | The name of the `.mdp` file. | `"mdrun.mdp"` |
 | `topol` | The name of the topology file. | `"topol.top"` |
 | `ndx` | The name of the index file used for grompping. | `"index_grompp.ndx"` |
+| `restraint_file` | The file to give to the `-r` option of grompp, to use for restraints. `"start"` will use the starting structure of the repetitions, `"initial"` will use the initial structure. Any other (nonempty) string will be interpreted as a path to the file. If it evaluates to False, teh option will not be passed to gromacs. | `False` |
 | `maxwarn` | How many warnings to ignore. Can be useful, e.g. when generating velocities while using Nosé-Hoover thermostat. | 0 |
 
 
@@ -202,7 +202,7 @@ These options change the on-the-fly transformations that are done to the traject
 
 ##### Clustering
 
-These options only affect the coordinates used for clustering. The transformations are added after the fval coordinates are read, but before the clustering coordinates.
+These options only affect the coordinates used for clustering. The transformations are added after the fval coordinates have been read, but before the clustering coordinates.
 
 | Variable | Description | Default value |
 | --- | - | - |
@@ -229,15 +229,20 @@ In most cases you should not need these, but may be helpful in others.
 | `maxclust` | Maximum number of clusters in bin. | 15 |
 | `clust_choice_frac` | Fraction of the choices to be made from clustering. | 0.5 |
 | `clust_tol` | Tolerance to choose the number of clusters. | 0.1 |
+| `initial_struct` | The initial structure file. Can be any file that MDAnalysis can read as a structure file without needing a trajectory. E.g. TPR files are (currently, as of v2.2.0) not enough. Gro and pdb are guaranteed to work. | `"start.gro"` |
 
 
 ### Specific use cases and tips
 
 #### Multiple starting structure
 
-If you want to have multiple different starting points, or even different starting points for each repetition this is noe possible. All gro files matching `start*.gro` (excluding `start.gro`), or any xtc files matching `start*.xtc` under the `initial` folder will be used as starting frames. To have a diffferent starting structure for 16 repetitions, just include gro files named `start01.gro`,`start02.gro`,...,`start16.gro`, or a single xtc file as `start.xtc` with 16 frames, or any mix of these. The frames will be read in alphabetic order, `gro` files before `xtc`. If there are in total more frames than repetitions, a warning will be produced and the N first frames willbe used (for N repetitions). If there are less frames than repetitions, they will be read in order and filled in "round robin" fashion (e.g.for three frames and 8 repetitions, the repetiton startingopoints would be [1,2,3,1,2,3,1,2]).
+If you want to have multiple different starting points, or even different starting points for each repetition this is now possible. All pdb/gro/xtc files in the same dir as `initial_struct`, matching `<name>*.<suffix>` (where `<name>` is the name of the initial structure without file ending), excluding `initial_struct`, will be used as starting frames.
 
-**Note** that you do then also need the `start.gro` to be used as a structure file, but not as a starting frame. If you have three gro files under `initial`: `start.gro`, `start1.gro`, `start2.gro`, this will be counted as two starting frames, the first from `start1.gro` and secodn from `start2.gro`
+For example, you can set `initial_struct="initial/start.gro"`, make the folder "initial" and include gro files named `start.gro`,`start01.gro`,`start02.gro`,...,`start16.gro` to have 16 different frames. "start.gro" will be used for making all selections and as astructure file during and after initialization. The rest will only be used during initialization as the starting structures. For the same effect you can also have just `start.gro` and a single xtc file as `start.xtc` with 16 frames.
+
+The frames will be read in alphabetic order, `pdb` files before `gro`, and `gro` files before `xtc`. If there are in total more frames than repetitions, a warning will be produced and the N first frames will be used (for N repetitions). If there are less frames than repetitions, they will be read in order and filled in "round robin" fashion (e.g.for three frames and 8 repetitions, the repetiton starting points would be [1,2,3,1,2,3,1,2]).
+
+**Remember** that you do always need the `initial_struct` to be used as a structure file, and it will only be used as a starting structure, if it is the only one found. If you have three gro files under `initial`: `start.gro`, `start1.gro`, `start2.gro`, this will be counted as two starting frames, the first from `start1.gro` and second from `start2.gro`. If the `initial_struct` is the only file found, then it will be used as teh only frame.
 
 
 #### Using the MDAnalysis selection objects in the calculation of the function
@@ -259,7 +264,7 @@ def function_val(positions):
         # Write the selection
         sel.write("tmp_analysis.pdb")
         # Run external command
-        compProc = subp.run(command, capture_output=True, text=True)
+        compProc = subp.run("command", capture_output=True, text=True)
         # get output
         results.append(float(compProc.stdout))
     
@@ -269,8 +274,9 @@ def function_val(positions):
 For now the program only makes a  single selection. However, do remember that the config file is a python script, so you can write any arbitrary code. This means you can make your own selection objects by adding the following lines anywhere in the config:
 
 ```python
+import MDAnalysis as mda
 _univ  = mda.Universe("initial/start.pdb")
-_mysel   = univ.select_atoms("protein and resid 200-300 and backbone")
+_mysel = univ.select_atoms("protein and resid 200-300 and backbone")
 ```
 
 Here we used a leading underscore, so that we do not accidentally overwrite any variables the program adds to the module, like `sel` and `struct`. Also here we cannot yet use those variables, since they are of course not added yet when the config is imported. Another note about this is that the choose command has to be run, or a PDB produced manually before this works, since the automatic PDB maker only runs after the config is imported. You can also just use the gro file as structure, but then make sure the atom naming is correct and you do not need chain info.

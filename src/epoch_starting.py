@@ -91,7 +91,7 @@ def next_rep(i: int, cfg: Any, newepoch: int, oldepoch: int, rep: int, frm: int,
     elif(cfg.restraint_file=="start"):
         kwargs["r"] = pathlib.Path("start.gro")
     elif(cfg.restraint_file):
-        kwargs["r"] = cfg.restraint_file
+        kwargs["r"] = pathlib.Path("..", "..") / cfg.restraint_file
 
     # Do the gromacs job asynchronously in the worker pool
     rc=pool.apply_async(utils.gromacs_command,

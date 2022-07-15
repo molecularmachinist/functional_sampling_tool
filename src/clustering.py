@@ -181,7 +181,7 @@ class ClusterChooser(choosing.FrameChooser):
 
         plt.legend()
         os.makedirs(self.cfg.fig_output_dir / ("epoch%02d"%self.u_epcs[-1]), exist_ok=True)
-        plt.savefig(self.cfg.fig_output_dir / ("epoch%02d"%self.u_epcs[-1]) / "hist_clust.png"%(self.cfg.fig_output_dir, self.u_epcs[-1]))
+        plt.savefig(self.cfg.fig_output_dir / ("epoch%02d"%self.u_epcs[-1]) / "hist_clust.png" )
         plt.clf()
 
 

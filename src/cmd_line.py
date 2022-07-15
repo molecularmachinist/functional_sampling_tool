@@ -48,10 +48,12 @@ def choose(args: argparse.Namespace) -> None:
 
 def copy_templates(args: argparse.Namespace) -> None:
     if(not args.no_config):
+        args.config_out.parent.mkdir(parents=True,exist_ok=True)
         fin = import_files("%s.templates"%__package__).joinpath("config_example.py.txt")
         print("Making", args.config_out)
         shutil.copyfile(fin, args.config_out)
     if(not args.no_sbatch):
+        args.sbatch_out.parent.mkdir(parents=True,exist_ok=True)
         fin = import_files("%s.templates"%__package__).joinpath("sbatch_template.sh")
         print("Making", args.sbatch_out)
         shutil.copyfile(fin, args.sbatch_out)

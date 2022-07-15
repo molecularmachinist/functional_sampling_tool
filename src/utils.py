@@ -7,12 +7,12 @@ import inspect, hashlib
 import warnings
 
 # Type hinting
-from typing import Any, Callable,Union, Optional,List,Dict
+from typing import Any, Callable, Union, Optional, List, Dict
 import MDAnalysis as mda
 from MDAnalysis.core.groups import AtomGroup
 from MDAnalysis.coordinates.base import Timestep
 from numpy.typing import ArrayLike, NDArray
-# Type alias
+# Type aliases
 transform_type = Callable[[Timestep],Timestep]
 
 
@@ -70,8 +70,8 @@ def read_ndx(ndx: str) -> Dict[str,List[int]]:
     return indexes
 
 
-def gromacs_command(gmx: str, cmd: str, *args: str, directory: str=".",
-                    input: Optional[bytes] = None, **kwargs: str) -> int:
+def gromacs_command(gmx: str, cmd: str, *args: Any, directory: str=".",
+                    input: Optional[bytes] = None, **kwargs: Any) -> int:
     """ Call the gromacs subcommand cmd in directory. Both args and keys of kwargs should be without the leading dash.
         output is redirected to output_<cmd>.txt. Returns the return code of the command.
     """
@@ -80,9 +80,9 @@ def gromacs_command(gmx: str, cmd: str, *args: str, directory: str=".",
     prevdir = os.getcwd()
     try:
         os.chdir(directory)
-        command = [gmx, cmd]+["-"+a for a in args]
+        command = [gmx, cmd]+["-"+str(a) for a in args]
         for k in kwargs:
-            command += ["-"+k, kwargs[k]]
+            command += ["-"+k, str(kwargs[k])]
 
         print(f"Running: {' '.join(command)}")
         with open("output_%s.txt"%cmd, "w") as fout:
@@ -157,7 +157,7 @@ def copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: 
 
 def hash_func(f: Callable) -> str:
     """
-    Reads function as string and calulates the md5sum as a hex string
+    Reads function as string and calculates the md5sum as a hex string
     """
     fstr = inspect.getsource(f)
     return hashlib.md5(fstr.encode('utf-8')).hexdigest()

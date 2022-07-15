@@ -26,14 +26,17 @@ def init_rep(i: int,cfg: Any, atoms: AtomGroup, pool: Pool, d: str="epoch01") ->
 
     print("Wrote start.gro to rep%02d, starting to grompp..."%(i))
 
-    kwargs = {"c": "start.gro", "f": "../../"+cfg.mdp,
-                                "n": "../../"+cfg.ndx, "p": "../../"+cfg.topol,
-                                "o": "mdrun.tpr", "maxwarn": str(cfg.maxwarn),
-                                "directory": str(d)
-                                }
+    kwargs = {"c": pathlib.Path("start.gro"),
+              "f": pathlib.Path("..", "..") / cfg.mdp,
+              "n": pathlib.Path("..", "..") / cfg.ndx,
+              "p": pathlib.Path("..", "..") / cfg.topol,
+              "o": pathlib.Path("mdrun.tpr"),
+              "directory": d }
 
+    if(cfg.maxwarn):
+        kwargs["maxwarn"] = str(cfg.maxwarn)
     if(cfg.restraint_file=="initial"):
-        kwargs["r"] = pathlib.Path("..") / ".." / cfg.structpath
+        kwargs["r"] = pathlib.Path("..", "..") / cfg.initial_struct
     elif(cfg.restraint_file=="start"):
         kwargs["r"] = "start.gro"
     elif(cfg.restraint_file):
@@ -66,7 +69,7 @@ def next_rep(i: int, cfg: Any, newepoch: int, oldepoch: int, rep: int, frm: int,
     cfg.struct.trajectory[frm]
 
     cfg.struct.atoms.write(str(d / "start.gro"))
-    print("Wrote structure to %s, starting to grompp..."%str(d / "start.gro"))
+    print("Wrote structure to %s, starting to grompp..."%(d / "start.gro"))
 
     # Make a note of the origin
     with (d / "origin.txt").open("w") as f:
@@ -74,16 +77,19 @@ def next_rep(i: int, cfg: Any, newepoch: int, oldepoch: int, rep: int, frm: int,
         f.write("# epoch rep frame val\n")
         f.write("%d %d %d %f\n"%(oldepoch,rep,frm, val))
 
-    kwargs = {"c": "start.gro", "f": "../../"+cfg.mdp,
-              "n": "../../"+cfg.ndx, "p": "../../"+cfg.topol,
-              "o": "mdrun.tpr", "directory": str(d) }
+    kwargs = {"c": pathlib.Path("start.gro"),
+              "f": pathlib.Path("..", "..") / cfg.mdp,
+              "n": pathlib.Path("..", "..") / cfg.ndx,
+              "p": pathlib.Path("..", "..") / cfg.topol,
+              "o": pathlib.Path("mdrun.tpr"),
+              "directory": d }
 
-    if(cfg.maxwarn or cfg.maxwarn_add):
-        kwargs["maxwarn"] = str(cfg.maxwarn or cfg.maxwarn_add)
+    if(cfg.maxwarn):
+        kwargs["maxwarn"] = cfg.maxwarn
     if(cfg.restraint_file=="initial"):
-        kwargs["r"] = pathlib.Path("..") / ".." / cfg.structpath
+        kwargs["r"] = pathlib.Path("..", "..") / cfg.initial_struct
     elif(cfg.restraint_file=="start"):
-        kwargs["r"] = "start.gro"
+        kwargs["r"] = pathlib.Path("start.gro")
     elif(cfg.restraint_file):
         kwargs["r"] = cfg.restraint_file
 
@@ -122,6 +128,7 @@ def start_epoch(nextepoch: int, cfg: Any,
             # Initial structures and first epoch
             struct = inout.load_starter_structures(cfg.initial_struct)
             num_frames = len(struct.trajectory)
+            print("Found %d starting structures"%num_frames)
             if(num_frames>cfg.N):
                 warnings.warn(f"{num_frames} starting structures found, but only {cfg.N} " \
                               f"repetitions will be started. Only the first {cfg.N} struc" \

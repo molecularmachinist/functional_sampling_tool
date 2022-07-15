@@ -286,7 +286,7 @@ def load_options(cfgpath: Union[str, pathlib.Path]) -> Any:
     if(cfg.unwrap_mols):
         # Preparing molecule unwrapper
         mdrunpath = pathlib.Path("epoch01")/"rep01"/"mdrun.tpr"
-        bonded_struct = mda.Universe(str(mdrunpath), str(cfg.structpath))
+        bonded_struct = mda.Universe(str(mdrunpath), str(cfg.initial_struct))
         unwrap_sel = utils.load_sel(cfg.unwrap_sel, cfg.struct, cfg.indexes)
         unwrap_sel = bonded_struct.atoms[unwrap_sel.indices]
         if(cfg.unwrap_starters is None):

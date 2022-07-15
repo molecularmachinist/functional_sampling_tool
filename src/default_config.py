@@ -59,10 +59,6 @@ ignore_reps = []
 # e.g. to ignore epochs 6 and 7: ignore_epcs = [6,7]
 ignore_epcs = []
 
-
-# whether to add one to maxwarn on the subsequent epochs (due to atom names changing)
-maxwarn_add = False
-
 # Histogram building
 # At least this much data in each bin of the histogram
 data_per_bin = 100

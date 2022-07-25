@@ -20,7 +20,7 @@ class FSTException(Exception):
 def handle_errors(func: Callable[[argparse.Namespace],None]) -> Callable[[argparse.Namespace],None]:
     def wrapped_func(args: argparse.Namespace) -> None:
         try:
-            func(args)
+            return func(args)
         except FSTException as e:
             print(f"{e.__class__.__name__}: {e}",file=sys.stderr)
             sys.exit(e.code)

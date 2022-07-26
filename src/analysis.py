@@ -206,7 +206,8 @@ def extract(args: argparse.Namespace) -> None:
     # Silencing warning about missing chainIDs
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore","Found missing chainIDs.", UserWarning)
-        sel.write(pdb_out)
+        warnings.filterwarnings("ignore","Found no information for attr", UserWarning)
+        sel.write(struct_out)
 
     if(args.around is None):
         data = extract_all(u, sel, transforms, args)

@@ -360,6 +360,7 @@ def clean_latest_epoch(force: bool = False) -> None:
             print("You have 5 seconds to cancel with ctrl-C")
             time.sleep(5)
             print("Continuing, data in epoch%02d will now be lost forever"%epoch)
+            break
     
     print(f"Cleaning up epoch {epoch}")
     # If nothing was found (or force=True), we can just do it

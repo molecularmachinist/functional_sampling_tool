@@ -8,7 +8,7 @@ It provides default values for config, and will be rewritten in updates.
 
 ########################### Remote options #####################################
 # Set dirs/files/patterns to exclude from rsync command
-rsync_excludes = ["config.py", "/sbatch_launch.sh", "fval_data.npz", ".mdrun.xtc_offsets.lock", ".mdrun.xtc_offsets.npz", "figs"]
+rsync_excludes = ["fval_data.npz", ".mdrun.xtc_offsets.lock", ".mdrun.xtc_offsets.npz"]
 
 
 

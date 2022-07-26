@@ -47,7 +47,7 @@ def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List
 
     if(args.unwrap or args.wrap):
         # Preparing molecule unwrapper
-        bonded_struct = mda.Universe("epoch01/rep01/mdrun.tpr", str(args.cfg.pdbpath))
+        bonded_struct = mda.Universe("epoch01/rep01/mdrun.tpr", str(args.cfg.initial_struct))
         unwrap_sel = utils.load_sel(args.sel_unwrap, u, indexes)
         unwrap_sel = bonded_struct.atoms[unwrap_sel.indices]
         print("Selected %d atoms for unwrapping"%len(unwrap_sel))
@@ -98,7 +98,7 @@ def analysis_subparser(parser: argparse.ArgumentParser) -> None:
                              help="Overwrite the value in \"index_file\" to use another one just for this analysis (default: %(default)s)",
                              default=None)
     extr_parser.add_argument("-o","--output",metavar="<name>.xtc",dest="output",
-                             help="Output xtc file for extraction. Another file with the same name, but npz file ending will be made with info on each extracted frame, as well as a pdb file for structure. (default: %(default)s)",
+                             help="Output xtc file for extraction. Another file with the same name, but npz file ending will be made with info on each extracted frame, as well as a structure file. (default: %(default)s)",
                              default=pathlib.Path("analysis/extracted.xtc"),
                              type=pathlib.Path)
     extr_parser.add_argument("--noignore",     action="store_false", dest="doignore",
@@ -199,14 +199,15 @@ def extract(args: argparse.Namespace) -> None:
 
     u.trajectory.add_transformations(*transforms)
     # The pdb file name from xtc file dir and stem (name without suffix)
-    pdb_out = args.output.parent / (args.output.stem + ".pdb")
+    struct_out = args.output.parent / (args.output.stem + args.cfg.initial_struct.suffix)
     #
     args.output.parent.mkdir(parents=True,exist_ok=True)
-    print("Writing structure to", pdb_out)
+    print("Writing structure to", struct_out)
     # Silencing warning about missing chainIDs
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore","Found missing chainIDs.", UserWarning)
-        sel.write(pdb_out)
+        warnings.filterwarnings("ignore","Found no information for attr", UserWarning)
+        sel.write(struct_out)
 
     if(args.around is None):
         data = extract_all(u, sel, transforms, args)

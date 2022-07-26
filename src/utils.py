@@ -95,13 +95,17 @@ def gromacs_command(gmx: str, cmd: str, *args: Any, directory: str=".",
 
 
 
-def rsync_command(send_from: str, send_to: str, excludes: List[str] = []) -> int:
+def rsync_command(send_from: Union[str,list], send_to: str, excludes: List[str] = []) -> int:
     """ A utility function for keeping the remote dir in sync.
         Basically run rsync with given source and target, and given excludes.
         Uses -ravP by default.
         Prints stdout and sterr when program finishes and returns the return code.
     """
-    command = ["rsync", "-avP", "--partial"]+["--exclude=%s"%e for e in excludes] + [send_from, send_to]
+    if(type(send_from)==list):
+        command = ["rsync", "-avP", "--partial"]+["--exclude=%s"%e for e in excludes] + send_from + [send_to]
+    else:
+        command = ["rsync", "-avP", "--partial"]+["--exclude=%s"%e for e in excludes] + [send_from, send_to]
+
     print(f"Running: {' '.join(command)}")
     compProc = subp.run(command)
     return compProc.returncode
@@ -112,7 +116,7 @@ def rsync_down(cfg: Any) -> None:
     """ Wrapper function for rsync_command, to sync the local dir to the remote,
         ie. "pull down"
     """
-    rc = rsync_command("%s:%s/"%(cfg.remote_name,cfg.remote_dir), "./", excludes=cfg.rsync_excludes)
+    rc = rsync_command("%s:%s/epoch*"%(cfg.remote_name,cfg.remote_dir), ".", excludes=cfg.rsync_excludes)
     print("Process returned %d"%rc)
 
 
@@ -120,7 +124,8 @@ def rsync_up(cfg: Any) -> None:
     """ Wrapper function for rsync_command, to sync the remote dir to the local,
         ie. "push up"
     """
-    rc = rsync_command( "./", "%s:%s/"%(cfg.remote_name,cfg.remote_dir), excludes=cfg.rsync_excludes)
+    send_dirs = [str(p) for p in pathlib.Path(".").glob("epoch*")]
+    rc = rsync_command(send_dirs, "%s:%s"%(cfg.remote_name,cfg.remote_dir), excludes=cfg.rsync_excludes)
     print("Process returned %d"%rc)
 
 

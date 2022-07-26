@@ -8,6 +8,7 @@ from libcpp.unordered_set cimport unordered_set as cunset
 from libcpp.unordered_map cimport unordered_map as cunmap
 from libcpp.stack cimport stack as cstack
 from libcpp.vector cimport vector as cvector
+from libc.math cimport rint
 
 from cython          cimport floating 
 from cython.operator cimport dereference
@@ -243,11 +244,10 @@ cdef void iterate_bonds(floating[:,:] pos, int[:,:] bonds):
         for j in range(pos.shape[1]):
             # Difference vector
             diff = pos[a2,j]-pos[a1,j]
-            # If distance is more than half box vector, translate by box vector (1.0)
-            if(diff<-0.5):
-                pos[a2,j] += 1.0
-            if(diff>0.5):
-                pos[a2,j] -= 1.0
+            # a2 is translated by the nearest integer amount of box vectors.
+            # If diff is between [-0.5,0.5], nothing happens, [-1.5,-0.5] or [0.5,1.5]
+            # will be shifted by one, etc. It should always end up within [-0.5,0.5] of a1  
+            pos[a2,j] -= rint(diff)
                 
 
 
@@ -264,11 +264,13 @@ def make_whole(floating[:,:] pos, int[:,:] bonds, floating[:,:] box):
     # Inverse box
     invbox = np.linalg.inv(box)
     unitpos = np.empty_like(pos)
-    # Transfer coordinates to unit cell and put in box
+    # Transfer coordinates to reciprocal space (relative to box vec)
+    # Atoms are also put back into box. This is useful to force starter
+    # atoms to always be in box 
     cmatmul3D_mod(pos, invbox,unitpos)
     # Fix box in reciprocal space
     iterate_bonds(unitpos, bonds)
-
+    # Bring fixed positions back to real space
     cmatmul3D(unitpos, box, pos)
 
     return pos

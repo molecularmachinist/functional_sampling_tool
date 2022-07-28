@@ -109,7 +109,7 @@ def analysis_subparser(parser: argparse.ArgumentParser) -> None:
                              default=None,
                              type=float)
     extr_parser.add_argument("--number", "-N",metavar="number",
-                             help="The number of closest frames to extract around the --around value. Ignored if --around not given.",
+                             help="The number of closest frames to extract around the --around value. Ignored if --around not given. (default: %(default)d)",
                              default=1000,
                              type=int)
     extr_parser.add_argument("--stride", metavar="N",

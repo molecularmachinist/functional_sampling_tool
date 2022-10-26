@@ -19,7 +19,11 @@ def handle_errors(func: Callable[[argparse.Namespace], None]) -> Callable[[argpa
         try:
             return func(args)
         except FSTException as e:
-            print(f"{e.__class__.__name__}: {e}",file=sys.stderr)
+            print("--------------------------\n", file=sys.stderr)
+            print(e.__class__.__name__, file=sys.stderr)
+            print("", file=sys.stderr)
+            print(e,  file=sys.stderr)
+            print("\n--------------------------", file=sys.stderr)
             sys.exit(e.code)
     return wrapped_func
 

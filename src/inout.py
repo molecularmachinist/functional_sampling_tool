@@ -53,8 +53,15 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_]
     transform_opt = [cfg.unwrap_mols, cfg.unwrap_mols and cfg.mols_in_box,
                      cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos]
     if (not np.array_equal(transform_opt, dat["transform_opt"])):
-        raise LoadError("Trajetory transformations changed from %s, reloading" % str(
+        raise LoadError("Trajectory transformations changed from %s, reloading" % str(
             d/cfg.npz_file_name))
+
+    # if "stride" is not found in dat, but stride is 1 and ignore_from_start is 0, we can just continue
+    # in other words, only do the check if "stride" is in dat or either value is different
+    if ("stride" in dat or cfg.stride != 1 or cfg.ignore_from_start != 0):
+        if (cfg.stride != dat["stride"] or cfg.ignore_from_start != dat["ignore_from_start"]):
+            raise LoadError("Stride or ignore_from_start changed from %s, reloading" % str(
+                d/cfg.npz_file_name))
 
     unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(
         0, dtype=int)
@@ -79,10 +86,11 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_]
 def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], NDArray[np.float_]]:
     cfg.struct.load_new(str(d / "mdrun.xtc"))
     cfg.struct.trajectory.add_transformations(*cfg.traj_transforms)
-    fval_crd = np.empty([len(cfg.struct.trajectory), len(cfg.sel), 3])
-    crd = np.empty([len(cfg.struct.trajectory), len(cfg.sel_clust), 3])
+    trjlen = len(cfg.struct.trajectory[cfg.ignore_from_start::cfg.stride])
+    fval_crd = np.empty([trjlen, len(cfg.sel), 3])
+    crd = np.empty([trjlen, len(cfg.sel_clust), 3])
     print("Copying crd")
-    for j, ts in enumerate(cfg.struct.trajectory):
+    for j, ts in enumerate(cfg.struct.trajectory[cfg.ignore_from_start::cfg.stride]):
         fval_crd[j] = cfg.sel.positions
         ts = cfg.clust_transform(ts)
         crd[j] = cfg.sel_clust.positions
@@ -105,7 +113,9 @@ def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], ND
                         unwrap_sel=unwrap_sel,
                         transform_opt=transform_opt,
                         sel=cfg.sel.indices,
-                        sel_clust=cfg.sel_clust.indices)
+                        sel_clust=cfg.sel_clust.indices,
+                        stride=cfg.stride,
+                        ignore_from_start=cfg.ignore_from_start)
 
     return fval, crd
 
@@ -154,7 +164,7 @@ def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[NDArray[np.i
         print(f"No data loaded from {edir}")
         return np.zeros(0, dtype=int), np.zeros(0, dtype=float), np.zeros(0, dtype=int), np.zeros((0, len(cfg.sel_clust), 3), dtype=float)
 
-    frms = [np.arange(len(f)) for f in fval]
+    frms = [np.arange(len(f))*cfg.stride+cfg.ignore_from_start for f in fval]
 
     return np.concatenate(reps), np.concatenate(fval), np.concatenate(frms), np.concatenate(crd)
 

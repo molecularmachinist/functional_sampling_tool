@@ -139,7 +139,7 @@ def argP() -> argparse.Namespace:
     push_parser.set_defaults(func=clean, config_func=(lambda cfgpath: None))
     push_parser.add_argument("--force", action="store_true", help="Force the removal of the latest epoch dir, "
                              "even if a mdrun.xtc file can be found in one of the repetition folders. Note, this "
-                             "can easily lead to oss of data")
+                             "can easily lead to loss of data")
 
     # Template command
     templ_parser = subparsers.add_parser(

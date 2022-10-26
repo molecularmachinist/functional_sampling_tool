@@ -8,7 +8,7 @@ import inspect
 import hashlib
 import warnings
 
-from .exceptions import DeprecatedUsageWarning
+from .exceptions import DeprecatedUsageWarning, NoSbatchLaunchError
 
 # Type hinting
 from typing import Any, Callable, Union, Optional, List, Dict
@@ -154,6 +154,9 @@ def copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: 
 
     To be depracated: if the template has {account} {email} and {i}, it will be filled as before, from cfg
     """
+    if (not fin.exists()):
+        raise NoSbatchLaunchError(
+            f"No file found at {fin}, make sure the launch script exists and the path is correct.")
     templ = fin.read_text()
     if ("{i}" in templ and "{account}" in templ and "{email}" in templ):
         __depr_copy_sbatch_template(fin, fout, enum, cfg)

@@ -61,3 +61,10 @@ class NoConfigError(FSTException, FileNotFoundError):
     An exception raised, when the config file does not exists.
     """
     pass
+
+
+class NoSbatchLaunchError(FSTException, FileNotFoundError):
+    """
+    An exception raised, when the config file does not exists.
+    """
+    pass

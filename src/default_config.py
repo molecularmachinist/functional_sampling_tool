@@ -60,9 +60,6 @@ ignore_reps = []
 # e.g. to ignore epochs 6 and 7: ignore_epcs = [6,7]
 ignore_epcs = []
 
-# whether to add one to maxwarn on the subsequent epochs (due to atom names changing)
-maxwarn_add = False
-
 # Options to handle using only some of the data
 # The function values will be recalculated for every epoch and repetition if these options are changed
 # Amount of data (frames) to ignore from start of each repetition

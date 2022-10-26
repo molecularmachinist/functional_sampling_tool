@@ -60,6 +60,16 @@ ignore_reps = []
 # e.g. to ignore epochs 6 and 7: ignore_epcs = [6,7]
 ignore_epcs = []
 
+# whether to add one to maxwarn on the subsequent epochs (due to atom names changing)
+maxwarn_add = False
+
+# Options to handle using only some of the data
+# The function values will be recalculated for every epoch and repetition if these options are changed
+# Amount of data (frames) to ignore from start of each repetition
+ignore_from_start = 0
+# The stride for only using every n'th frame
+stride = 1
+
 # Histogram building
 # At least this much data in each bin of the histogram
 data_per_bin = 100

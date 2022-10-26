@@ -19,10 +19,10 @@ This module includes functions to make on the fly transformations for MDAnalysis
 """
 
 
-
-def make_whole(ts: Timestep, bonds:NDArray[np.int_], sel:NDArray[np.int_]):
+def make_whole(ts: Timestep, bonds: NDArray[np.int_], sel: NDArray[np.int_]):
     box = ts.triclinic_dimensions
-    ts.positions[sel] = _ctransformations.make_whole(ts.positions[sel], bonds,box)
+    ts.positions[sel] = _ctransformations.make_whole(
+        ts.positions[sel], bonds, box)
 
     return ts
 
@@ -44,33 +44,31 @@ class Unwrapper:
         returns:
             transformation function
     """
-    def __init__(self, ag: AtomGroup, starters: Union[List[Atom],AtomGroup] = [], initsetup: bool = False):
+
+    def __init__(self, ag: AtomGroup, starters: Union[List[Atom], AtomGroup] = [], initsetup: bool = False):
         self.starters = starters
-        self.ag  = ag
+        self.ag = ag
         self.sel = self.ag.indices
-        self.__setup_run=False
-        if(initsetup):
+        self.__setup_run = False
+        if (initsetup):
             self._setup()
 
     def _setup(self) -> None:
-        if(self.__setup_run):
-            warnings.warn("Unwrapper setup being run after __setup_run is already. " \
+        if (self.__setup_run):
+            warnings.warn("Unwrapper setup being run after __setup_run is already. "
                           "Continuing without new setup.", RuntimeWarning)
         self.bonds = _ctransformations.traverse_mol(self.ag.indices,
                                                     self.ag.universe.bonds.to_indices(),
-                                                    np.array([s.index for s in self.starters],dtype=int))
+                                                    np.array([s.index for s in self.starters], dtype=int))
         self.__setup_run = True
         # No need to remember atom group or starters after setup
         del self.ag
         del self.starters
 
-
-    def __call__(self, ts:Timestep) -> Timestep:
-        if(not self.__setup_run):
+    def __call__(self, ts: Timestep) -> Timestep:
+        if (not self.__setup_run):
             self._setup()
         return make_whole(ts, self.bonds, self.sel)
-
-
 
 
 class MolWrapper:
@@ -82,42 +80,41 @@ class MolWrapper:
     returns:
         transformation function
     """
+
     def __init__(self, ag: AtomGroup, initsetup: bool = False):
-        self.ag  = ag
+        self.ag = ag
         self.selection = self.ag.indices
-        self.__setup_run=False
-        if(initsetup):
+        self.__setup_run = False
+        if (initsetup):
             self._setup()
 
-
     def _setup(self) -> None:
-        if(self.__setup_run):
-            warnings.warn("Unwrapper setup being run after __setup_run is already True." \
+        if (self.__setup_run):
+            warnings.warn("Unwrapper setup being run after __setup_run is already True."
                           "Continuing without new setup.", RuntimeWarning)
-        
+
         self.mols, self.nmols = _ctransformations.find_frags(
-                                        self.selection,
-                                        self.ag.universe.bonds.to_indices()
-                                    )
+            self.selection,
+            self.ag.universe.bonds.to_indices()
+        )
         self.weights = self.ag.masses.astype(self.ag.positions.dtype)
         self.__setup_run = True
         # No need to remember atom group after setup
         del self.ag
 
     def __call__(self, ts: Timestep) -> Timestep:
-        if(not self.__setup_run):
+        if (not self.__setup_run):
             self._setup()
 
         box = ts.triclinic_dimensions
         ts.positions[self.selection] = _ctransformations.wrap_mols(
-                                                ts.positions[self.selection],
-                                                self.weights,
-                                                self.mols,
-                                                self.nmols,
-                                                box
-                                            )
+            ts.positions[self.selection],
+            self.weights,
+            self.mols,
+            self.nmols,
+            box
+        )
         return ts
-
 
 
 class Superpos:
@@ -131,19 +128,20 @@ class Superpos:
     returns:
         transformation function
     """
+
     def __init__(self, ag: AtomGroup, centre: bool, superposition: bool, subselection: Optional[AtomGroup] = None):
         self.seli = ag.indices.copy()
         self.ref = ag.positions.copy()
         self.ref_com = ag.center_of_mass()
-        self.w   = ag.masses.copy()
+        self.w = ag.masses.copy()
         self.totw = self.w.sum()
-        if(subselection is None):
+        if (subselection is None):
             self.subsel = self.seli
         else:
             self.subsel = subselection.indices
-        if(superposition):
+        if (superposition):
             self.func = self.superpos
-        elif(centre):
+        elif (centre):
             self.func = self.centre
         else:
             self.func = self.nothing
@@ -155,9 +153,11 @@ class Superpos:
         sel = ts.positions[self.seli].copy()
         sel_com = np.sum(self.w*sel.T, axis=-1)/self.totw
         sel -= sel_com
-        R, rmsd = align.rotation_matrix(sel, self.ref-self.ref_com, weights=self.w)
+        R, rmsd = align.rotation_matrix(
+            sel, self.ref-self.ref_com, weights=self.w)
         sel = sel @ R.T
-        ts.positions[self.subsel] = ((ts.positions[self.subsel]-sel_com) @ R.T)+self.ref_com
+        ts.positions[self.subsel] = (
+            (ts.positions[self.subsel]-sel_com) @ R.T)+self.ref_com
         return ts
 
     def centre(self, ts: Timestep) -> Timestep:
@@ -166,5 +166,5 @@ class Superpos:
         ts.positions[self.subsel] += self.ref_com-sel_com
         return ts
 
-    def nothing(self, ts:Timestep) -> Timestep:
+    def nothing(self, ts: Timestep) -> Timestep:
         return ts

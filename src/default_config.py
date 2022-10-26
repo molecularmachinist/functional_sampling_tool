@@ -8,16 +8,16 @@ It provides default values for config, and will be rewritten in updates.
 
 ########################### Remote options #####################################
 # Set dirs/files/patterns to exclude from rsync command
-rsync_excludes = ["fval_data.npz", ".mdrun.xtc_offsets.lock", ".mdrun.xtc_offsets.npz"]
+rsync_excludes = ["fval_data.npz",
+                  ".mdrun.xtc_offsets.lock", ".mdrun.xtc_offsets.npz"]
 
 
-
-########################### Running simulations
+# Running simulations
 gmx = "gmx"
 # input files for grompping
-mdp   = "mdrun.mdp"
+mdp = "mdrun.mdp"
 topol = "topol.top"
-ndx   = "index_grompp.ndx"
+ndx = "index_grompp.ndx"
 sbatch = "sbatch_launch.sh"
 # file for -r option for grompping. False to not use the option, "initial" to use
 # the inital structure, "start" to use the starting structrue of the repetition and any
@@ -71,28 +71,28 @@ minchoice = data_per_bin
 # Allow choosing the same frame more than once in the same epoch.
 # In some edge cases of multiple choices within a region of low sampling,
 # the minchoice values might overlap and still produce duplicates.
-allow_choice_duplicates=False
+allow_choice_duplicates = False
 # A dictionary of keyword arguments for scipy.signal.find_peaks https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html
-peak_options = {"width":5, "distance":10}
+peak_options = {"width": 5, "distance": 10}
 # Make plot histogram as cumulative, or each epoch separately
-cumulative_histogram=True
+cumulative_histogram = True
 # Maximum number of (latest) epochs to plot in histogram, for cumulative only changes
-# how many are added to legend. 
-histogram_max_epochs=15
+# how many are added to legend.
+histogram_max_epochs = 15
 
 
 # Cluster histogram
-clust_data_per_bin=1000
-clust_maxbins=10
+clust_data_per_bin = 1000
+clust_maxbins = 10
 
 # Number of epoch before clustering
-epochs_pre_clust=3
-#Max number of clusters per bin
-maxclust=15
+epochs_pre_clust = 3
+# Max number of clusters per bin
+maxclust = 15
 # choose at most this fraction of choices from clustering
-clust_choice_frac=0.5
+clust_choice_frac = 0.5
 # Tolerace for number of clusters in clustering
-clust_tol=0.1
+clust_tol = 0.1
 
 # These options allow running multiple runs with separate configs suing the same data
 # Name of archivefile
@@ -101,4 +101,3 @@ npz_file_name = "fval_data.npz"
 first_rep_num = 1
 # figure output dir
 fig_output_dir = "figs"
-

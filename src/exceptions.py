@@ -1,23 +1,20 @@
 # -*- coding: utf-8 -*-
 
-# typing
 import argparse
 import sys
 from typing import Callable
 
 
-
 class FSTException(Exception):
     """
     A base exception differnetiate between fst-internal exception,
-    to be catched nicely, and some other code's exceptions, which should not be caught.
+    to be caught nicely, and some other code's exceptions, which should not be caught.
     """
-    code=1
+    code = 1
     pass
 
 
-
-def handle_errors(func: Callable[[argparse.Namespace],None]) -> Callable[[argparse.Namespace],None]:
+def handle_errors(func: Callable[[argparse.Namespace], None]) -> Callable[[argparse.Namespace], None]:
     def wrapped_func(args: argparse.Namespace) -> None:
         try:
             return func(args)
@@ -47,11 +44,13 @@ class RepExistsError(FSTException, FileExistsError):
     """
     pass
 
-class NonzeroReturnError(FSTException,RuntimeError):
+
+class NonzeroReturnError(FSTException, RuntimeError):
     """
     An exception raised, when a subprocess returns a nonzero return code.
     """
     pass
+
 
 class NoConfigError(FSTException, FileNotFoundError):
     """

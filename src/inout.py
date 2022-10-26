@@ -141,7 +141,8 @@ def load_from_dir(d: pathlib.Path, cfg: Any, load_fval: bool) -> Tuple[NDArray[n
     return get_data_from_xtc(d, cfg)
 
 
-def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[NDArray[np.int_], NDArray[np.float_], NDArray[np.int_], NDArray[np.float_]]:
+def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[
+        NDArray[np.int_], NDArray[np.float_], NDArray[np.int_], NDArray[np.float_]]:
     edir = pathlib.Path("epoch%02d" % epoch)
     rep_nums = check_num(edir / "rep")
     fval = []
@@ -197,7 +198,8 @@ def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Di
     return data
 
 
-def load_flat_extract_data(cfg: Any, doignore: bool = True) -> Tuple[Dict[str, NDArray[Union[np.float_, np.int_]]], Dict[int, Dict[int, str]]]:
+def load_flat_extract_data(cfg: Any, doignore: bool = True) -> Tuple[
+        Dict[str, NDArray[Union[np.float_, np.int_]]], Dict[int, Dict[int, str]]]:
     data = load_extract_data(cfg, doignore)
 
     flat_data = {"fval": [], "frms": [], "reps": [], "epcs": []}

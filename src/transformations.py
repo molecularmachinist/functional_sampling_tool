@@ -45,7 +45,10 @@ class Unwrapper:
             transformation function
     """
 
-    def __init__(self, ag: AtomGroup, starters: Union[List[Atom], AtomGroup] = [], initsetup: bool = False):
+    def __init__(self,
+                 ag: AtomGroup,
+                 starters: Union[List[Atom], AtomGroup] = [],
+                 initsetup: bool = False):
         self.starters = starters
         self.ag = ag
         self.sel = self.ag.indices
@@ -129,7 +132,11 @@ class Superpos:
         transformation function
     """
 
-    def __init__(self, ag: AtomGroup, centre: bool, superposition: bool, subselection: Optional[AtomGroup] = None):
+    def __init__(self,
+                 ag: AtomGroup,
+                 centre: bool,
+                 superposition: bool,
+                 subselection: Optional[AtomGroup] = None):
         self.seli = ag.indices.copy()
         self.ref = ag.positions.copy()
         self.ref_com = ag.center_of_mass()

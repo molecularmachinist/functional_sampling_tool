@@ -20,7 +20,12 @@ methods for choosing frames.
 
 class FrameChooser():
 
-    def __init__(self, cfg: Any, fval: NDArray[np.float_], frms: NDArray[np.int_], reps: NDArray[np.int_], epcs: NDArray[np.int_]):
+    def __init__(self,
+                 cfg: Any,
+                 fval: NDArray[np.float_],
+                 frms: NDArray[np.int_],
+                 reps: NDArray[np.int_],
+                 epcs: NDArray[np.int_]):
         """
         Takes the config and data as 4 N-length arrays with the rep, fval, epoch
         and frame number (within teh specific epoch and rep) of each datapoint/frame.
@@ -52,7 +57,11 @@ class FrameChooser():
         fval, _, frms, reps, epcs = inout.load_data(cfg, load_fval)
         return cls(cfg, fval, frms, reps, epcs)
 
-    def update(self, fval: NDArray[np.float_], frms: NDArray[np.int_], reps: NDArray[np.int_], epcs: NDArray[np.int_]) -> None:
+    def update(self,
+               fval: NDArray[np.float_],
+               frms: NDArray[np.int_],
+               reps: NDArray[np.int_],
+               epcs: NDArray[np.int_]) -> None:
         """
         Update the new data and recalculates histogram
         """
@@ -68,7 +77,12 @@ class FrameChooser():
 
         self.make_hist()
 
-    def _make_hist_no_cfg(self, maxbins: int, data_per_bin: int, minval: float, maxval: float, hard_boundaries: bool = False) -> None:
+    def _make_hist_no_cfg(self,
+                          maxbins: int,
+                          data_per_bin: int,
+                          minval: float,
+                          maxval: float,
+                          hard_boundaries: bool = False) -> None:
         """
         The function that actually makes the histogram. Does not read values from cfg,
         but gets them as parameters. This way different implementations can use
@@ -110,7 +124,8 @@ class FrameChooser():
             self.cfg.maxval
         )
 
-    def make_choices(self, prechoices: int = 0, plot: bool = True) -> Tuple[NDArray[np.float_], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
+    def make_choices(self, prechoices: int = 0, plot: bool = True) -> Tuple[
+            NDArray[np.float_], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
         """
         Uses the histogram to choose bins and returns the bin indices of the choices.
         prechoices is the number of choices already done.
@@ -184,7 +199,8 @@ class FrameChooser():
                                nanmask, maxims, minims)
         return self.choose_frames(choices)
 
-    def choose_frames(self, chosen_bins: List[int]) -> Tuple[NDArray[np.float_], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
+    def choose_frames(self, chosen_bins: List[int]) -> Tuple[
+            NDArray[np.float_], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
         """ Input parameters:
                 - chosen_bins : Length N list of the indices of the bins that have been chosen.
                                 Duplicates (starting from the same bin) are simply many times in the list.
@@ -238,7 +254,11 @@ class FrameChooser():
 
         return v, e, r, f
 
-    def print_choices(self, val: NDArray[np.float_], epc: NDArray[np.int_], rep: NDArray[np.int_], frm: NDArray[np.int_]) -> None:
+    def print_choices(self,
+                      val: NDArray[np.float_],
+                      epc: NDArray[np.int_],
+                      rep: NDArray[np.int_],
+                      frm: NDArray[np.int_]) -> None:
         print("Final choices:")
         for v, e, r, f in zip(val, epc, rep, frm):
             print(f"frm {f}, rep {r}, epc {e}, fval={v}")

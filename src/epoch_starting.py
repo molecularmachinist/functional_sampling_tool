@@ -18,7 +18,11 @@ from multiprocessing.pool import AsyncResult
 from numpy.typing import NDArray
 
 
-def init_rep(i: int, cfg: Any, atoms: AtomGroup, pool: Pool, d: str = "epoch01") -> Tuple[pathlib.Path, AsyncResult]:
+def init_rep(i: int,
+             cfg: Any,
+             atoms: AtomGroup,
+             pool: Pool,
+             d: str = "epoch01") -> Tuple[pathlib.Path, AsyncResult]:
     """ Initializes rep i from atom group atoms
     """
     d = pathlib.Path(d) / ("rep%02d" % i)
@@ -57,7 +61,14 @@ def init_rep(i: int, cfg: Any, atoms: AtomGroup, pool: Pool, d: str = "epoch01")
     return (d, rc)
 
 
-def next_rep(i: int, cfg: Any, newepoch: int, oldepoch: int, rep: int, frm: int, val: float, pool: Pool) -> Tuple[pathlib.Path, AsyncResult]:
+def next_rep(i: int,
+             cfg: Any,
+             newepoch: int,
+             oldepoch: int,
+             rep: int,
+             frm: int,
+             val: float,
+             pool: Pool) -> Tuple[pathlib.Path, AsyncResult]:
     """ Initializes rep i of newepoch, taking the frame frm from rep of oldepoch
     """
     d = pathlib.Path("epoch%02d" % newepoch) / ("rep%02d" % i)

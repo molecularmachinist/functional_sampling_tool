@@ -24,7 +24,13 @@ rng = np.random.default_rng()
 
 class ClusterChooser(choosing.FrameChooser):
 
-    def __init__(self, cfg: Any, fval: NDArray[np.float_], coords: NDArray[np.float_], frms: NDArray[np.int_], reps: NDArray[np.int_], epcs: NDArray[np.int_]):
+    def __init__(self,
+                 cfg: Any,
+                 fval: NDArray[np.float_],
+                 coords: NDArray[np.float_],
+                 frms: NDArray[np.int_],
+                 reps: NDArray[np.int_],
+                 epcs: NDArray[np.int_]):
         """
         Takes the config and data as 4 N-length arrays with the rep, fval, epoch
         and frame number (within teh specific epoch and rep) of each datapoint/frame.
@@ -69,7 +75,8 @@ class ClusterChooser(choosing.FrameChooser):
         self.clust_unique_bins, self.clust_unique_bin_counts = np.unique(
             self.clust_hist_indexes, return_counts=True)
 
-    def make_choices(self, prechoices: int = 0, plot: bool = True) -> Tuple[NDArray[np.float_], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
+    def make_choices(self, prechoices: int = 0, plot: bool = True) -> Tuple[
+            NDArray[np.float_], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
         if (len(self.u_epcs) <= self.cfg.epochs_pre_clust):
             return self.plain_chooser.make_choices(prechoices, plot)
         if (plot):
@@ -131,7 +138,8 @@ class ClusterChooser(choosing.FrameChooser):
 
         return fval, epcs, reps, frms
 
-    def choose_frames(self, chosen_clusts: List[int], clusters: NDArray[np.int_]) -> Tuple[NDArray[np.float_], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
+    def choose_frames(self, chosen_clusts: List[int], clusters: NDArray[np.int_]) -> Tuple[
+            NDArray[np.float_], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
         """ Input parameters:
                 - chosen_clusts : Length N list of the indices of the clusters that have been chosen.
                                   Duplicates (starting from the same bin) are simply many times in the list.
@@ -196,8 +204,11 @@ class ClusterChooser(choosing.FrameChooser):
         plt.clf()
 
 
-def make_clusters(coords: NDArray[np.float_], plot: bool = False, plotname: pathlib.Path = pathlib.Path("plot.png"),
-                  maxclust: int = 15, tol: float = 0.1) -> NDArray[np.int_]:
+def make_clusters(coords: NDArray[np.float_],
+                  plot: bool = False,
+                  plotname: pathlib.Path = pathlib.Path("plot.png"),
+                  maxclust: int = 15,
+                  tol: float = 0.1) -> NDArray[np.int_]:
     global colors
     """
     Takes a shape(n,m) array of coordinates and return shape(n) labels of clusters.

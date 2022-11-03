@@ -122,13 +122,13 @@ def analysis_subparser(parser: argparse.ArgumentParser) -> None:
                              default=1000,
                              type=int)
     extr_parser.add_argument("--stride", metavar="N",
-                             help="Only extract every Nth frame.",
-                             default=1,  type=int)
+                             help="Only extract every Nth frame. By default \"stride\" from config.",
+                             default=None,  type=int)
     extr_parser.add_argument("--beginning", "-b", metavar="N",
-                             help="Ignore this many frames form the beginning of each simulation.",
-                             default=0,  type=int)
-    extr_parser.add_argument(
-        "--unwrap",   action="store_true", help="Unwrap molecules (default: No)")
+                             help="Ignore this many frames from the beginning of each simulation. By default \"ignore_from_start\" from config.",
+                             default=None,  type=int)
+    extr_parser.add_argument("--unwrap",   action="store_true",
+                             help="Unwrap molecules (default: No)")
     extr_parser.add_argument("--sel_unwrap", metavar="str",
                              help="The selection to unwrap. Same syntax as --selection, and by default uses same selection.",
                              default=None)
@@ -206,6 +206,11 @@ def extract_all(u: mda.Universe, sel: AtomGroup, transforms: List[transform_type
 
 
 def extract(args: argparse.Namespace) -> None:
+    if (args.stride is None):
+        args.stride = args.cfg.stride
+    if (args.beginning is None):
+        args.beginning = args.cfg.ignore_from_start
+
     u, sel, transforms = load_struct(args)
 
     u.trajectory.add_transformations(*transforms)

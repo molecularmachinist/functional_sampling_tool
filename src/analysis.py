@@ -92,8 +92,13 @@ def analysis_subparser(parser: argparse.ArgumentParser) -> None:
     subparsers.required = True
     subparsers.dest = 'subcommand'
 
+    extract_description = "Only repetitions for which the data " \
+        "npz-archive is present can be extracted. Run the choose command with " \
+        "the--choose_only option to calculate the functions and make the archives " \
+        "without making a new epoch"
     # extractor command
-    extr_parser = subparsers.add_parser("extract", help="Extract frames.")
+    extr_parser = subparsers.add_parser("extract", help="Extract frames.",
+                                        description=extract_description)
     extr_parser.add_argument("--selection", metavar="str",
                              help="The selection to extract. \"select_str\" and \"select_str_clust\" will be read from the config. "
                                   "as with those selection string, this can also be a group in \"index_file\" (default: \"%(default)s\")",

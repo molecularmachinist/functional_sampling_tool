@@ -56,12 +56,10 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_]
         raise LoadError("Trajectory transformations changed from %s, reloading" % str(
             d/cfg.npz_file_name))
 
-    # if "stride" is not found in dat, but stride is 1 and ignore_from_start is 0, we can just continue
-    # in other words, only do the check if "stride" is in dat or either value is different
-    if ("stride" in dat or cfg.stride != 1 or cfg.ignore_from_start != 0):
-        if (cfg.stride != dat["stride"] or cfg.ignore_from_start != dat["ignore_from_start"]):
-            raise LoadError("Stride or ignore_from_start changed from %s, reloading" % str(
-                d/cfg.npz_file_name))
+    # if "stride" is found in dat, it was made with v0.0.1, so data might be missing
+    if ("stride" in dat):
+        raise LoadError("%s made with tool version 0.0.1 meaning data might be missing, reloading" % str(
+            d/cfg.npz_file_name))
 
     unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(
         0, dtype=int)
@@ -86,11 +84,11 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_]
 def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], NDArray[np.float_]]:
     cfg.struct.load_new(str(d / "mdrun.xtc"))
     cfg.struct.trajectory.add_transformations(*cfg.traj_transforms)
-    trjlen = len(cfg.struct.trajectory[cfg.ignore_from_start::cfg.stride])
+    trjlen = len(cfg.struct.trajectory)
     fval_crd = np.empty([trjlen, len(cfg.sel), 3])
     crd = np.empty([trjlen, len(cfg.sel_clust), 3])
     print("Copying crd")
-    for j, ts in enumerate(cfg.struct.trajectory[cfg.ignore_from_start::cfg.stride]):
+    for j, ts in enumerate(cfg.struct.trajectory):
         fval_crd[j] = cfg.sel.positions
         ts = cfg.clust_transform(ts)
         crd[j] = cfg.sel_clust.positions
@@ -113,9 +111,7 @@ def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], ND
                         unwrap_sel=unwrap_sel,
                         transform_opt=transform_opt,
                         sel=cfg.sel.indices,
-                        sel_clust=cfg.sel_clust.indices,
-                        stride=cfg.stride,
-                        ignore_from_start=cfg.ignore_from_start)
+                        sel_clust=cfg.sel_clust.indices)
 
     return fval, crd
 
@@ -154,9 +150,15 @@ def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[
         d = edir / ("rep%02d" % i)
         if ((d/"mdrun.xtc").exists()):
             fv, cr = load_from_dir(d, cfg, load_fval)
+            if (cfg.ignore_from_start != 0 or cfg.stride != 1):
+                # If we are ignoring data, we'll make a copy so as to not drag the ignored data in memory
+                # Otherwise numpy will just make a view of the original array and keep it in memory
+                fv = fv[cfg.ignore_from_start::cfg.stride].copy()
+                cr = cr[cfg.ignore_from_start::cfg.stride].copy()
+
             fval.append(fv)
             crd.append(cr)
-            reps.append(np.full(fv.shape, i))
+            reps.append(np.full(fval[-1].shape, i))
         else:
             print(f"No data loaded from {d}")
 

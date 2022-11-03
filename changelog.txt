@@ -1,0 +1,7 @@
+v0.0.2
+
+- fval and cluster coordinates are saved to data npz archive as awhole, and the ignoring
+  from start and stride are only applied after reading. This means the archive files made with
+  v0.0.1 must be reloaded.
+  Before this change the extraction was broken when the tsrting frame or stride were not the defaults.
+- beginning and stride in extraction are taken from config by default.

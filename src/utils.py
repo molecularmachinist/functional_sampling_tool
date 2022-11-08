@@ -170,6 +170,18 @@ def copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: 
                 fo.write(line.replace("{epoch_num}", str(enum)))
 
 
+def copy_config(fin: pathlib.Path, fout: pathlib.Path):
+    """
+    Copy the config file to the specified location.
+    TODO: add default values to the end of the new config file.
+    """
+    with fout.open("w")as fo:
+        with fin.open() as fi:
+            fo.write(fi.read())
+
+        # for def_val in default_vals:
+
+
 def hash_func(f: Callable) -> str:
     """
     Reads function as string and calculates the md5sum as a hex string

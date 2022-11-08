@@ -2,20 +2,43 @@
 
 ## Requirements
 
+
+The tool has only been tested on linux (ubuntu based distribution). In general there is nothing stopping it from working on other platforms, but do keep this in mind.
+
+### Basic requirements
+
+These you will need to have preinstalled before installing the package.
+
 1. Python 3.7 or higher (3.10 recommended)
-1. NumPy and matplotlib (with python<3.10, also importlib_resources)
+1. [GROMACS](https://www.gromacs.org)
+1. C++ compiler
+
+GROMACS is only needed for grompping. This means that a [quck and dirty](https://manual.gromacs.org/current/install-guide/index.html#quick-and-dirty-installation) installation is enough. Do make sure it is the same major version that you plan on using for the simulation runs.
+
+The C++ compiler is needed to compile a few of the trajectory transformation modules, which allow making broken molecules whole over the PBC. The package build process has been tested with the open source GCC-compiler, but in theory any compiler should work.
+
+### Python modules
+
+These you can either preinstall, or let either pip or conda install for you in the installation procedure
+
+1. NumPy
+1. matplotlib
+1. importlib_resources (only with with python<3.10) 
 1. [MDAnalysis](https://docs.mdanalysis.org/stable/index.html)
 1. [scikit-learn](https://scikit-learn.org/stable/)
-1. GROMACS
 
 
 
-Either install them manually, or follow the instructions below to let pip take care of that for you. GROMACS does of course need to be manualy installed.
-
-The tool has only been tested on linux, so it might or might not work with other OS.
 
 ## Installation
 
+Whichever installation way you choose to use, start by copying the project to your computer.
+
+```
+wget https://github.com/molecularmachinist/functional_sampling_tool/archive/refs/tags/v0.0.2.tar.gz
+tar xvzf v0.0.2.tar.gz
+cd functional_sampling_tool-0.0.2
+```
 
 ### Quick and easy
 
@@ -23,7 +46,7 @@ Just run
 ```sh
 pip install .
 ```
-in the project root. This will install all dependencies and compile and install the package.
+in the project root. This will install all module dependencies and compile and install the package.
 
 ### Recommended way
 
@@ -46,13 +69,19 @@ Here I assume that you have downloaded the project and are within its root folde
 pip install .
 ```
 
-When the command finishes, it should be all done and the tool usable as `fst`. If you ever want to uninstall it just run (with the `fst_env` environment activated).
+When the command finishes, it should be all done and the tool usable as `fst`.
+
+**Remember** that in this way you need to run `conda activate fst_env` once in every new terminal before using the tool. If you want to use this environment by default, add `conda activate fst_env` at the end of your `.bashrc`
+
+
+## Uninstalling
+
+If you ever want to uninstall the tool just run (with the `fst_env` environment activated if you did the recommended installation).
 
 ```sh
 pip uninstall functional_sampling_tool
 ```
 
-**Remember** that in this way you need to run `conda activate fst_env` once in every new terminal before using the tool. If you want to use this environment by default, add `conda activate fst_env` at the end of your `.bashrc`
 
 
 ## How it works

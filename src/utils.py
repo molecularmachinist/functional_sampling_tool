@@ -10,6 +10,8 @@ import warnings
 
 from .exceptions import DeprecatedUsageWarning, NoSbatchLaunchError
 
+from . import __version__ as fst_version
+
 # Type hinting
 from typing import Any, Callable, Union, Optional, List, Dict
 import MDAnalysis as mda
@@ -176,6 +178,10 @@ def copy_config(fin: pathlib.Path, fout: pathlib.Path):
     TODO: add default values to the end of the new config file.
     """
     with fout.open("w")as fo:
+        fo.write(f"# Copy of {fout}\n")
+        fo.write("# Made with functional_sampling_tool "
+                 f"version {fst_version}\n")
+
         with fin.open() as fi:
             fo.write(fi.read())
 

@@ -75,6 +75,9 @@ maxbins = 100
 # Minimum amount to choose a frame from. If less frames are in the bin, this many closest frames in value will be used.
 # Must be higher or equal to N if allow_choice_duplicates=True
 minchoice = data_per_bin
+# maximum height to choose from, as fraction from minimum found height to maximum
+# (maxh-minh)*choice_crit+minh will be the highest allowed histogram bin.
+choice_crit = 0.5
 # Allow choosing the same frame more than once in the same epoch.
 # In some edge cases of multiple choices within a region of low sampling,
 # the minchoice values might overlap and still produce duplicates.

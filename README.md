@@ -147,7 +147,7 @@ Here is a listing of all the variables you should need in normal usage. The defa
 By default the rsync excludes are
 
 ```python
-rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", ".*.xtc_offsets.npz", "figs", "fst", "src"]
+rsync_excludes = ["fval_data.npz", ".mdrun.xtc_offsets.lock", ".mdrun.xtc_offsets.npz"]
 ```
 
 
@@ -181,6 +181,7 @@ rsync_excludes = ["config.py", "initial", "templates", "fval_data.npz", ".*.xtc_
 | --- | - | - |
 | `select_str` | The selection string (or index group) used for the function calculation. | - |
 | `select_str_clust` | The selection string (or index group) used for the clustering. | - |
+| `initial_struct` | The initial structure file. Can be any file that MDAnalysis can read as a structure file without needing a trajectory. E.g. TPR files are (currently, as of MDAnalysis v2.2.0) not enough. Gro and pdb are guaranteed to work. | `"start.gro"` |
 | `index_file` | `None` or the name of the index file, where the index groups of the selections are. | `None` |
 | `minval`/`maxval` | The boundaries for the functional sampling. One of them can be the string "start", to use the initial value, and either can be `None` to use no boundary (only useful at the beginning). | - |
 | `function_val` | The function to be sampled. | - |
@@ -198,7 +199,7 @@ These options change the on-the-fly transformations that are done to the traject
 | `unwrap_mols` | Whether to unwrap molecules (make them whole if broken over the PBC). | `False` |
 | `unwrap_sel` | The selection string (or index group) used for unwrapping. Only atoms within this selection will be considered, so if parts of a chain are missing, only those parts that have unbroken bonded graphs will be made whole, each of them separately. In general you should make a selection with at least the backbone connecting whichever parts you want whole. This should be fast enough even with large proteins, but including the water can effect performance badly. The default selection of "protein" should work in most cases.| `"protein"` |
 | `unwrap_starters` | `None` or the selection string (or index group) used as "starters". These atoms will be the starting points of making the molecules whole. In effect, they are guaranteed to be inside the box after the process. If `None`, or if a molecule does not have any atoms in the group, the atom with the smallest index will be used. | `None` |
-| `mols_in_box` | Whether to put centre of mas of molecules back in box after unwrapping. Only the coordinates in `unwrap_sel` are moved and considered for the centre of mass, **however**, unlike for unwrapping, molecules are moved as a whole, even if they are missing parts in between. This option is ignored if `unwrap_mols=False`.| |
+| `mols_in_box` | Whether to put centre of mass of molecules back in box after unwrapping. Only the coordinates in `unwrap_sel` are moved and considered for the centre of mass, **however**, unlike for unwrapping, molecules are moved as a whole, even if they are missing parts in between. This option is ignored if `unwrap_mols=False`.| `False` |
 
 ##### Clustering
 
@@ -215,7 +216,10 @@ In most cases you should not need these, but may be helpful in others.
 
 | Variable | Description | Default value |
 | --- | - | - |
-| `maxwarn_add` | In case the atom naming has changed between the topology and the structure (eg when making it into a PDB file), one more warning might be issued by grompp. In that case setting this to `True` will add one more to the number of warnings ignored, in all but the first epoch. | `False` |
+| `ignore_reps` | List of repetitions (as tuples of epoch number and repetiton number, as ints) to ignore. E.g. `[(1,3),(4,5)]` to ignore repetition 3 of epoch 1 and repetition 5 of epoch 4. | `[]` |
+| `ignore_epcs` | List of epoch numbers (as ints) to ignore. E.g. `[1,3]` to ignore epochs 1 and 3. | `[]` |
+| `ignore_from_start` | Number of frames to ignore from the start. | 0 |
+| `stride` | Only consider every N'th frame | 1 |
 | `data_per_bin` | On average, at least this much data should be in the histogram bins within the boundaries. | 100 |
 | `maxbins` | Maximum number of histogram bins within the boundaries. | 100 |
 | `minchoice` | Minimum number of frames, from which a choice will be made. If the chosen bin has less frames, this many of the closest frames in function value are used as the pool of frames to choose from. | 100 |
@@ -230,7 +234,7 @@ In most cases you should not need these, but may be helpful in others.
 | `maxclust` | Maximum number of clusters in bin. | 15 |
 | `clust_choice_frac` | Fraction of the choices to be made from clustering. | 0.5 |
 | `clust_tol` | Tolerance to choose the number of clusters. | 0.1 |
-| `initial_struct` | The initial structure file. Can be any file that MDAnalysis can read as a structure file without needing a trajectory. E.g. TPR files are (currently, as of v2.2.0) not enough. Gro and pdb are guaranteed to work. | `"start.gro"` |
+
 
 
 ### Specific use cases and tips
@@ -243,7 +247,7 @@ For example, you can set `initial_struct="initial/start.gro"`, make the folder "
 
 The frames will be read in alphabetic order, `pdb` files before `gro`, and `gro` files before `xtc`. If there are in total more frames than repetitions, a warning will be produced and the N first frames will be used (for N repetitions). If there are less frames than repetitions, they will be read in order and filled in "round robin" fashion (e.g.for three frames and 8 repetitions, the repetiton starting points would be [1,2,3,1,2,3,1,2]).
 
-**Remember** that you do always need the `initial_struct` to be used as a structure file, and it will only be used as a starting structure, if it is the only one found. If you have three gro files under `initial`: `start.gro`, `start1.gro`, `start2.gro`, this will be counted as two starting frames, the first from `start1.gro` and second from `start2.gro`. If the `initial_struct` is the only file found, then it will be used as teh only frame.
+**Remember** that you do always need the `initial_struct` to be used as a structure file, and it will only be used as a starting structure, if it is the only one found. If you have three gro files under `initial`: `start.gro`, `start1.gro`, `start2.gro`, this will be counted as two starting frames, the first from `start1.gro` and second from `start2.gro`. If the `initial_struct` is the only file found, then it will be used as the only frame.
 
 
 #### Using the MDAnalysis selection objects in the calculation of the function

@@ -5,3 +5,4 @@ v0.0.2
   v0.0.1 must be reloaded.
   Before this change the extraction was broken when the tsrting frame or stride were not the defaults.
 - beginning and stride in extraction are taken from config by default.
+- max height for choices can be given in config

@@ -144,7 +144,7 @@ class FrameChooser():
             minh = 0
 
         # The criteria for choices is half way between max and min heights
-        crith = (maxh-minh)/2+minh
+        crith = (maxh-minh)*self.cfg.choice_crit+minh
 
         choices = []
 

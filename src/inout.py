@@ -373,6 +373,9 @@ def load_options(cfgpath: pathlib.Path) -> Any:
     elif (cfg.maxval is None):
         cfg.maxval = float("inf")
 
+    # Make the global rng
+    cfg.rng = np.random.default_rng(cfg.rng_seed)
+
     return cfg
 
 

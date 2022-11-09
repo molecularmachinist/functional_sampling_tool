@@ -222,7 +222,6 @@ class FrameChooser():
                 - frms      : Same as epcs and reps, but with the information of the frame.
         """
 
-        rng = np.random.default_rng()
         # lists for value, rpoch, rep and frame
         v, e, r, f = [], [], [], []
         for bi, ci in zip(*np.unique(chosen_bins, return_counts=True)):
@@ -244,8 +243,8 @@ class FrameChooser():
                 vals_in_bin = np.argsort(np.abs(self.fval-cnt))[:n_in_bin]
 
             # Choose ci from bin
-            ndx = rng.choice(n_in_bin, size=ci,
-                             replace=self.cfg.allow_choice_duplicates)
+            ndx = self.cfg.rng.choice(n_in_bin, size=ci,
+                                      replace=self.cfg.allow_choice_duplicates)
 
             v.extend(self.fval[vals_in_bin][ndx])
             e.extend(self.epcs[vals_in_bin][ndx])

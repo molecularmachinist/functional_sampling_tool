@@ -53,6 +53,9 @@ clust_superpos = False
 
 ############################## Advanced options ################################
 
+# the random number seed. None means a totally random run.
+rng_seed = None
+
 # List of reps to ignore. Should be a list of tuples (epc,rep),
 # e.g. to ignore rep 1 of ep 11 and rep 3 of ep 5: ignore_reps = [(11,1),(5,3)]
 ignore_reps = []

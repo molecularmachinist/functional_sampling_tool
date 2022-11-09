@@ -20,8 +20,6 @@ colors += ["sandybrown", "deeppink", "darkslategrey",
            "indianred", "lawngreen", "lightseagreen"]
 colors = np.array(colors)
 
-rng = np.random.default_rng()
-
 
 class ClusterChooser(choosing.FrameChooser):
 
@@ -98,7 +96,8 @@ class ClusterChooser(choosing.FrameChooser):
                 clust_results[ci] = make_clusters(
                     coords=crds,
                     maxclust=self.cfg.maxclust,
-                    tol=self.cfg.clust_tol
+                    tol=self.cfg.clust_tol,
+                    rng=self.cfg.rng
                 )
                 clust_results[ci]["labels"] += ci*max(100, self.cfg.maxclust)
                 clusters[indxs] = clust_results[ci]["labels"]
@@ -171,13 +170,11 @@ class ClusterChooser(choosing.FrameChooser):
                 - reps      : Same as epcs, but with the corresponding rep.
                 - frms      : Same as epcs and reps, but with the information of the frame.
         """
-
-        global rng
         # lists for value, rpoch, rep and frame
         v, e, r, f = [], [], [], []
         for ci in chosen_clusts:
             vals_in_clust = ci == clusters
-            ndx = rng.choice(np.sum(vals_in_clust))
+            ndx = self.cfg.rng.choice(np.sum(vals_in_clust))
 
             v.append(self.fval[vals_in_clust][ndx])
             e.append(self.epcs[vals_in_clust][ndx])
@@ -218,8 +215,9 @@ class ClusterChooser(choosing.FrameChooser):
 
 
 def make_clusters(coords: NDArray[np.float_],
-                  maxclust: int = 15,
-                  tol: float = 0.1) -> Dict[str, NDArray]:
+                  maxclust: int,
+                  tol: float,
+                  rng: np.random.Generator) -> Dict[str, NDArray]:
     """
     Takes a shape(n,m) array of coordinates and return shape(n) labels of clusters.
     The labels should be integers between 0 and maxclust-1.
@@ -232,8 +230,6 @@ def make_clusters(coords: NDArray[np.float_],
         - results : A dictionary with the labels under the \"labels\" key and all data needed for plotting
                     included under different keys.
     """
-    global rng
-
     shuffled_data = rng.permutation(coords)
 
     # call pca

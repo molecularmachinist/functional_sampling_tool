@@ -5,6 +5,8 @@
 
 The tool has only been tested on linux (ubuntu based distribution). In general there is nothing stopping it from working on other platforms, but do keep this in mind.
 
+As prequisite knowledge you will need to know ho to get around using the command line and how to run basic simulations in GROMACS.
+
 ### Basic requirements
 
 These you will need to have preinstalled before installing the package.
@@ -245,6 +247,7 @@ In most cases you should not need these, but may be helpful in others.
 
 | Variable | Description | Default value |
 | --- | - | - |
+| `rng_seed` | Random number generator seed. Can be anything that `numpy.random.default_rng()` takes as a seed, usually an int or sequence of ints. `None` means to pull genearte the state randomly, i.e. the run will be unreproducible. If the seed is not `None`, you can rerun the tool (as long as the data or etting havenot changed) with the same seed to reproduce the exact same choices. | `None` |
 | `ignore_reps` | List of repetitions (as tuples of epoch number and repetiton number, as ints) to ignore. E.g. `[(1,3),(4,5)]` to ignore repetition 3 of epoch 1 and repetition 5 of epoch 4. | `[]` |
 | `ignore_epcs` | List of epoch numbers (as ints) to ignore. E.g. `[1,3]` to ignore epochs 1 and 3. | `[]` |
 | `ignore_from_start` | Number of frames to ignore from the start. | 0 |

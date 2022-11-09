@@ -1,4 +1,3 @@
-import os
 import MDAnalysis as mda
 import argparse
 import pathlib

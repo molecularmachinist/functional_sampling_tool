@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.colors as mpl_colors
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import os
 import pathlib
@@ -11,13 +11,14 @@ from . import choosing
 from . import inout
 
 # Type hints
-from typing import Any, Tuple, Union, List
+from typing import Any, Tuple, List, Dict
 from numpy.typing import NDArray
 
 colors = ['r', 'b', 'g', 'orange', 'cyan', 'indigo',
           'purple', 'magenta', 'brown', 'k', 'y']
 colors += ["sandybrown", "deeppink", "darkslategrey",
            "indianred", "lawngreen", "lightseagreen"]
+colors = np.array(colors)
 
 rng = np.random.default_rng()
 
@@ -88,20 +89,19 @@ class ClusterChooser(choosing.FrameChooser):
 
         natoms = self.coords.shape[1]
         dims = self.coords.shape[2]
+        clust_results = {}
         for ci, cc in zip(self.clust_unique_bins, self.clust_unique_bin_counts):
             if (ci != 0 and ci != len(self.bin_edges) and cc >= self.cfg.clust_data_per_bin):
                 indxs = self.clust_hist_indexes == ci
                 nframes = np.sum(indxs, dtype=int)
                 crds = self.coords[indxs].reshape((nframes, natoms*dims))
-                clusters[indxs] = make_clusters(
+                clust_results[ci] = make_clusters(
                     coords=crds,
-                    plot=plot,
-                    plotname=self.cfg.fig_output_dir /
-                    ("epoch%02d" % (self.u_epcs[-1])) /
-                    "clusters" / ("choices_%d.png" % ci),
                     maxclust=self.cfg.maxclust,
                     tol=self.cfg.clust_tol
-                ) + ci*(self.cfg.maxclust)*2
+                )
+                clust_results[ci]["labels"] += ci*max(100, self.cfg.maxclust)
+                clusters[indxs] = clust_results[ci]["labels"]
 
         clusts, counts = np.unique(clusters[clusters >= 0], return_counts=True)
         srt_clusts = clusts[np.argsort(counts)]
@@ -110,6 +110,8 @@ class ClusterChooser(choosing.FrameChooser):
         maxchoice = min(int(self.cfg.clust_choice_frac *
                         self.cfg.N), len(srt_clusts)//2)
         choices = list(srt_clusts[:maxchoice])
+
+        # If we can choose still more, do so by duplicate choosing
         if (len(choices) < nchoices):
             weights = [(np.max(counts)-counts[c == clusts][0])
                        for c in choices]
@@ -127,6 +129,17 @@ class ClusterChooser(choosing.FrameChooser):
         print(
             f"Chose {len(choices)} clusters out of {len(clusts)}, with {nchoices} max allowed")
         print(f"{len(np.unique(choices))} unique clusters")
+
+        if (plot):
+            choice_counts = {ci: cc for ci, cc in
+                             zip(*np.unique(choices, return_counts=True))}
+            for ci in clust_results:
+                plot_clust(clust_results[ci],
+                           choice_counts,
+                           plotname=self.cfg.fig_output_dir /
+                           ("epoch%02d" % (self.u_epcs[-1])) /
+                           "clusters" / ("choices_%d.png" % ci))
+
         fval, epcs, reps, frms = self.choose_frames(choices, clusters)
 
         v, e, r, f = self.plain_chooser.make_choices(
@@ -141,9 +154,9 @@ class ClusterChooser(choosing.FrameChooser):
     def choose_frames(self, chosen_clusts: List[int], clusters: NDArray[np.int_]) -> Tuple[
             NDArray[np.float_], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
         """ Input parameters:
-                - chosen_clusts : Length N list of the indices of the clusters that have been chosen.
+                - chosen_clusts : Length N list of the labels of the clusters that have been chosen.
                                   Duplicates (starting from the same bin) are simply many times in the list.
-                - clusters      : Array of the cluster indices for all simulated frames
+                - clusters      : Array of the cluster labels for all simulated frames
             Output:
                 - v : Length N list of the fvals for each new rep
                 - e : Length N list of the epochs each new rep comes from
@@ -205,13 +218,19 @@ class ClusterChooser(choosing.FrameChooser):
 
 
 def make_clusters(coords: NDArray[np.float_],
-                  plot: bool = False,
-                  plotname: pathlib.Path = pathlib.Path("plot.png"),
                   maxclust: int = 15,
-                  tol: float = 0.1) -> NDArray[np.int_]:
-    global colors
+                  tol: float = 0.1) -> Dict[str, NDArray]:
     """
     Takes a shape(n,m) array of coordinates and return shape(n) labels of clusters.
+    The labels should be integers between 0 and maxclust-1.
+
+    Input parameters:
+        - coords   : shape(n,m) array of the coordinates to cluster.
+        - maxclust : maximum allowed number of clusters
+        - tol      : the tolerance for the choosing criteria. A float between 0 and 1.
+    Output:
+        - results : A dictionary with the labels under the \"labels\" key and all data needed for plotting
+                    included under different keys.
     """
     global rng
 
@@ -263,32 +282,65 @@ def make_clusters(coords: NDArray[np.float_],
     # now try with GMM
     gm = GaussianMixture(n_components=nclust, random_state=0).fit(first_2)
 
-    if (plot):
-        fig, axes = plt.subplots(2, 2, figsize=(8, 7))
-        axes[0, 0].plot(range(1, maxclust+1), bic)
-        axes[0, 0].plot(range(1, maxclust+1), aic)
-        axes[0, 0].plot(nclust, bic[nclust-1], "rx")
-        axes[0, 0].plot(nclust, aic[nclust-1], "rx")
+    results = {}
 
-        axes[0, 1].plot(range(2, maxclust+1), bic[1:]-bic[:-1])
-        axes[0, 1].plot(range(2, maxclust+1), aic[1:]-aic[:-1])
+    results["maxclust"] = maxclust
+    results["nclust"] = nclust
 
-        axes[1, 0].plot(range(1, maxclust+1), rbic)
-        axes[1, 0].plot(range(1, maxclust+1), raic)
-        axes[1, 0].plot(nclust, rbic[nclust-1], "rx")
-        axes[1, 0].plot(nclust, raic[nclust-1], "rx")
-        fig.tight_layout()
+    results["bic"] = bic
+    results["aic"] = aic
+    results["rbic"] = rbic
+    results["raic"] = raic
+    results["labels"] = gm.predict(first_2)
+    results["reduced_dims"] = first_2
 
-        if (nclust < len(colors)):
-            cmap = mpl_colors.ListedColormap(colors[:nclust], N=nclust)
-        else:
-            cmap = mpl_colors.ListedColormap(colors, N=nclust)
+    return results
 
-        labels = gm.predict(first_2)
-        axes[1, 1].scatter(first_2[:, 0], first_2[:, 1],
-                           s=1, c=labels, cmap=cmap)
 
-        fig.savefig(plotname)
+def plot_clust(results: Dict[str, NDArray], choices: Dict[int, int], plotname: pathlib.Path):
+    """
+    Takes a shape(n,m) array of coordinates and return shape(n) labels of clusters.
+    The labels should be integers between 0 and maxclust.
+
+    Input parameters:
+        - results  : A dictionary with the results from make_clusters.
+        - choices  : A dictionary with the chosen labels as keys and multiplicity of choices as values.
+        - plotname : A pathlib.Path where the figure will be saved.
+    """
+    global colors
+    nclust = results["nclust"]
+    fig, axes = plt.subplots(2, 2, figsize=(8, 7))
+    axes[0, 0].plot(range(1, results["maxclust"]+1), results["bic"])
+    axes[0, 0].plot(range(1, results["maxclust"]+1), results["aic"])
+    axes[0, 0].plot(nclust, results["bic"][nclust-1], "rx")
+    axes[0, 0].plot(nclust, results["aic"][nclust-1], "rx")
+
+    axes[1, 0].plot(range(1, results["maxclust"]+1), results["rbic"])
+    axes[1, 0].plot(range(1, results["maxclust"]+1), results["raic"])
+    axes[1, 0].plot(nclust, results["rbic"][nclust-1], "rx")
+    axes[1, 0].plot(nclust, results["raic"][nclust-1], "rx")
+    fig.tight_layout()
+
+    unique_lbls, inv_lbl_ndxes = np.unique(results["labels"],
+                                           return_inverse=True)
+    cols = colors[inv_lbl_ndxes % len(colors)]
+
+    axes[0, 1].scatter(*results["reduced_dims"].T,
+                       s=1, c=cols)
+    handles = []
+    for i, lbl in enumerate(unique_lbls):
+        label = str(lbl)
+        if lbl in choices:
+            if (choices[lbl] > 1):
+                label += " (%d)" % (choices[lbl])
+            else:
+                label += " (*)"
+        handles.append(
+            mpatches.Patch(color=colors[i % len(colors)], label=label))
+
+    axes[1, 1].legend(handles=handles, loc="upper left")
+    axes[1, 1].axis("off")
+
+    fig.savefig(plotname)
 
     plt.clf()
-    return labels

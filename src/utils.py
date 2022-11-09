@@ -189,9 +189,7 @@ def copy_config(fin: pathlib.Path, fout: pathlib.Path, default_values: Dict[str,
 
         fo.write("\n#  Default values: \n")
         for key, val in default_values.items():
-            if (type(val) == str):
-                val = f"\"{val}\""
-            fo.write(f"{key} = {val}")
+            fo.write(f"{key} = {val!r}\n")
 
 
 def hash_func(f: Callable) -> str:

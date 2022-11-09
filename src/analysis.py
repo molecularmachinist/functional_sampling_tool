@@ -94,7 +94,7 @@ def analysis_subparser(parser: argparse.ArgumentParser) -> None:
 
     extract_description = "Only repetitions for which the data " \
         "npz-archive is present can be extracted. Run the choose command with " \
-        "the--choose_only option to calculate the functions and make the archives " \
+        "the --choose_only option to calculate the functions and make the archives " \
         "without making a new epoch"
     # extractor command
     extr_parser = subparsers.add_parser("extract", help="Extract frames.",

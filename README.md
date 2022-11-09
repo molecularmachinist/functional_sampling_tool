@@ -316,6 +316,6 @@ _univ  = mda.Universe("initial/start.pdb")
 _mysel = univ.select_atoms("protein and resid 200-300 and backbone")
 ```
 
-Here we used a leading underscore, so that we do not accidentally overwrite any variables the program adds to the module, like `sel` and `struct`. Also here we cannot yet use those variables, since they are of course not added yet when the config is imported. Another note about this is that the choose command has to be run, or a PDB produced manually before this works, since the automatic PDB maker only runs after the config is imported. You can also just use the gro file as structure, but then make sure the atom naming is correct and you do not need chain info.
+Here we used a leading underscore, so that we do not accidentally overwrite any variables the program adds to the module, like `sel` and `struct`. We cannot yet use those variables, since they are of course not added yet when the config is imported, unlike the code within the function, which does not get called until later in the program.
 
-In the future multiple selection might be supprted and this will become less 
+In the future multiple selection might be supprted and this will become easier to deal with.

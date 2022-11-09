@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-import os
 import pathlib
 import math
 from sklearn.decomposition import PCA
@@ -78,36 +77,43 @@ class ClusterChooser(choosing.FrameChooser):
             NDArray[np.float_], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
         if (len(self.u_epcs) <= self.cfg.epochs_pre_clust):
             return self.plain_chooser.make_choices(prechoices, plot)
-        if (plot):
-            os.makedirs(self.cfg.fig_output_dir / ("epoch%02d" %
-                        self.u_epcs[-1]), exist_ok=True)
-            os.makedirs(self.cfg.fig_output_dir / ("epoch%02d" %
-                        self.u_epcs[-1]) / "clusters", exist_ok=True)
+
+        # Allocate array for labels, default value -1 for non labeled frames.
         clusters = np.full(self.fval.shape, -1, dtype=int)
 
         natoms = self.coords.shape[1]
         dims = self.coords.shape[2]
         clust_results = {}
+        # Iterate over bins
         for ci, cc in zip(self.clust_unique_bins, self.clust_unique_bin_counts):
+            # check the bin is not "over the edges" and there is enough data to go on
             if (ci != 0 and ci != len(self.bin_edges) and cc >= self.cfg.clust_data_per_bin):
+                # A mask of which values are in this bin
                 indxs = self.clust_hist_indexes == ci
                 nframes = np.sum(indxs, dtype=int)
+                # Get the coordinates in this bin
                 crds = self.coords[indxs].reshape((nframes, natoms*dims))
+                # Do the actual clustering
                 clust_results[ci] = make_clusters(
                     coords=crds,
                     maxclust=self.cfg.maxclust,
                     tol=self.cfg.clust_tol,
                     rng=self.cfg.rng
                 )
+                # Make cluster labels unique over different bins by adding 100 times the bin index to the labels,
+                # unless the maxclust is larger than that. In that case we add maxclust times the bin index.
                 clust_results[ci]["labels"] += ci*max(100, self.cfg.maxclust)
                 clusters[indxs] = clust_results[ci]["labels"]
 
+        # count data in each cluster
         clusts, counts = np.unique(clusters[clusters >= 0], return_counts=True)
         srt_clusts = clusts[np.argsort(counts)]
 
         nchoices = int(self.cfg.clust_choice_frac*self.cfg.N)
-        maxchoice = min(int(self.cfg.clust_choice_frac *
-                        self.cfg.N), len(srt_clusts)//2)
+
+        # Choose either the number appointed by clust_choice_frac, or at maximum half the total clusters
+        maxchoice = min(int(self.cfg.clust_choice_frac * self.cfg.N),
+                        len(srt_clusts)//2)
         choices = list(srt_clusts[:maxchoice])
 
         # If we can choose still more, do so by duplicate choosing
@@ -125,13 +131,20 @@ class ClusterChooser(choosing.FrameChooser):
             for i in range(nchoices-len(choices)):
                 choices.append(choices[i])
 
-        print(
-            f"Chose {len(choices)} clusters out of {len(clusts)}, with {nchoices} max allowed")
+        print(f"Chose {len(choices)} clusters out of "
+              f"{len(clusts)}, with {nchoices} max allowed")
         print(f"{len(np.unique(choices))} unique clusters")
 
         if (plot):
+            # Make sure the plot dir exists
+            (self.cfg.fig_output_dir /
+             ("epoch%02d" % self.u_epcs[-1]) /
+             "clusters"
+             ).mkdir(parents=True, exist_ok=True)
+            # Make a dictionary of choices and their counts (multiplicities)
             choice_counts = {ci: cc for ci, cc in
                              zip(*np.unique(choices, return_counts=True))}
+            # Plot all bins
             for ci in clust_results:
                 plot_clust(clust_results[ci],
                            choice_counts,
@@ -139,10 +152,13 @@ class ClusterChooser(choosing.FrameChooser):
                            ("epoch%02d" % (self.u_epcs[-1])) /
                            "clusters" / ("choices_%d.png" % ci))
 
+        # Choose the actual frames
         fval, epcs, reps, frms = self.choose_frames(choices, clusters)
 
         v, e, r, f = self.plain_chooser.make_choices(
-            prechoices+len(choices), plot)
+            prechoices=prechoices+len(choices),
+            plot=plot
+        )
         fval += v
         epcs += e
         reps += r
@@ -207,10 +223,11 @@ class ClusterChooser(choosing.FrameChooser):
             plt.axvline(c, linestyle="-.", alpha=.1, color="k")
 
         plt.legend()
-        os.makedirs(self.cfg.fig_output_dir / ("epoch%02d" %
-                    self.u_epcs[-1]), exist_ok=True)
-        plt.savefig(self.cfg.fig_output_dir / ("epoch%02d" %
-                    self.u_epcs[-1]) / "hist_clust.png")
+        outfile = (self.cfg.fig_output_dir /
+                   ("epoch%02d" % self.u_epcs[-1]) /
+                   "hist_clust.png")
+        outfile.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(outfile)
         plt.clf()
 
 
@@ -237,14 +254,10 @@ def make_clusters(coords: NDArray[np.float_],
     pca = PCA(n_components=ncomponents, whiten=True)
     pca.fit(shuffled_data)
 
-    # plot the explained variance
-
     print(f"First {ncomponents} PCA components explain {np.sum(pca.explained_variance_ratio_)*100} % of variance")
 
-    # 2D projections on the eigenspace_orig
+    # Get the two first PCs for each datapoint
     xpca = pca.transform(coords)
-
-    first_2 = np.vstack((xpca[:, 0], xpca[:, 1])).T
 
     # how to choose clusters?
     bic = []
@@ -252,9 +265,9 @@ def make_clusters(coords: NDArray[np.float_],
 
     for n_cluster in range(1, maxclust+1):
         gm = GaussianMixture(n_components=n_cluster,
-                             random_state=0).fit(first_2)
-        bic.append(gm.bic(first_2))
-        aic.append(gm.aic(first_2))
+                             random_state=0).fit(xpca)
+        bic.append(gm.bic(xpca))
+        aic.append(gm.aic(xpca))
 
     bic = np.array(bic)
     aic = np.array(aic)
@@ -265,18 +278,19 @@ def make_clusters(coords: NDArray[np.float_],
     raic /= raic[0]
 
     nclust = -1
+    # find the first occurence, where raic and rbic are both below tol
     for i, (ra, rb) in enumerate(zip(raic, rbic)):
         if (ra < tol and rb < tol):
             nclust = i+1
             break
-
+    # If nclust is not yet found, take the number with minimum product
     if (nclust < 0):
         nclust = np.argmin(raic*rbic)+1
 
     print(f"making {nclust} clusters")
 
-    # now try with GMM
-    gm = GaussianMixture(n_components=nclust, random_state=0).fit(first_2)
+    # now train the final GMM
+    gm = GaussianMixture(n_components=nclust, random_state=0).fit(xpca)
 
     results = {}
 
@@ -287,8 +301,8 @@ def make_clusters(coords: NDArray[np.float_],
     results["aic"] = aic
     results["rbic"] = rbic
     results["raic"] = raic
-    results["labels"] = gm.predict(first_2)
-    results["reduced_dims"] = first_2
+    results["labels"] = gm.predict(xpca)
+    results["reduced_dims"] = xpca
 
     return results
 

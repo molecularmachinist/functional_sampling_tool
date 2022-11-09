@@ -103,13 +103,18 @@ class FrameChooser():
         self.binsize = (self.binmax-self.binmin)/maxbins
         print(f"Calculated maxbins {maxbins_calc}, final maxbins {maxbins}")
         print(f"{np.sum((self.fval>minval)*(self.fval<maxval))} data inside boundaries")
-        # Make histogram
+        # Make bin edges
         if (hard_boundaries):
-            self.bin_edges = np.linspace(self.binmin, self.binmax, maxbins)
+            self.bin_edges = np.linspace(self.binmin,
+                                         self.binmax,
+                                         maxbins)
         else:
-            self.bin_edges = np.arange(
-                lowest_val, largest_val+self.binsize, self.binsize)
+            self.bin_edges = np.arange(lowest_val,
+                                       largest_val+self.binsize,
+                                       self.binsize)
+        # Make the histogram
         self.hist, _ = np.histogram(self.fval, bins=self.bin_edges)
+        # bin centers are halfway between edges
         self.bin_centers = (self.bin_edges[:-1]+self.bin_edges[1:])/2
         # Make a mask of which bins have higher edge larger than minval
         # AND lower edge lower than maxval
@@ -130,10 +135,13 @@ class FrameChooser():
         Uses the histogram to choose bins and returns the bin indices of the choices.
         prechoices is the number of choices already done.
         """
+        # Smooth the distribution
         smoothed = utils.rolling_mean(self.hist)
+        # Get a amask to ingore the nan-values in the smoothed distribution
         nanmask = np.isfinite(smoothed)*self.hist_mask
-        maxims, max_crit = find_peaks(
-            smoothed[nanmask], **self.cfg.peak_options)
+        # Find maxima and minima
+        maxims, max_crit = find_peaks(smoothed[nanmask],
+                                      **self.cfg.peak_options)
         minims, min_crit = find_peaks(-smoothed[nanmask],
                                       **self.cfg.peak_options)
 
@@ -157,20 +165,18 @@ class FrameChooser():
         zero_mask = self.hist_mask*(self.hist != 0)
         indexes = np.arange(len(self.hist))[zero_mask]
 
-        # TODO: refactor below
-        # Handle not peaks-edge case
-        if (maxims.size == 0):
-            if (self.hist[self.hist_mask][-1] < crith):
+        # If the right edge is low enough, check if we add it to choices
+        if (self.hist[self.hist_mask][-1] < crith):
+            # if   no maxima     or    no minima     or last maximum is closer than last minimum
+            if (maxims.size == 0 or minims.size == 0 or maxims[-1] > minims[-1]):
                 choices.append(indexes[-1])
-            if (self.hist[self.hist_mask][0] < crith):
-                choices.append(indexes[0])
-        else:
-            # Check if first/last extrema is a maxima -> also include the far end(s)
-            if ((minims.size == 0 or maxims[-1] > minims[-1]) and self.hist[self.hist_mask][-1] < crith):
-                choices.append(indexes[-1])
-            if ((minims.size == 0 or maxims[0] < minims[0]) and self.hist[self.hist_mask][0] < crith):
+        # Now same for left edge
+        if (self.hist[self.hist_mask][0] < crith):
+            # if   no maxima     or    no minima     or first maximum is closer than first minimum
+            if (maxims.size == 0 or minims.size == 0 or maxims[0] < minims[0]):
                 choices.append(indexes[0])
 
+        # weights go linearily from 1 at no data 0 at at crith
         weights = [(crith-self.hist[c]) for c in choices]
         weights /= np.sum(weights)
         srt_ind = np.argsort(-weights)
@@ -305,10 +311,13 @@ class FrameChooser():
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         plt.tight_layout()
         # Make directory and save fig
-        os.makedirs(self.cfg.fig_output_dir / ("epoch%02d" %
-                    self.u_epcs[-1]), exist_ok=True)
-        plt.savefig(self.cfg.fig_output_dir / ("epoch%02d" %
-                    self.u_epcs[-1]) / "hist.png")
+        outfile = (
+            self.cfg.fig_output_dir /
+            ("epoch%02d" % self.u_epcs[-1]) /
+            "hist.png"
+        )
+        outfile.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(outfile)
         plt.clf()
 
     def _plot_choices(self, crith, smoothed, choices, nanmask, maxims, minims) -> None:
@@ -325,8 +334,11 @@ class FrameChooser():
         plt.plot(self.bin_centers[choices],
                  self.hist[choices], "g^", label="Choices")
         plt.legend()
-        os.makedirs(self.cfg.fig_output_dir / ("epoch%02d" %
-                    self.u_epcs[-1]), exist_ok=True)
-        plt.savefig(self.cfg.fig_output_dir / ("epoch%02d" %
-                    self.u_epcs[-1]) / "choices.png")
+        outfile = (
+            self.cfg.fig_output_dir /
+            ("epoch%02d" % self.u_epcs[-1]) /
+            "choices.png"
+        )
+        outfile.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(outfile)
         plt.clf()

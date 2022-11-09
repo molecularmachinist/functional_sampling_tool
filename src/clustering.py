@@ -148,6 +148,7 @@ class ClusterChooser(choosing.FrameChooser):
             for ci in clust_results:
                 plot_clust(clust_results[ci],
                            choice_counts,
+                           (self.bin_edges[ci-1], self.bin_edges[ci]),
                            plotname=self.cfg.fig_output_dir /
                            ("epoch%02d" % (self.u_epcs[-1])) /
                            "clusters" / ("choices_%d.png" % ci))
@@ -307,7 +308,7 @@ def make_clusters(coords: NDArray[np.float_],
     return results
 
 
-def plot_clust(results: Dict[str, NDArray], choices: Dict[int, int], plotname: pathlib.Path):
+def plot_clust(results: Dict[str, NDArray], choices: Dict[int, int], fval_range: Tuple[float, float], plotname: pathlib.Path):
     """
     Takes a shape(n,m) array of coordinates and return shape(n) labels of clusters.
     The labels should be integers between 0 and maxclust.
@@ -315,6 +316,7 @@ def plot_clust(results: Dict[str, NDArray], choices: Dict[int, int], plotname: p
     Input parameters:
         - results  : A dictionary with the results from make_clusters.
         - choices  : A dictionary with the chosen labels as keys and multiplicity of choices as values.
+        - choices  : A tuple with the boundaries of the bin in function values.
         - plotname : A pathlib.Path where the figure will be saved.
     """
     global colors
@@ -342,7 +344,7 @@ def plot_clust(results: Dict[str, NDArray], choices: Dict[int, int], plotname: p
         label = str(lbl)
         if lbl in choices:
             if (choices[lbl] > 1):
-                label += " (%d)" % (choices[lbl])
+                label += f" ({choices[lbl]})"
             else:
                 label += " (*)"
         handles.append(
@@ -350,6 +352,9 @@ def plot_clust(results: Dict[str, NDArray], choices: Dict[int, int], plotname: p
 
     axes[1, 1].legend(handles=handles, loc="upper left")
     axes[1, 1].axis("off")
+
+    fig.suptitle("fval range ({:.5g} to {:.5g})".format(*fval_range))
+    fig.tight_layout()
 
     fig.savefig(plotname)
 

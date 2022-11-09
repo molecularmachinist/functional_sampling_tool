@@ -295,11 +295,14 @@ def import_cfg(cfgpath: pathlib.Path) -> Any:
     sys.dont_write_bytecode = writebytecode
 
     # Load defaults
+    cfg.default_items = {}
     for item in dir(default_config):
         if (item.startswith("__")):
             continue
         if (not hasattr(cfg, item)):
-            setattr(cfg, item, getattr(default_config, item))
+            value = getattr(default_config, item)
+            cfg.default_items[item] = value
+            setattr(cfg, item, value)
 
     cfg.ignore_epcs = set(cfg.ignore_epcs)
     cfg.ignore_reps = set(cfg.ignore_reps)

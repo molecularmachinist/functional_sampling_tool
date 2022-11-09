@@ -201,4 +201,5 @@ def start_epoch(nextepoch: int, cfg: Any,
         "epoch%02d" % nextepoch) / cfg.sbatch.name, nextepoch, cfg)
 
     utils.copy_config(pathlib.Path(cfg.__file__),
-                      pathlib.Path("epoch%02d" % nextepoch) / "config.py")
+                      pathlib.Path("epoch%02d" % nextepoch) / "config.py",
+                      cfg.default_items)

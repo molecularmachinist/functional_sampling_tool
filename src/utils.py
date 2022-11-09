@@ -4,6 +4,7 @@ import subprocess as subp
 import numpy as np
 import math
 import os
+import sys
 import inspect
 import hashlib
 import warnings
@@ -172,20 +173,25 @@ def copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: 
                 fo.write(line.replace("{epoch_num}", str(enum)))
 
 
-def copy_config(fin: pathlib.Path, fout: pathlib.Path):
+def copy_config(fin: pathlib.Path, fout: pathlib.Path, default_values: Dict[str, Any] = {}):
     """
     Copy the config file to the specified location.
-    TODO: add default values to the end of the new config file.
     """
     with fout.open("w")as fo:
         fo.write(f"# Copy of {fout}\n")
         fo.write("# Made with functional_sampling_tool "
                  f"version {fst_version}\n")
+        fo.write("# Command line call:\n")
+        fo.write("# "+" ".join(sys.argv)+"\n\n")
 
         with fin.open() as fi:
             fo.write(fi.read())
 
-        # for def_val in default_vals:
+        fo.write("\n#  Default values: \n")
+        for key, val in default_values.items():
+            if (type(val) == str):
+                val = f"\"{val}\""
+            fo.write(f"{key} = {val}")
 
 
 def hash_func(f: Callable) -> str:

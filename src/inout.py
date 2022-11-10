@@ -174,7 +174,7 @@ def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[
 
 def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Dict[int, Union[str, NDArray[np.float_]]]]]:
     epochs = check_num(pathlib.Path("epoch"))
-    data = {"fval": {}, "fnames": {}}
+    data = {"fval": {}, "fnames": {}, "origin": {}}
     for e in epochs:
         if (doignore and (e in cfg.ignore_epcs)):
             continue
@@ -189,6 +189,9 @@ def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Di
             if (doignore and ((e, r) in cfg.ignore_reps)):
                 continue
             d = edir / ("rep%02d" % r)
+
+            data["origin"][e][r] = utils.load_origin_data(d, e)
+
             if (not (d/cfg.npz_file_name).is_file()):
                 continue
 

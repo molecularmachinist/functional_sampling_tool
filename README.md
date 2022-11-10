@@ -108,9 +108,9 @@ At minimum you will need to copy the templates for `config.py` and  `sbatch_laun
 ```sh
 fst make_templates
 ```
-after which you should make sure the sbatch launch script matches your workflow and simulation methods. The parts in curly brackets will be populated with the info from `config.py` for email and account, and  the epoch number in the job name.
+after which you should make sure the sbatch launch script matches your workflow and simulation methods. The parts `{epoch_number}` will be populated with the epoch number, in the example to rename each job.
 
-You will also need to have a starting structure, which should be put into `initil/start.gro`. You will also need a topology in `topol.top`, mdrun options in `mdrun.mdp` and an index file for grompping in `index_grompp.ndx` (for now this is required, in future version might only be needed if special groups are used in the `mdp`-file). Here is a tree view of how you project folder should look like to begin:
+You will also need to have a starting structure, which should be in `start.gro`, as well as a topology in `topol.top`, mdrun options in `mdrun.mdp` and an index file for grompping in `index_grompp.ndx` (for now this is required, in future version might only be needed if special groups are used in the `mdp`-file). Here is a tree view of how you project folder should look like to begin:
 
 ```
 ├── config.py *

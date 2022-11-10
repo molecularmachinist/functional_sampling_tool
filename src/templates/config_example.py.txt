@@ -33,7 +33,10 @@ maxwarn = 0
 
 
 ############################## Function calcs ##################################
-# Initial structure file, used for making the selections
+# Initial structure file, used for making the selections. String or list of strings.
+# With a single value it is used as the topology and list of starting structure,
+# With multiple files the first is used as the reference structure and topology,
+# but only the subsequent files are used as starting points for the initial epoch.
 initial_struct = "start.gro"
 # To make next run faster we save this selection to disk
 # The coordinates of the selection are used in function_val

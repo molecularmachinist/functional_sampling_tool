@@ -26,7 +26,7 @@ restraint_file = False
 maxwarn = 0
 
 ############################## Function calcs ##################################
-# Initial structure file
+# Initial structure file(s)
 initial_struct = "start.gro"
 # index file for selections
 index_file = None

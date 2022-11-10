@@ -200,7 +200,9 @@ def hash_func(f: Callable) -> str:
     return hashlib.md5(fstr.encode('utf-8')).hexdigest()
 
 
-def load_sel(sel_str: str, struct: Union[mda.Universe, AtomGroup], ndx: Dict[str, List[int]]) -> AtomGroup:
+def load_sel(sel_str: str,
+             struct: Union[mda.Universe, AtomGroup],
+             ndx: Dict[str, List[int]]) -> AtomGroup:
     if (sel_str in ndx):
         sel = struct.atoms[np.array(ndx[sel_str])-1]
     else:

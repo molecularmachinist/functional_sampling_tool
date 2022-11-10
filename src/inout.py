@@ -251,35 +251,6 @@ def load_data(cfg: Any, load_fval: bool):
     return fval, crds, frms, reps, epcs
 
 
-starter_suffixes = [".pdb", ".gro", ".xtc"]
-
-
-def load_starter_structures(initial_struct: pathlib.Path) -> mda.Universe:
-    """
-    Checks for starter structures as initial/start*.gro (not including start.gro) or initial/start*.xtc
-    Returns a universe with the frames loaded if some are found, otherwise just the initial/start.gro.
-    """
-    global starter_suffixes
-    univ = mda.Universe(str(initial_struct))
-    starters = {}
-    for key in starter_suffixes:
-        starters[key] = []
-
-    for f in initial_struct.parent.iterdir():
-        if (f.name.startswith(initial_struct.stem) and f.suffix in starters and f != initial_struct):
-            starters[f.suffix].append(f)
-
-    starters_files = []
-    for key in starter_suffixes:
-        starters[key].sort()
-        starters_files.extend(starters[key])
-
-    if (starters_files):
-        univ.load_new([str(f) for f in starters_files])
-
-    return univ
-
-
 def import_cfg(cfgpath: pathlib.Path) -> Any:
     """
     Only import the config, does not load structs or do anything with it.
@@ -307,8 +278,13 @@ def import_cfg(cfgpath: pathlib.Path) -> Any:
     cfg.ignore_epcs = set(cfg.ignore_epcs)
     cfg.ignore_reps = set(cfg.ignore_reps)
 
+    if (type(cfg.initial_struct) != list):
+        cfg.initial_struct = [cfg.initial_struct]
+
+    cfg.initial_struct = [pathlib.Path(item) for item in cfg.initial_struct]
+
     # Make path variables into Path objects
-    for pathvar in ("npz_file_name", "fig_output_dir", "initial_struct", "mdp", "topol", "ndx", "sbatch"):
+    for pathvar in ("npz_file_name", "fig_output_dir", "mdp", "topol", "ndx", "sbatch"):
         aspath = pathlib.Path(getattr(cfg, pathvar))
         setattr(cfg, pathvar, aspath)
 
@@ -321,7 +297,7 @@ def load_options(cfgpath: pathlib.Path) -> Any:
     """
     cfg = import_cfg(cfgpath)
     print("Loading structure")
-    cfg.struct = mda.Universe(str(cfg.initial_struct))
+    cfg.struct = mda.Universe(str(cfg.initial_struct[0]))
     cfg.indexes = utils.read_ndx(cfg.index_file)
     cfg.sel = utils.load_sel(cfg.select_str, cfg.struct, cfg.indexes)
     cfg.sel_clust = utils.load_sel(
@@ -333,7 +309,8 @@ def load_options(cfgpath: pathlib.Path) -> Any:
     if (cfg.unwrap_mols):
         # Preparing molecule unwrapper
         mdrunpath = pathlib.Path("epoch01")/"rep01"/"mdrun.tpr"
-        bonded_struct = mda.Universe(str(mdrunpath), str(cfg.initial_struct))
+        bonded_struct = mda.Universe(str(mdrunpath),
+                                     str(cfg.initial_struct[0]))
         unwrap_sel = utils.load_sel(cfg.unwrap_sel, cfg.struct, cfg.indexes)
         unwrap_sel = bonded_struct.atoms[unwrap_sel.indices]
         if (cfg.unwrap_starters is None):

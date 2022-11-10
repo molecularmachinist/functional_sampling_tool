@@ -5,6 +5,7 @@ import numpy as np
 import warnings
 from multiprocessing import Pool
 import pathlib
+import MDAnalysis as mda
 
 from .exceptions import RepExistsError, NonzeroReturnError
 
@@ -21,6 +22,7 @@ from numpy.typing import NDArray
 def init_rep(i: int,
              cfg: Any,
              atoms: AtomGroup,
+             origin: Tuple[int, int],
              pool: Pool,
              d: str = "epoch01") -> Tuple[pathlib.Path, AsyncResult]:
     """ Initializes rep i from atom group atoms
@@ -31,8 +33,16 @@ def init_rep(i: int,
             f"{d} already exists, will not try to overwrite. Try running \"fst clean\" to remove the latest epoch directory.")
     d.mkdir()
 
-    # If not found, just load the default
     atoms.write(str(d / "start.gro"))
+
+    # Make a note of the origin
+    with (d / "origin.txt").open("w") as f:
+        f.write("# Origin of this trajectory:\n")
+        f.write(f"# Frame is from {cfg.initial_struct[origin[0]]}\n")
+        f.write("# Initial value not yet calculated, set to NaN\n")
+        f.write("# Rep is the index of the origin file in 'initial_struct'\n")
+        f.write("# epoch rep frame val\n")
+        f.write("%d %d %d nan\n" % (0, origin[0], origin[1]))
 
     print("Wrote start.gro to rep%02d, starting to grompp..." % (i))
 
@@ -46,7 +56,7 @@ def init_rep(i: int,
     if (cfg.maxwarn):
         kwargs["maxwarn"] = str(cfg.maxwarn)
     if (cfg.restraint_file == "initial"):
-        kwargs["r"] = pathlib.Path("..", "..") / cfg.initial_struct
+        kwargs["r"] = pathlib.Path("..", "..") / cfg.initial_struct[0]
     elif (cfg.restraint_file == "start"):
         kwargs["r"] = "start.gro"
     elif (cfg.restraint_file):
@@ -104,7 +114,7 @@ def next_rep(i: int,
     if (cfg.maxwarn):
         kwargs["maxwarn"] = cfg.maxwarn
     if (cfg.restraint_file == "initial"):
-        kwargs["r"] = pathlib.Path("..", "..") / cfg.initial_struct
+        kwargs["r"] = pathlib.Path("..", "..") / cfg.initial_struct[0]
     elif (cfg.restraint_file == "start"):
         kwargs["r"] = pathlib.Path("start.gro")
     elif (cfg.restraint_file):
@@ -146,7 +156,7 @@ def start_epoch(nextepoch: int, cfg: Any,
         res = []
         if (nextepoch == 1):
             # Initial structures and first epoch
-            struct = inout.load_starter_structures(cfg.initial_struct)
+            struct = mda.Universe(*[str(f) for f in cfg.initial_struct])
             num_frames = len(struct.trajectory)
             print("Found %d starting structures" % num_frames)
             if (num_frames > cfg.N):
@@ -168,8 +178,22 @@ def start_epoch(nextepoch: int, cfg: Any,
                     break
 
                 struct.trajectory[i % num_frames]
-                res.append(init_rep(cfg.first_rep_num +
-                           i, cfg, struct.atoms, p))
+
+                if (len(cfg.initial_struct) == 1):
+                    origin = (0, 0)
+                if (len(cfg.initial_struct) == 2):
+                    origin = (1, i % num_frames)
+                else:
+                    ofile, oframe = struct.trajectory._get_local_frame(
+                        struct.trajectory.frame)
+                    origin = (ofile+1, oframe)
+                res.append(
+                    init_rep(cfg.first_rep_num + i,
+                             cfg,
+                             struct.atoms,
+                             origin,
+                             p)
+                )
         elif (np.any([d is None for d in (val, epc, rep, frm)])):
             raise ValueError(
                 "val, epc, rep or frm cannot be None if nextepoch!=1")

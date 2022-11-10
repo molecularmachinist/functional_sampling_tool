@@ -212,7 +212,7 @@ rsync_excludes = ["fval_data.npz", ".mdrun.xtc_offsets.lock", ".mdrun.xtc_offset
 | --- | - | - |
 | `select_str` | The selection string (or index group) used for the function calculation. | - |
 | `select_str_clust` | The selection string (or index group) used for the clustering. | - |
-| `initial_struct` | The initial structure file. Can be any file that MDAnalysis can read as a structure file without needing a trajectory. E.g. TPR files are (currently, as of MDAnalysis v2.2.0) not enough. Gro and pdb are guaranteed to work. | `"start.gro"` |
+| `initial_struct` | The initial structure file, either as a single string or list of strings. The first file has to be one that MDAnalysis can read as a structure file without needing a trajectory. E.g. TPR files are (currently, as of MDAnalysis v2.2.0) not enough. GRO and PDB are guaranteed to work. The rest can be any trajectory files read by MDAnalysis, with matching number of atoms. | `"start.gro"` |
 | `index_file` | `None` or the name of the index file, where the index groups of the selections are. | `None` |
 | `minval`/`maxval` | The boundaries for the functional sampling. One of them can be the string "start", to use the initial value, and either can be `None` to use no boundary (only useful at the beginning). | - |
 | `function_val` | The function to be sampled. | - |
@@ -273,14 +273,9 @@ In most cases you should not need these, but may be helpful in others.
 
 #### Multiple starting structure
 
-If you want to have multiple different starting points, or even different starting points for each repetition this is now possible. All pdb/gro/xtc files in the same dir as `initial_struct`, matching `<name>*.<suffix>` (where `<name>` is the name of the initial structure without file ending), excluding `initial_struct`, will be used as starting frames.
+If you want to have multiple different starting points, you can specify `initial_struct` in the config as a list of filenames. The first one will be used only as a topology and a reference structure, while the rest will only be used as starting points for the initial epoch. The repetitions will be started in the order the files are listed, iterating over all frames in each one. If more frames than repetitons are found, a warning will be raised. If there are less frames than repetitions, the iteration is simply started from beginning as many times as needed.
 
-For example, you can set `initial_struct="initial/start.gro"`, make the folder "initial" and include gro files named `start.gro`,`start01.gro`,`start02.gro`,...,`start16.gro` to have 16 different frames. "start.gro" will be used for making all selections and as astructure file during and after initialization. The rest will only be used during initialization as the starting structures. For the same effect you can also have just `start.gro` and a single xtc file as `start.xtc` with 16 frames.
-
-The frames will be read in alphabetic order, `pdb` files before `gro`, and `gro` files before `xtc`. If there are in total more frames than repetitions, a warning will be produced and the N first frames will be used (for N repetitions). If there are less frames than repetitions, they will be read in order and filled in "round robin" fashion (e.g.for three frames and 8 repetitions, the repetiton starting points would be [1,2,3,1,2,3,1,2]).
-
-**Remember** that you do always need the `initial_struct` to be used as a structure file, and it will only be used as a starting structure, if it is the only one found. If you have three gro files under `initial`: `start.gro`, `start1.gro`, `start2.gro`, this will be counted as two starting frames, the first from `start1.gro` and second from `start2.gro`. If the `initial_struct` is the only file found, then it will be used as the only frame.
-
+The `init` command makes a similar `origin.txt` file as the `choose` command, so you can check where the initial frame for each rep came from. The epoch will always be zero, the "rep" will be the index of the file in `initial_struct`. The function value is not yet calculated in the initialisation, so it will only be nan.
 
 #### Using the MDAnalysis selection objects in the calculation of the function
 

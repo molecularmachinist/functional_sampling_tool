@@ -254,19 +254,19 @@ def load_data(cfg: Any, load_fval: bool):
 starter_suffixes = [".pdb", ".gro", ".xtc"]
 
 
-def load_starter_structures(intial_struct: pathlib.Path) -> mda.Universe:
+def load_starter_structures(initial_struct: pathlib.Path) -> mda.Universe:
     """
     Checks for starter structures as initial/start*.gro (not including start.gro) or initial/start*.xtc
     Returns a universe with the frames loaded if some are found, otherwise just the initial/start.gro.
     """
     global starter_suffixes
-    univ = mda.Universe(str(intial_struct))
+    univ = mda.Universe(str(initial_struct))
     starters = {}
     for key in starter_suffixes:
         starters[key] = []
 
-    for f in intial_struct.parent.iterdir():
-        if (f.name.startswith(intial_struct.stem) and f.suffix in starters and f != intial_struct):
+    for f in initial_struct.parent.iterdir():
+        if (f.name.startswith(initial_struct.stem) and f.suffix in starters and f != initial_struct):
             starters[f.suffix].append(f)
 
     starters_files = []

@@ -2,7 +2,20 @@ import argparse
 import pathlib
 
 from .. import inout
+from ..exceptions import NoNetworkxError
+
+
 from .extract import extract
+
+try:
+    from .ancestry import ancestry
+except ImportError as e:
+    ancestry_fail_error = e
+
+    def ancestry(args: argparse.Namespace):
+        raise NoNetworkxError("Failed to import functional_sampling_tool.analysis.extract.\n"
+                              "Make sure you have networkx installed before making ancestry graphs.\n"
+                              f"Original error message: {ancestry_fail_error}")
 
 # type alias
 subparser_type = argparse._SubParsersAction[argparse.ArgumentParser]
@@ -68,6 +81,28 @@ def extract_subparser(subparsers: subparser_type) -> None:
                              default=None)
     # Use just config import as config_func, so the selections and such are not loaded
     extr_parser.set_defaults(func=extract, config_func=inout.import_cfg)
+
+
+def ancestry_subparser(subparsers: subparser_type) -> None:
+    """
+    Add the ancestry graph options to the provided subparser
+    """
+
+    ancestry_description = "Make a graph of which simulation each new simulation is spawned from."
+
+    # extractor command
+    anc_parser = subparsers.add_parser("ancestry", help="Make an ancestry graph of the simulations.",
+                                       description=ancestry_description)
+    anc_parser.add_argument("-o", "--output", metavar="<name>.pdf", dest="output",
+                            help="Output file for the graph. The parent directory will be created if it does not yet exist (default: %(default)s)",
+                            default=pathlib.Path("analysis/figs/ancestry.pdf"))
+    anc_parser.add_argument("--doignore",     action="store_true", dest="doignore",
+                            help="Ignore the epochs and repetitions defined in the config. "
+                            "Note that this can result in problems if any of the ignored simulations "
+                            "is a parent to another one. (default: do not ignore)")
+
+    # Use just config import as config_func, so the selections and such are not loaded
+    anc_parser.set_defaults(func=ancestry, config_func=inout.import_cfg)
 
 
 def analysis_subparser(parser: argparse.ArgumentParser):

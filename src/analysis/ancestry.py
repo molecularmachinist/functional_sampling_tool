@@ -66,15 +66,15 @@ def make_graph(data: dict, include_start=True):
     return G
 
 
-def plot_graph(fout: pathlib.Path, G: nx.graph, data: dict):
+def plot_graph(fout: pathlib.Path, G: nx.DiGraph, data: dict):
     fig, ax = plt.subplots(1)
     pos = nx.nx_agraph.graphviz_layout(G, prog="dot")
-    # nx.draw(G,pos={key:key for key in G},ax=ax)
+
     max_frm = 0
     for e, r in pos:
         if (e == 0):
             continue
-        max_frm = max(data["run_frm"][e][r][0]/10, max_frm)
+        max_frm = max(data["start_frm"][e][r], max_frm)
 
     default_size = np.array((50, 12))
 
@@ -85,11 +85,9 @@ def plot_graph(fout: pathlib.Path, G: nx.graph, data: dict):
         posB2 = posB+(0, 1.5*default_size[1])
         path = mpl.path.Path([posA, posA2, posB2, posB],
                              [1, 4, 4, 4])
-        # arr = mpl.patches.FancyArrowPatch(path=path)
+
         arr = mpl.patches.PathPatch(path, fc="none")
         ax.add_patch(arr)
-
-    # nx.draw_networkx_edges(G,pos=pos,ax=ax,node_size=500, arrows=True, connectionstyle="arc") #,with_labels=True)
 
     cmap = mpl.colors.LinearSegmentedColormap.from_list(
         name="MyBlues", colors=[mpl.colormaps["Blues"](0.05), mpl.colormaps["Blues"](0.75)])
@@ -104,7 +102,7 @@ def plot_graph(fout: pathlib.Path, G: nx.graph, data: dict):
         maxs = np.maximum(maxs, pos[node]+size)
         mins = np.minimum(mins, pos[node]-size)
         if (node[0] > 0):
-            color = cmap(norm(data["run_frm"][node[0]][node[1]][0]/10))
+            color = cmap(norm(data["start_frm"][node[0]][node[1]]))
         else:
             color = cmap(0)
         rec = mpl.patches.Rectangle(pos[node]-size/2,
@@ -112,7 +110,7 @@ def plot_graph(fout: pathlib.Path, G: nx.graph, data: dict):
                                     facecolor=color,
                                     edgecolor="k")
         ax.add_patch(rec)
-        ax.text(*pos[node], f"{node[0] if node[0]!=0 else 'start'}",  # ,{node[1]}",
+        ax.text(*pos[node], f"{node[0] if node[0]!=0 else 'start'}",
                 ha="center", va="center")
 
     ax.set_xlim(mins[0], maxs[0])
@@ -120,7 +118,7 @@ def plot_graph(fout: pathlib.Path, G: nx.graph, data: dict):
     fig.set_size_inches(26, 10)
     cbar = plt.colorbar(mpl.cm.ScalarMappable(
         norm, cmap), ax=ax, location="right", fraction=0.02, aspect=30, pad=0.005)
-    cbar.set_label("Runtime at start of simulation (ns)")
+    cbar.set_label("Number of frames at start of simulation")
 
     ax.axis("off")
 
@@ -132,3 +130,5 @@ def plot_graph(fout: pathlib.Path, G: nx.graph, data: dict):
 
 def ancestry(args: argparse.Namespace) -> None:
     data = inout.load_extract_data(args.cfg, args.doignore)
+    G = make_graph(data)
+    plot_graph(args.output, G, data)

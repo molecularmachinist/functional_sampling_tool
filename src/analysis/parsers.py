@@ -17,11 +17,8 @@ except ImportError as e:
                               "Make sure you have networkx installed before making ancestry graphs.\n"
                               f"Original error message: {ancestry_fail_error}")
 
-# type alias
-subparser_type = argparse._SubParsersAction[argparse.ArgumentParser]
 
-
-def extract_subparser(subparsers: subparser_type) -> None:
+def extract_subparser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]") -> None:
     """
     Add the extraction options to the provided subparser
     """
@@ -83,7 +80,7 @@ def extract_subparser(subparsers: subparser_type) -> None:
     extr_parser.set_defaults(func=extract, config_func=inout.import_cfg)
 
 
-def ancestry_subparser(subparsers: subparser_type) -> None:
+def ancestry_subparser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]") -> None:
     """
     Add the ancestry graph options to the provided subparser
     """

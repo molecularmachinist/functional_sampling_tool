@@ -143,7 +143,7 @@ def argP() -> argparse.Namespace:
 
     # Template command
     templ_parser = subparsers.add_parser(
-        "make_templates", help="Copy default config.py and sbatch_template.sh files")
+        "make-templates", help="Copy default config.py and sbatch_template.sh files")
     templ_parser.set_defaults(
         func=copy_templates, config_func=(lambda cfgpath: None))
     templ_parser.add_argument("--config-out", metavar="<name>.py", default=pathlib.Path("config.py"),

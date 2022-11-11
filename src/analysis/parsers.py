@@ -116,3 +116,4 @@ def analysis_subparser(parser: argparse.ArgumentParser):
     subparsers.dest = 'subcommand'
 
     extract_subparser(subparsers)
+    ancestry_subparser(subparsers)

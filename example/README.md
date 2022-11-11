@@ -6,7 +6,7 @@ Here we take a very small protein (α-Conotoxin MII, PDB id [1MII](https://www.r
 
 To begin, you should have downloaded this repo, and installed all the required python packages, as well as have gromacs installed. To start off, `cd` into the `initialize` folder and take a look around. This is how you should set up your own project, when you start running one. You'll notice the `config.py` is already set up, a starting structure is in `initial/start.gro`, along with a corresponding topology in `topol.top`.
 
-The `sbatch_launch.sh` is where you would normally add you SLURM commands to run the job on a supercomputer. In this example case it is just a bash script that runs the repetitions on the local machine. To produce an example of the `sbatch_launch.sh` and `config.py`, you can run `fst make_templates`. Don't run it now, or you would overwrite the current files.
+The `sbatch_launch.sh` is where you would normally add you SLURM commands to run the job on a supercomputer. In this example case it is just a bash script that runs the repetitions on the local machine. To produce an example of the `sbatch_launch.sh` and `config.py`, you can run `fst make-templates`. Don't run it now, or you would overwrite the current files.
 
 `index_grompp.ndx` is, for now, needed even if you have no special groups in the mdp file. To make one with just the defaults, use
 ```

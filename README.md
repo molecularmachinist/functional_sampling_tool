@@ -106,7 +106,7 @@ After a set amount of epochs, the tool will start to use a clustering method on 
 
 At minimum you will need to copy the templates for `config.py` and  `sbatch_launch.sh` to your project folder. This can be done with
 ```sh
-fst make_templates
+fst make-templates
 ```
 after which you should make sure the sbatch launch script matches your workflow and simulation methods. The parts `{epoch_number}` will be populated with the epoch number, in the example to rename each job.
 
@@ -121,7 +121,7 @@ You will also need to have a starting structure, which should be in `start.gro`,
 └── sbatch_launch.sh *
 ```
 
-The files marked with an asterisk can be copied and modified from templates with `fst make_templates`, while the rest you should provide yourself. All the file names can differ from these and are defined in the config (except the config name, of course), these are just the defaults. The config name can be given as a command line argument **before the command** (e.g. `fst -c myconfig.py choose`).
+The files marked with an asterisk can be copied and modified from templates with `fst make-templates`, while the rest you should provide yourself. All the file names can differ from these and are defined in the config (except the config name, of course), these are just the defaults. The config name can be given as a command line argument **before the command** (e.g. `fst -c myconfig.py choose`).
 
 ## Usage
 

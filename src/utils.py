@@ -14,7 +14,7 @@ from .exceptions import DeprecatedUsageWarning, NoSbatchLaunchError
 from . import __version__ as fst_version
 
 # Type hinting
-from typing import Any, Callable, Union, Optional, List, Dict
+from typing import Any, Callable, Union, Optional, List, Dict, Tuple
 import MDAnalysis as mda
 from MDAnalysis.core.groups import AtomGroup
 from MDAnalysis.coordinates.base import Timestep
@@ -200,9 +200,52 @@ def hash_func(f: Callable) -> str:
     return hashlib.md5(fstr.encode('utf-8')).hexdigest()
 
 
-def load_sel(sel_str: str, struct: Union[mda.Universe, AtomGroup], ndx: Dict[str, List[int]]) -> AtomGroup:
+def load_sel(sel_str: str,
+             struct: Union[mda.Universe, AtomGroup],
+             ndx: Dict[str, List[int]]) -> AtomGroup:
     if (sel_str in ndx):
         sel = struct.atoms[np.array(ndx[sel_str])-1]
     else:
         sel = struct.select_atoms(sel_str)
     return sel
+
+
+def load_origin_data(filename: pathlib.Path, e: int) -> dict[str, Union[int, float]]:
+    """
+    Load the reps origin data from the given filename. If the file is not found, but the
+    epoch is the first one, the info is guessed. If the epoch is not the first one a message
+    is printed on stderr and an empty dict is returned.
+    If the file is found, but parsing fails, a message is printed in stderr and empty dict returned.
+    """
+    data = {}
+    try:
+        with (filename).open() as f:
+            for line in f:
+                if line.startswith("#"):
+                    continue
+                parts = line.split()
+                break
+
+        if (len(parts) != 4):
+            raise ValueError()
+        data = {"epc":  int(parts[0]),
+                "rep":  int(parts[1]),
+                "frm":  int(parts[2]),
+                "fval": float(parts[3])}
+
+    except FileNotFoundError:
+        if (e == 1):
+            data = {"epc":  0,
+                    "rep":  0,
+                    "frm":  0,
+                    "fval": float("nan")}
+        else:
+            print(f"origin file in {filename} could not be found. "
+                  "This might be a problem if you're making an ancestry graph",
+                  file=sys.stderr)
+    except ValueError:
+        print(f"origin file in {filename} could not be parsed. "
+              "This might be a problem if you're making an ancestry graph",
+              file=sys.stderr)
+
+    return data

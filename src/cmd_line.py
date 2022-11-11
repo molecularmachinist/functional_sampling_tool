@@ -9,7 +9,7 @@ from . import inout
 from . import epoch_starting
 from . import clustering
 from . import utils
-from . import analysis
+from .analysis import parsers as analysis_parsers
 from .exceptions import handle_errors
 
 # For python 3.10 (or higher) import from standard lib, older releases use importlib_resources.
@@ -158,7 +158,7 @@ def argP() -> argparse.Namespace:
     # Analysis command
     analysis_parser = subparsers.add_parser(
         "analysis", help="Utilities to help with analysis")
-    analysis.analysis_subparser(analysis_parser)
+    analysis_parsers.analysis_subparser(analysis_parser)
 
     arguments = parser.parse_args()
     arguments.cfg = handle_errors(arguments.config_func)(arguments.config)

@@ -172,9 +172,9 @@ def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[
     return np.concatenate(reps), np.concatenate(fval), np.concatenate(frms), np.concatenate(crd)
 
 
-def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Dict[int, Union[str, NDArray[np.float_]]]]]:
+def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Dict[int, Any]]]:
     epochs = check_num(pathlib.Path("epoch"))
-    data = {"fval": {}, "fnames": {}}
+    data = {"fval": {}, "fnames": {}, "origin": {}, "start_frm": {}}
     for e in epochs:
         if (doignore and (e in cfg.ignore_epcs)):
             continue
@@ -189,6 +189,18 @@ def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Di
             if (doignore and ((e, r) in cfg.ignore_reps)):
                 continue
             d = edir / ("rep%02d" % r)
+
+            data["origin"][e][r] = utils.load_origin_data(d / "origin.txt", e)
+            if (e == 1 or not data["origin"][e][r]):
+                data["start_frm"][e][r] = 0
+            else:
+                pe, pr = data["origin"][e][r]["epc"], data["origin"][e][r]["rep"]
+                if (not data["origin"][pe][pr]):
+                    data["start_frm"][e][r] = 0
+                else:
+                    data["start_frm"][e][r] = data["start_frm"][pe][pr] + \
+                        data["origin"][e][r]["frm"]
+
             if (not (d/cfg.npz_file_name).is_file()):
                 continue
 

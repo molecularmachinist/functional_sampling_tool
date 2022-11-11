@@ -190,7 +190,7 @@ def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Di
                 continue
             d = edir / ("rep%02d" % r)
 
-            data["origin"][e][r] = utils.load_origin_data(d, e)
+            data["origin"][e][r] = utils.load_origin_data(d / "origin.txt", e)
             if (e == 1 or not data["origin"][e][r]):
                 data["start_frm"][e][r] = 0
             else:

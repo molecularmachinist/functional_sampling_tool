@@ -6,9 +6,9 @@ Here we take a very small protein (α-Conotoxin MII, PDB id [1MII](https://www.r
 
 To begin, you should have downloaded this repo, and installed all the required python packages, as well as have gromacs installed. To start off, `cd` into the `initialize` folder and take a look around. This is how you should set up your own project, when you start running one. You'll notice the `config.py` is already set up, a starting structure is in `initial/start.gro`, along with a corresponding topology in `topol.top`.
 
-The `sbatch_launch.sh` is where you would normally add you SLURM commands to run the job on a supercomputer. In this example case it is just a bash script that runs the repetitions on the local machine. To produce an example of the `sbatch_launch.sh` and `config.py`, you can run `fst make_templates`. Don't run it now, or you would overwrite teh current files.
+The `sbatch_launch.sh` is where you would normally add you SLURM commands to run the job on a supercomputer. In this example case it is just a bash script that runs the repetitions on the local machine. To produce an example of the `sbatch_launch.sh` and `config.py`, you can run `fst make_templates`. Don't run it now, or you would overwrite the current files.
 
-`index_grompp.ndx` is, for now, needed even if you have no special groups in the mdp file. To make one wih just the defaults, use
+`index_grompp.ndx` is, for now, needed even if you have no special groups in the mdp file. To make one with just the defaults, use
 ```
 echo q | gmx make_ndx -f initial/start.gro -o index_grompp.ndx
 ```
@@ -28,7 +28,7 @@ The first step in the project is of course to make the first epoch. The command 
 fst init
 ```
 
-This makes a folder `epoch01`, copies the necessary files for each repetition into `epoch/repNN` and grompps the systems. It will also copy the `sbatch_launch.sh` into `epoch01`, with the account, email and epoch number filled in.
+This makes a folder `epoch01`, copies the necessary files for each repetition into `epoch/repNN` and grompps the systems. It will also copy the `sbatch_launch.sh` into `epoch01`, with the epoch number filled in on the job name.
 
 In this case the command should actually fail, complaining about nonzero return code from grompp. Check the output file in the error message (e.g. `epoch01/rep01/output_grompp.txt`) to see what the error is caused by. It should be caused by a warning about generating velocities when using Parrinello-Rahman pressure coupling. In this case we know that we do want to do this. The system is already equilbrated, so the pressure coupling should work fine, and we do need to regenerate velocities for each repetition. As such this warning can be ignored. Do make sure that this was what caused the error, and never ignore a warning you are not sure should be ignored.
 

@@ -25,7 +25,7 @@ def extract_subparser(subparsers: "argparse._SubParsersAction[argparse.ArgumentP
 
     extract_description = "Only repetitions for which the data " \
         "npz-archive is present can be extracted. Run the choose command with " \
-        "the --choose_only option to calculate the functions and make the archives " \
+        "the --choose-only option to calculate the functions and make the archives " \
         "without making a new epoch"
     # extractor command
     extr_parser = subparsers.add_parser("extract", help="Extract frames.",
@@ -60,20 +60,20 @@ def extract_subparser(subparsers: "argparse._SubParsersAction[argparse.ArgumentP
                              default=None,  type=int)
     extr_parser.add_argument("--unwrap",   action="store_true",
                              help="Unwrap molecules (default: No)")
-    extr_parser.add_argument("--sel_unwrap", metavar="str",
+    extr_parser.add_argument("--sel-unwrap", metavar="str",
                              help="The selection to unwrap. Same syntax as --selection, and by default uses same selection.",
                              default=None)
-    extr_parser.add_argument("--unwrap_starters", metavar="str",
+    extr_parser.add_argument("--unwrap-starters", metavar="str",
                              help="The selection to use as starters in unwrapping. \"unwrap_starters\" to use from config, by default use none",
                              default=None)
     extr_parser.add_argument("--wrap",     action="store_true",
                              help="Put centre of mass of molecules back in box. "
-                                  "Uses the --sel_unwrap. (default: No)")
-    extr_parser.add_argument("--superpos_trans", action="store_true",
-                             help="Superposition the --sel_superpos selection onto the initial structure, only translating (default: No)")
+                                  "Uses the --sel-unwrap. (default: No)")
+    extr_parser.add_argument("--superpos-trans", action="store_true",
+                             help="Superposition the --sel-superpos selection onto the initial structure, only translating (default: No)")
     extr_parser.add_argument("--superposition",     action="store_true",
-                             help="Superposition the --sel_superpos selection onto the initial structure, translating and rotating (default: No)")
-    extr_parser.add_argument("--sel_superpos", metavar="str",
+                             help="Superposition the --sel-superpos selection onto the initial structure, translating and rotating (default: No)")
+    extr_parser.add_argument("--sel-superpos", metavar="str",
                              help="The selection to superposition. Same syntax as --selection, and by default uses same selection.",
                              default=None)
     # Use just config import as config_func, so the selections and such are not loaded
@@ -93,7 +93,7 @@ def ancestry_subparser(subparsers: "argparse._SubParsersAction[argparse.Argument
     anc_parser.add_argument("-o", "--output", metavar="<name>.pdf", dest="output",
                             help="Output file for the graph. The parent directory will be created if it does not yet exist (default: %(default)s)",
                             default=pathlib.Path("analysis/figs/ancestry.pdf"))
-    anc_parser.add_argument("--include_start",     action="store_true",
+    anc_parser.add_argument("--include-start",     action="store_true",
                             help="Add the starting structure(s) also to the graph. (default: do not include)")
     anc_parser.add_argument("--doignore",     action="store_true", dest="doignore",
                             help="Ignore the epochs and repetitions defined in the config. "

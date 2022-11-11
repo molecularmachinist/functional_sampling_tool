@@ -110,9 +110,9 @@ def argP() -> argparse.Namespace:
                                help="pull from remote before choosing (default: %(default)s)")
     choose_parser.add_argument("--push", action="store_true",
                                help="push to remote after choosing (default: %(default)s)")
-    choose_parser.add_argument("--choose_only", action="store_true",
+    choose_parser.add_argument("--choose-only", action="store_true",
                                help="Only make the choices and plots, do not initialize next epoch (default: %(default)s)")
-    choose_parser.add_argument("--reload_fval", action="store_true",
+    choose_parser.add_argument("--reload-fval", action="store_true",
                                help="Reload data from mdrun.xtc even if fval_data.npz exists and everything matches (default: %(default)s)")
     choose_parser.set_defaults(func=choose)
 
@@ -121,7 +121,7 @@ def argP() -> argparse.Namespace:
         "newepoch", help="Shorthand for \"choose --pull --push\".")
     epochstarter_parser.set_defaults(
         func=choose, push=True, pull=True, choose_only=False)
-    epochstarter_parser.add_argument("--reload_fval", action="store_true",
+    epochstarter_parser.add_argument("--reload-fval", action="store_true",
                                      help="Reload data from mdrun.xtc even if fval_data.npz exists and everything matches (default: %(default)s)")
 
     # Push and pull commands
@@ -146,13 +146,13 @@ def argP() -> argparse.Namespace:
         "make_templates", help="Copy default config.py and sbatch_template.sh files")
     templ_parser.set_defaults(
         func=copy_templates, config_func=(lambda cfgpath: None))
-    templ_parser.add_argument("--config_out", metavar="<name>.py", default=pathlib.Path("config.py"),
+    templ_parser.add_argument("--config-out", metavar="<name>.py", default=pathlib.Path("config.py"),
                               help="Filename of produced config file (default: %(default)s)", type=pathlib.Path)
-    templ_parser.add_argument("--sbatch_out", metavar="<name>.sh", default=pathlib.Path(
+    templ_parser.add_argument("--sbatch-out", metavar="<name>.sh", default=pathlib.Path(
         "sbatch_launch.sh"), help="Filename of produced sbatch file (default: %(default)s)", type=pathlib.Path)
-    templ_parser.add_argument("--no_config",  action="store_true",
+    templ_parser.add_argument("--no-config",  action="store_true",
                               help="Do not produce config file (default: %(default)s)")
-    templ_parser.add_argument("--no_sbatch",  action="store_true",
+    templ_parser.add_argument("--no-sbatch",  action="store_true",
                               help="Do not produce sbatch file (default: %(default)s)")
 
     # Analysis command

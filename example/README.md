@@ -76,7 +76,7 @@ This will read the data from the xtc files, calculate the function values, make 
 To run the choosing, without grompping (so that it is faster and you do not need to remove the folder each time), use
 
 ```
-fst choose --choose_only
+fst choose --choose-only
 ```
 
 After you are satisfied in these results, push the new epoch to the remote just as before.

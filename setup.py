@@ -1,6 +1,6 @@
 from setuptools import setup, Extension
 import numpy
-from Cython.Build    import cythonize
+from Cython.Build import cythonize
 
 
 extension = Extension("functional_sampling_tool._ctransformations",
@@ -12,7 +12,10 @@ extension = Extension("functional_sampling_tool._ctransformations",
 
 
 setup(
-    packages    = ["functional_sampling_tool"],
-    package_dir = {"functional_sampling_tool": "src"},
-    ext_modules = cythonize(extension, language_level = "3")
+
+    packages=["functional_sampling_tool",
+              "functional_sampling_tool.analysis",
+              "functional_sampling_tool.templates"],
+    package_dir={"functional_sampling_tool": "src"},
+    ext_modules=cythonize(extension, language_level="3")
 )

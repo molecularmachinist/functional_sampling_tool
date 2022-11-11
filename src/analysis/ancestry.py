@@ -130,5 +130,5 @@ def plot_graph(fout: pathlib.Path, G: nx.DiGraph, data: dict):
 
 def ancestry(args: argparse.Namespace) -> None:
     data = inout.load_extract_data(args.cfg, args.doignore)
-    G = make_graph(data)
+    G = make_graph(data, include_start=args.include_start)
     plot_graph(args.output, G, data)

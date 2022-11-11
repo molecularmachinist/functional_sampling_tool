@@ -93,6 +93,8 @@ def ancestry_subparser(subparsers: "argparse._SubParsersAction[argparse.Argument
     anc_parser.add_argument("-o", "--output", metavar="<name>.pdf", dest="output",
                             help="Output file for the graph. The parent directory will be created if it does not yet exist (default: %(default)s)",
                             default=pathlib.Path("analysis/figs/ancestry.pdf"))
+    anc_parser.add_argument("--include_start",     action="store_true",
+                            help="Add the starting structure(s) also to the graph. (default: do not include)")
     anc_parser.add_argument("--doignore",     action="store_true", dest="doignore",
                             help="Ignore the epochs and repetitions defined in the config. "
                             "Note that this can result in problems if any of the ignored simulations "

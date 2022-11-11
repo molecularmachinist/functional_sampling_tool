@@ -6,3 +6,7 @@ v0.0.2
   Before this change the extraction was broken when the tsrting frame or stride were not the defaults.
 - beginning and stride in extraction are taken from config by default.
 - max height for choices can be given in config
+
+v0.0.2.1
+
+- Bugfix: The templates folder was not being installed properly

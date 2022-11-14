@@ -14,10 +14,13 @@ These you will need to have preinstalled before installing the package.
 1. Python 3.7 or higher (3.10 recommended)
 1. [GROMACS](https://www.gromacs.org)
 1. C++ compiler
+1. Optional: `rsync`
 
 GROMACS is only needed for grompping. This means that a [quck and dirty](https://manual.gromacs.org/current/install-guide/index.html#quick-and-dirty-installation) installation is enough. Do make sure it is the same major version that you plan on using for the simulation runs.
 
 The C++ compiler is needed to compile a few of the trajectory transformation modules, which allow making broken molecules whole over the PBC. The package build process has been tested with the open source GCC-compiler, but in theory any compiler should work.
+
+`rsync` is needed to move the data between your local computer and the remote. It should be preinstalled at least on most linux distributions. If you run the tool on the machine you plan on running the simulations, it is not needed. Also you can work around it by manually moving the files with your chosen method. in that case simply do not use the push and pull methods of the tool.
 
 ### Python modules
 
@@ -28,8 +31,9 @@ These you can either preinstall, or let either pip or conda install for you in t
 1. importlib_resources (only with with python<3.10) 
 1. [MDAnalysis](https://docs.mdanalysis.org/stable/index.html)
 1. [scikit-learn](https://scikit-learn.org/stable/)
+1. Optional: [NetworkX](https://networkx.org/)
 
-
+NetworkX is only needed for ancestry graph building and is not installed by default. You can run the tool just fine, until you use the `fst analysis ancestry` command, which will throw an error. You can then just install the package any time and ancestry graphing will start working.
 
 
 ## Installation
@@ -58,7 +62,7 @@ In the recommended way we will use conda to make a new envirnonment. This way wo
 First, we will make a new conda environment dedicated just for the tool and activate it (if you have [mamba](https://mamba.readthedocs.io/en/latest/) installed, use it for the first command to speed up the process):
 
 ```sh
-conda create -c conda-forge -n fst_env python=3.10 numpy matplotlib mdanalysis scikit-learn
+conda create -c conda-forge -n fst_env python=3.10 numpy matplotlib mdanalysis scikit-learn networkx
 conda activate fst_env
 ```
 

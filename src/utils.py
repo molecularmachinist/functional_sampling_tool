@@ -210,7 +210,7 @@ def load_sel(sel_str: str,
     return sel
 
 
-def load_origin_data(filename: pathlib.Path, e: int) -> dict[str, Union[int, float]]:
+def load_origin_data(filename: pathlib.Path, e: int) -> Dict[str, Union[int, float]]:
     """
     Load the reps origin data from the given filename. If the file is not found, but the
     epoch is the first one, the info is guessed. If the epoch is not the first one a message

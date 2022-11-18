@@ -318,3 +318,32 @@ _mysel = univ.select_atoms("protein and resid 200-300 and backbone")
 Here we used a leading underscore, so that we do not accidentally overwrite any variables the program adds to the module, like `sel` and `struct`. We cannot yet use those variables, since they are of course not added yet when the config is imported, unlike the code within the function, which does not get called until later in the program.
 
 In the future multiple selection might be supprted and this will become easier to deal with.
+
+
+#### Running custom script for function calculation
+
+This is very "work-around"-ish solution and might get a better way to resolve in the future. Like with the selections, you can use the variable `current_dir`, which will be a `pathlib.Path` to the folder from which the positions were gotten from.
+
+For now there is no nice way to get the initial value and at that point the `current_dir` variable will not be yet set. You can return it manually as in the example below. The actual value is only used for plotting purposes and does not affect choosing, so you can use a random value if you wish.
+
+In this example we assume there is a bash script `fval.sh` in the project root, which is run in the repetition folder, producing a `fval.txt` file with just a single float per line:
+
+```python
+import os
+import subprocess as subp
+
+def function_val(positions):
+    try:
+        # If this is just the first frame this will throw NameError
+        current_dir
+    except NameError:
+        # Return the initial value manually
+        return np.array([1.23456])
+
+    # run command in the 'current_dir'
+    subp.run(["bash", "../../run.sh"], cwd=current_dir)
+    # Read the output
+    return np.loadtxt(current_dir / "fval.txt")
+```
+
+In this case the positions are ignored and you might want to set the `select_str` to something that only selects one or two atoms.

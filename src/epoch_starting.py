@@ -181,7 +181,7 @@ def start_epoch(nextepoch: int, cfg: Any,
 
                 if (len(cfg.initial_struct) == 1):
                     origin = (0, 0)
-                if (len(cfg.initial_struct) == 2):
+                elif (len(cfg.initial_struct) == 2):
                     origin = (1, i % num_frames)
                 else:
                     ofile, oframe = struct.trajectory._get_local_frame(

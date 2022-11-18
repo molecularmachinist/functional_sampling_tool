@@ -94,6 +94,7 @@ def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], ND
         crd[j] = cfg.sel_clust.positions
 
     print("Calculating fval")
+    cfg.current_dir = d
     fval = cfg.function_val(fval_crd)
     print("Saving %s" % cfg.npz_file_name)
     xtc_mod_t = (d/"mdrun.xtc").stat().st_mtime

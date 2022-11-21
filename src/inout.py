@@ -12,7 +12,7 @@ from . import utils
 from . import transformations
 from . import default_config
 
-from .exceptions import NoConfigError
+from .exceptions import NoConfigError, NoEpochsFoundError
 
 # Type hints
 from numpy.typing import NDArray
@@ -372,7 +372,7 @@ def load_options(cfgpath: pathlib.Path) -> Any:
 def clean_latest_epoch(force: bool = False) -> None:
     epochs = check_num(pathlib.Path("epoch"))
     if (not epochs):
-        raise FileNotFoundError(
+        raise NoEpochsFoundError(
             "No epochs found, are you sure you are in the correct folder?")
     epoch = epochs[-1]
 

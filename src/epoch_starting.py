@@ -147,10 +147,9 @@ def start_epoch(nextepoch: int, cfg: Any,
     edir.mkdir(exist_ok=True)
 
     # The grompping itself will be done asynchronously in the worker pool
-    # No point in having more than 4 workers, since reading the frame from file is done
-    # in the main process. Only exception is initialization, as there is no need to read a trajectory.
-    numproc = min(os.cpu_count(), 4, cfg.N) if (
-        nextepoch != 1) else min(os.cpu_count(), cfg.N)
+    # Max number of threads is half the cpu count. It is assumed that due to hyperthreading the number of logical
+    # cores is twice the number of physical cores
+    numproc = min(os.cpu_count()//2, cfg.N)
 
     with Pool(numproc) as p:
         res = []

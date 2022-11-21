@@ -5,7 +5,7 @@
 
 The tool has only been tested on linux (ubuntu based distribution). In general there is nothing stopping it from working on other platforms, but do keep this in mind.
 
-As prequisite knowledge you will need to know ho to get around using the command line and how to run basic simulations in GROMACS.
+As prequisite knowledge you will need to know how to get around using the command line and how to run basic simulations in GROMACS.
 
 ### Basic requirements
 
@@ -131,7 +131,7 @@ The files marked with an asterisk can be copied and modified from templates with
 
 Run `fst -h` for help or `fst <cmd> -h` for help on specific command.
 
-Almost all configuration should be done in the `config.py` file. The tool does have a few command line tools, but in principle these should only affect *what* is being done, not *how* it is being done (e.g. whether data should be pulled from teh remote is a command line argument, but the remote name, excludes and such are in config).
+Almost all configuration should be done in the `config.py` file. The tool does have a few command line tools, but in principle these should only affect *what* is being done, not *how* it is being done (e.g. whether data should be pulled from the remote is a command line argument, but the remote name, excludes and such are in config).
 
 If you have the configuration file in the same directory, named as `config.py`, just run as below. Otherwise add `fst -c <path/to/config>.py <cmd>`.
 
@@ -204,7 +204,7 @@ rsync_excludes = ["fval_data.npz", ".mdrun.xtc_offsets.lock", ".mdrun.xtc_offset
 | `mdp` | The name of the `.mdp` file. | `"mdrun.mdp"` |
 | `topol` | The name of the topology file. | `"topol.top"` |
 | `ndx` | The name of the index file used for grompping. | `"index_grompp.ndx"` |
-| `restraint_file` | The file to give to the `-r` option of grompp, to use for restraints. `"start"` will use the starting structure of the repetitions, `"initial"` will use the initial structure. Any other (nonempty) string will be interpreted as a path to the file. If it evaluates to False, teh option will not be passed to gromacs. | `False` |
+| `restraint_file` | The file to give to the `-r` option of grompp, to use for restraints. `"start"` will use the starting structure of the repetitions, `"initial"` will use the initial structure. Any other (nonempty) string will be interpreted as a path to the file. If it evaluates to False, the option will not be passed to gromacs. | `False` |
 | `maxwarn` | How many warnings to ignore. Can be useful, e.g. when generating velocities while using Nosé-Hoover thermostat. | 0 |
 
 

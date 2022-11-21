@@ -22,7 +22,7 @@ else:
 @handle_errors
 def init(args: argparse.Namespace) -> None:
     print("Initializing first epoch")
-    epoch_starting.start_epoch(1, args.cfg)
+    epoch_starting.start_epoch(1, args.cfg, numproc=args.num_proc)
     if (args.push):
         utils.rsync_up(args.cfg)
 
@@ -45,7 +45,14 @@ def choose(args: argparse.Namespace) -> None:
     val, epc, rep, frm = chooser.make_choices()
     if (not args.choose_only):
         epoch_starting.start_epoch(
-            chooser.nextepoch, args.cfg, val, epc, rep, frm)
+            chooser.nextepoch,
+            args.cfg,
+            val,
+            epc,
+            rep,
+            frm,
+            numproc=args.num_proc
+        )
     else:
         chooser.print_choices(val, epc, rep, frm)
     if (args.push):
@@ -100,6 +107,9 @@ def argP() -> argparse.Namespace:
         "init", help="Initialize the first epoch.")
     init_parser.add_argument("--push", action="store_true",
                              help="push to remote after initialization (default: %(default)s)")
+    init_parser.add_argument("--num-proc", type=int, default=None,
+                             help="Maximum number of parallel processes to use for grompping. By default uses at most half the number of logical "
+                             "CPUs. The actual number of threads is limited by the number of repetitions to start.")
     # The initializer has a different config func to not try to load the struct.
     init_parser.set_defaults(func=init, config_func=inout.import_cfg)
 
@@ -114,6 +124,9 @@ def argP() -> argparse.Namespace:
                                help="Only make the choices and plots, do not initialize next epoch (default: %(default)s)")
     choose_parser.add_argument("--reload-fval", action="store_true",
                                help="Reload data from mdrun.xtc even if fval_data.npz exists and everything matches (default: %(default)s)")
+    choose_parser.add_argument("--num-threads", type=int, default=None,
+                               help="Maximum number of parallel threads to use for grompping. By default uses at most half the number of logical "
+                               "CPUs. The actual number of threads is limited by the number of repetitions to start.")
     choose_parser.set_defaults(func=choose)
 
     # newepoch command
@@ -123,6 +136,9 @@ def argP() -> argparse.Namespace:
         func=choose, push=True, pull=True, choose_only=False)
     epochstarter_parser.add_argument("--reload-fval", action="store_true",
                                      help="Reload data from mdrun.xtc even if fval_data.npz exists and everything matches (default: %(default)s)")
+    epochstarter_parser.add_argument("--num-threads", type=int, default=None,
+                                     help="Maximum number of parallel threads to use for grompping. By default uses at most half the number of logical "
+                                     "CPUs. The actual number of threads is limited by the number of repetitions to start.")
 
     # Push and pull commands
     push_parser = subparsers.add_parser(

@@ -15,3 +15,4 @@ v0.0.3
 - Clustering figures improved: title includes fval range and the chosen clusters will be shown. The changes in aic and bic are no longer plotted.
 - The copied configs include the default values at the end. The "prelog" part also includes the command line call.
 - The rng seed can be given in config
+- Maximum number of grompp-processes is halved and can be changed with a command line option

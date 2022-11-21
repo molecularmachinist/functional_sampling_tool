@@ -133,7 +133,8 @@ def start_epoch(nextepoch: int, cfg: Any,
                 val: Optional[NDArray[np.float_]] = None,
                 epc: Optional[NDArray[np.int_]] = None,
                 rep: Optional[NDArray[np.int_]] = None,
-                frm: Optional[NDArray[np.int_]] = None) -> None:
+                frm: Optional[NDArray[np.int_]] = None,
+                numproc: Optional[int] = None) -> None:
     """ Start epoch nextepoch. If it is one, the initial epoch is started,
           otherwise the following parameters should be supplied. cfg is the config.
        "Optional" input parameters:
@@ -147,9 +148,13 @@ def start_epoch(nextepoch: int, cfg: Any,
     edir.mkdir(exist_ok=True)
 
     # The grompping itself will be done asynchronously in the worker pool
-    # Max number of threads is half the cpu count. It is assumed that due to hyperthreading the number of logical
-    # cores is twice the number of physical cores
-    numproc = min(os.cpu_count()//2, cfg.N)
+    if (numproc is None):
+        # Default max number of threads is half the cpu count. It is assumed that due to hyperthreading the number of logical
+        # cores is twice the number of physical cores
+        numproc = min(os.cpu_count()//2, cfg.N)
+    else:
+        # If numproc is specified, it is still limited by N
+        numproc = min(numproc, cfg.N)
 
     with Pool(numproc) as p:
         res = []

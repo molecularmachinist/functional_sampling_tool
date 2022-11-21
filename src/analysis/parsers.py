@@ -2,7 +2,7 @@ import argparse
 import pathlib
 
 from .. import inout
-from ..exceptions import NoNetworkxError
+from ..exceptions import OptionalDependencyMissingError
 
 
 from .extract import extract
@@ -13,9 +13,9 @@ except ImportError as e:
     ancestry_fail_error = e
 
     def ancestry(args: argparse.Namespace):
-        raise NoNetworkxError("Failed to import functional_sampling_tool.analysis.extract.\n"
-                              "Make sure you have networkx installed before making ancestry graphs.\n"
-                              f"Original error message: {ancestry_fail_error}")
+        raise OptionalDependencyMissingError("Failed to import functional_sampling_tool.analysis.extract.\n"
+                                             "Make sure you have networkx installed before making ancestry graphs.\n"
+                                             f"Original error message: {ancestry_fail_error}")
 
 
 def extract_subparser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]") -> None:

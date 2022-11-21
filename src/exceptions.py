@@ -63,7 +63,7 @@ class NoConfigError(FSTException, FileNotFoundError):
     pass
 
 
-class NoNetworkxError(FSTException, ImportError):
+class OptionalDependencyMissingError(FSTException, ImportError):
     """
     An exception raised, when the config file does not exists.
     """

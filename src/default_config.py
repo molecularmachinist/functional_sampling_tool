@@ -45,6 +45,9 @@ unwrap_starters = None
 # Only considers atoms in unwrap_sel
 mols_in_box = False
 
+# whether to make molecular assemblies whole
+mdvwhole_mols = False
+
 # whether to translate clustering coordinates to initial structure
 clust_centre = True
 # whether to fit clustering coordinates to initial structure, rotationally AND translationally

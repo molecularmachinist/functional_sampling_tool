@@ -8,11 +8,18 @@ import MDAnalysis as mda
 import importlib
 import pathlib
 
+try:
+    from mdvwhole.whole import MDAWhole
+    imported_mdwhole = True
+except ImportError as e:
+    mdvwhole_fail_error = e
+    imported_mdwhole = False
+
 from . import utils
 from . import transformations
 from . import default_config
 
-from .exceptions import NoConfigError, NoEpochsFoundError
+from .exceptions import NoConfigError, NoEpochsFoundError, OptionalDependencyMissingError
 
 # Type hints
 from numpy.typing import NDArray
@@ -51,18 +58,21 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_]
                         str(d/cfg.npz_file_name))
 
     transform_opt = [cfg.unwrap_mols, cfg.unwrap_mols and cfg.mols_in_box,
-                     cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos]
+                     cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos,
+                     cfg.mdvwhole_mols]
     if (not np.array_equal(transform_opt, dat["transform_opt"])):
-        raise LoadError("Trajectory transformations changed from %s, reloading" % str(
-            d/cfg.npz_file_name))
+        if (cfg.mdvwhole_mols or not np.array_equal(transform_opt[:-1], dat["transform_opt"])):
+            raise LoadError("Trajectory transformations changed from %s, reloading" % str(
+                d/cfg.npz_file_name))
 
     # if "stride" is found in dat, it was made with v0.0.1, so data might be missing
     if ("stride" in dat):
         raise LoadError("%s made with tool version 0.0.1 meaning data might be missing, reloading" % str(
             d/cfg.npz_file_name))
 
-    unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(
-        0, dtype=int)
+    unwrap_sel = cfg.traj_transforms[0].sel \
+        if (cfg.unwrap_mols or cfg.mdvwhole_mols) \
+        else np.zeros(0, dtype=int)
     if (not np.array_equal(unwrap_sel, dat["unwrap_sel"])):
         raise LoadError("Unwrapping selection in %s does not match, reloading" % str(
             d/cfg.npz_file_name))
@@ -99,10 +109,12 @@ def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], ND
     print("Saving %s" % cfg.npz_file_name)
     xtc_mod_t = (d/"mdrun.xtc").stat().st_mtime
     func_hash = utils.hash_func(cfg.function_val)
-    unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(
-        0, dtype=int)
+    unwrap_sel = cfg.traj_transforms[0].sel \
+        if (cfg.unwrap_mols or cfg.mdvwhole_mols) \
+        else np.zeros(0, dtype=int)
     transform_opt = [cfg.unwrap_mols, cfg.unwrap_mols and cfg.mols_in_box,
-                     cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos]
+                     cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos,
+                     cfg.mdvwhole_mols]
     np.savez_compressed(d/cfg.npz_file_name,
                         fval=fval,
                         fval_crd=fval_crd,
@@ -319,7 +331,7 @@ def load_options(cfgpath: pathlib.Path) -> Any:
     print("Selected %d atoms" % len(cfg.sel))
     print("Selected %d atoms for clustering" % len(cfg.sel_clust))
 
-    if (cfg.unwrap_mols):
+    if (cfg.unwrap_mols or cfg.mdvwhole_mols):
         # Preparing molecule unwrapper
         mdrunpath = pathlib.Path("epoch01")/"rep01"/"mdrun.tpr"
         bonded_struct = mda.Universe(str(mdrunpath),
@@ -331,6 +343,8 @@ def load_options(cfgpath: pathlib.Path) -> Any:
         else:
             unwrap_starters = utils.load_sel(
                 cfg.unwrap_starters, unwrap_sel, cfg.indexes)
+
+    if (cfg.unwrap_mols):
         cfg.traj_transforms = [
             transformations.Unwrapper(unwrap_sel, unwrap_starters)]
         print("Selected %d atoms for unwrapping" % len(unwrap_sel))
@@ -340,6 +354,16 @@ def load_options(cfgpath: pathlib.Path) -> Any:
 
     else:
         cfg.traj_transforms = []
+
+    if (cfg.mdvwhole_mols):
+        if (not imported_mdwhole):
+            raise OptionalDependencyMissingError("Failed to import mdvwhole.\nMake sure you have it "
+                                                 "installed before making molecular assemblies whole.\n"
+                                                 f"Original error message: {mdvwhole_fail_error}")
+        # TODO: better solution below
+        frags = transformations.MolWrapper(unwrap_sel).mols
+        cfg.traj_transforms.append(MDAWhole(frags))
+
     cfg.startval = cfg.function_val(np.array([cfg.sel.positions]))[0]
     print("Initial function value %g" % cfg.startval)
 

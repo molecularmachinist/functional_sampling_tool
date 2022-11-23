@@ -37,8 +37,14 @@ def extract_subparser(subparsers: "argparse._SubParsersAction[argparse.ArgumentP
     extr_parser.add_argument("-n", "--index", metavar="<name>.ndx", dest="index",
                              help="Overwrite the value in \"index_file\" to use another one just for this analysis (default: %(default)s)",
                              default=None)
+    extr_parser.add_argument("-i", "--input", metavar="<name>.xtc", dest="input",
+                             help="Input xtc file(s) for extraction. This is useful to extract the protein from only specific source files "
+                             "or to test how the trajectory transformations work for your system. If given, the --number, --around and --noignore options "
+                             "are ignored.",
+                             default=None)
     extr_parser.add_argument("-o", "--output", metavar="<name>.xtc", dest="output",
-                             help="Output xtc file for extraction. Another file with the same name, but npz file ending will be made with info on each extracted frame, as well as a structure file. (default: %(default)s)",
+                             help="Output xtc file for extraction. Another file with the same name, but npz file ending will be made with "
+                             "info on each extracted frame, as well as a structure file. (default: %(default)s)",
                              default=pathlib.Path("analysis/extracted.xtc"),
                              type=pathlib.Path)
     extr_parser.add_argument("--noignore",     action="store_false", dest="doignore",

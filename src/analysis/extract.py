@@ -112,6 +112,17 @@ def extract_around(u: mda.Universe, sel: AtomGroup, transforms: List[transform_t
     return data
 
 
+def extract_input(u: mda.Universe, sel: AtomGroup, transforms: List[transform_type], args: argparse.Namespace) -> None:
+    u.load_new([str(inp) for inp in args.input])
+    u.trajectory.add_transformations(*transforms)
+    ndata = len(u.trajectory[args.beginning::args.stride])
+    print("Writing frames to", args.output)
+    with mda.Writer(str(args.output), sel.n_atoms) as writer:
+        for i, ts in enumerate(u.trajectory[args.beginning::args.stride]):
+            print("Writing frame %d/%d" % (i+1, ndata), end="\r")
+            writer.write(sel)
+
+
 def extract_all(u: mda.Universe, sel: AtomGroup, transforms: List[transform_type], args: argparse.Namespace) -> Dict[str, ArrayLike]:
     data = inout.load_extract_data(args.cfg, args.doignore)
     data_out = {"frame": [], "time": [], "epoch": [], "rep": [], "fval": []}
@@ -160,7 +171,11 @@ def extract(args: argparse.Namespace) -> None:
             "ignore", "Found no information for attr", UserWarning)
         sel.write(struct_out)
 
-    if (args.around is None):
+    if (not args.input is None):
+        extract_input(u, sel, transforms, args)
+        print("\n")
+        return
+    elif (args.around is None):
         data = extract_all(u, sel, transforms, args)
     else:
         data = extract_around(u, sel, transforms, args)

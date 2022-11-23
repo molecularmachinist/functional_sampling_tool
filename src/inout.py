@@ -360,9 +360,9 @@ def load_options(cfgpath: pathlib.Path) -> Any:
             raise OptionalDependencyMissingError("Failed to import mdvwhole.\nMake sure you have it "
                                                  "installed before making molecular assemblies whole.\n"
                                                  f"Original error message: {mdvwhole_fail_error}")
-        # TODO: better solution below
-        frags = transformations.MolWrapper(unwrap_sel).mols
-        cfg.traj_transforms.append(MDAWhole(frags))
+        # TODO: Make sure the thing below works
+        print("Making molecular assemblies whole")
+        cfg.traj_transforms.append(MDAWhole(unwrap_sel))
 
     cfg.startval = cfg.function_val(np.array([cfg.sel.positions]))[0]
     print("Initial function value %g" % cfg.startval)

@@ -7,6 +7,16 @@ from .. import inout
 from .. import utils
 from .. import transformations
 
+from ..exceptions import OptionalDependencyMissingError
+
+
+try:
+    from mdvwhole.whole import MDAWhole
+    imported_mdwhole = True
+except ImportError as e:
+    mdvwhole_fail_error = e
+    imported_mdwhole = False
+
 # Type hints
 from typing import Any, Tuple, Optional, List, Dict
 from numpy.typing import ArrayLike
@@ -43,7 +53,7 @@ def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List
     print("Selected %d atoms for extraction" % len(sel))
     sel_superpos = utils.load_sel(args.sel_superpos, u, indexes)
 
-    if (args.unwrap or args.wrap):
+    if (args.unwrap or args.wrap or args.mdvwhole):
         # Preparing molecule unwrapper
         bonded_struct = mda.Universe(
             "epoch01/rep01/mdrun.tpr", str(args.cfg.initial_struct[0]))
@@ -60,13 +70,22 @@ def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List
 
     traj_transforms = []
     if (args.unwrap):
-        traj_transforms.append(
-            transformations.Unwrapper(unwrap_sel, unwrap_starters))
+        traj_transforms.append(transformations.Unwrapper(unwrap_sel,
+                                                         unwrap_starters))
 
     if (args.wrap):
         print("Putting mol COMs back in box for selection of %d atoms" %
               len(unwrap_sel))
         traj_transforms.append(transformations.MolWrapper(unwrap_sel))
+
+    if (args.mdvwhole):
+        if (not imported_mdwhole):
+            raise OptionalDependencyMissingError("Failed to import mdvwhole.\nMake sure you have it "
+                                                 "installed before making molecular assemblies whole.\n"
+                                                 f"Original error message: {mdvwhole_fail_error}")
+        else:
+            print("Making molecular assemblies whole")
+            traj_transforms.append(MDAWhole(unwrap_sel))
 
     if (args.superposition):
         print("%d atoms will be superpositioned" % (len(sel_superpos)))

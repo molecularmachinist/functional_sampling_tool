@@ -72,6 +72,8 @@ def extract_subparser(subparsers: "argparse._SubParsersAction[argparse.ArgumentP
     extr_parser.add_argument("--unwrap-starters", metavar="str",
                              help="The selection to use as starters in unwrapping. \"unwrap_starters\" to use from config, by default use none",
                              default=None)
+    extr_parser.add_argument("--mdvwhole",   action="store_true",
+                             help="Use mdvwhole to make molecular assemblies whole (default: No)")
     extr_parser.add_argument("--wrap",     action="store_true",
                              help="Put centre of mass of molecules back in box. "
                                   "Uses the --sel-unwrap. (default: No)")

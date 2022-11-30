@@ -7,11 +7,6 @@ import sys
 
 from . import __version__
 
-from . import inout
-from . import epoch_starting
-from . import clustering
-from . import utils
-from .analysis import parsers as analysis_parsers
 from .exceptions import handle_errors
 
 # For python 3.10 (or higher) import from standard lib, older releases use importlib_resources.
@@ -23,30 +18,36 @@ else:
 
 @handle_errors
 def init(args: argparse.Namespace) -> None:
+    from .epoch_starting import start_epoch
+    from .utils import rsync_up
     print("Initializing first epoch")
-    epoch_starting.start_epoch(1, args.cfg, numproc=args.num_proc)
+    start_epoch(1, args.cfg, numproc=args.num_proc)
     if (args.push):
-        utils.rsync_up(args.cfg)
+        rsync_up(args.cfg)
 
 
 @handle_errors
 def pushpull(args: argparse.Namespace) -> None:
+    from .utils import rsync_up, rsync_down
     if (args.pull):
-        utils.rsync_down(args.cfg)
+        rsync_down(args.cfg)
     else:
-        utils.rsync_up(args.cfg)
+        rsync_up(args.cfg)
 
 
 @handle_errors
 def choose(args: argparse.Namespace) -> None:
+    from .clustering import ClusterChooser
+    from .epoch_starting import start_epoch
+    from .utils import rsync_up, rsync_down
     if (args.pull):
-        utils.rsync_down(args.cfg)
-    chooser = clustering.ClusterChooser.fromReadData(
+        rsync_down(args.cfg)
+    chooser = ClusterChooser.fromReadData(
         args.cfg, args.reload_fval)
     chooser.plot_hist()
     val, epc, rep, frm = chooser.make_choices()
     if (not args.choose_only):
-        epoch_starting.start_epoch(
+        start_epoch(
             chooser.nextepoch,
             args.cfg,
             val,
@@ -58,7 +59,7 @@ def choose(args: argparse.Namespace) -> None:
     else:
         chooser.print_choices(val, epc, rep, frm)
     if (args.push):
-        utils.rsync_up(args.cfg)
+        rsync_up(args.cfg)
 
 
 @handle_errors
@@ -79,15 +80,33 @@ def copy_templates(args: argparse.Namespace) -> None:
 
 @handle_errors
 def clean(args: argparse.Namespace) -> None:
+    from .inout import clean_latest_epoch
     print("Running cleanup")
-    inout.clean_latest_epoch(args.force)
+    clean_latest_epoch(args.force)
+
+
+@handle_errors
+def config_importer(config: pathlib.Path):
+    from .inout import import_cfg
+    return import_cfg(config)
+
+
+@handle_errors
+def config_loader(config: pathlib.Path):
+    from .inout import load_options
+    return load_options(config)
 
 
 def argP() -> argparse.Namespace:
     """
     Define command line arguments. For each
     """
-    description = "Functional Sampling Tool: A tool for functional sampling."
+    # This should be importable without importing the whole lot,
+    # but importing it at the very beginning makes for a circular
+    # import.
+    from .analysis import parsers as analysis_parsers
+
+    description = f"Functional Sampling Tool: A tool for functional sampling."
     epilog = "For more detailed explanations, see the README.md"
     parser = argparse.ArgumentParser(
         prog="fst", description=description, epilog=epilog)
@@ -99,7 +118,7 @@ def argP() -> argparse.Namespace:
     parser.add_argument("-c", "--config", metavar="<name>.py", default=pathlib.Path("config.py"),
                         type=pathlib.Path, help="Path to config file (default: %(default)s)")
     # Global default for config_func
-    parser.set_defaults(config_func=inout.load_options)
+    parser.set_defaults(config_func=config_loader)
 
     # A subparser object to make subcommands. A subcommand is required.
     subparsers = parser.add_subparsers(
@@ -116,7 +135,7 @@ def argP() -> argparse.Namespace:
                              help="Maximum number of parallel processes to use for grompping. By default uses at most half the number of logical "
                              "CPUs. The actual number of threads is limited by the number of repetitions to start.")
     # The initializer has a different config func to not try to load the struct.
-    init_parser.set_defaults(func=init, config_func=inout.import_cfg)
+    init_parser.set_defaults(func=init, config_func=config_importer)
 
     # The chooser command
     choose_parser = subparsers.add_parser(
@@ -149,11 +168,11 @@ def argP() -> argparse.Namespace:
     push_parser = subparsers.add_parser(
         "push", help="rsync from local to remote")
     push_parser.set_defaults(
-        func=pushpull, config_func=inout.import_cfg, pull=False)
+        func=pushpull, config_func=config_importer, pull=False)
     pull_parser = subparsers.add_parser(
         "pull", help="rsync from remote to local")
     pull_parser.set_defaults(
-        func=pushpull, config_func=inout.import_cfg, pull=True)
+        func=pushpull, config_func=config_importer, pull=True)
 
     # clean commands
     push_parser = subparsers.add_parser("clean", help="clean latest epoch")
@@ -182,7 +201,7 @@ def argP() -> argparse.Namespace:
     analysis_parsers.analysis_subparser(analysis_parser)
 
     arguments = parser.parse_args()
-    arguments.cfg = handle_errors(arguments.config_func)(arguments.config)
+    arguments.cfg = arguments.config_func(arguments.config)
 
     return arguments
 

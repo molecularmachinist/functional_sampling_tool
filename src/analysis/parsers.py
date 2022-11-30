@@ -1,21 +1,25 @@
 import argparse
 import pathlib
 
-from .. import inout
-from ..exceptions import NoNetworkxError
+from ..exceptions import NoNetworkxError, handle_errors
+from ..cmd_line import config_importer
 
 
-from .extract import extract
-
-try:
-    from .ancestry import ancestry
-except ImportError as e:
-    ancestry_fail_error = e
-
-    def ancestry(args: argparse.Namespace):
+@handle_errors
+def ancestry_graphing(args: argparse.Namespace):
+    try:
+        from .ancestry import ancestry
+    except ImportError as e:
         raise NoNetworkxError("Failed to import functional_sampling_tool.analysis.extract.\n"
                               "Make sure you have networkx installed before making ancestry graphs.\n"
-                              f"Original error message: {ancestry_fail_error}")
+                              f"Original error message: {e}")
+    ancestry(args)
+
+
+@handle_errors
+def extraction(args: argparse.Namespace):
+    from .extract import extract
+    extract(args)
 
 
 def extract_subparser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]") -> None:
@@ -77,7 +81,8 @@ def extract_subparser(subparsers: "argparse._SubParsersAction[argparse.ArgumentP
                              help="The selection to superposition. Same syntax as --selection, and by default uses same selection.",
                              default=None)
     # Use just config import as config_func, so the selections and such are not loaded
-    extr_parser.set_defaults(func=extract, config_func=inout.import_cfg)
+    extr_parser.set_defaults(func=extraction,
+                             config_func=config_importer)
 
 
 def ancestry_subparser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]") -> None:
@@ -101,7 +106,8 @@ def ancestry_subparser(subparsers: "argparse._SubParsersAction[argparse.Argument
                             "is a parent to another one. (default: do not ignore)")
 
     # Use just config import as config_func, so the selections and such are not loaded
-    anc_parser.set_defaults(func=ancestry, config_func=inout.import_cfg)
+    anc_parser.set_defaults(func=ancestry_graphing,
+                            config_func=config_importer)
 
 
 def analysis_subparser(parser: argparse.ArgumentParser):

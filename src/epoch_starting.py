@@ -10,7 +10,6 @@ import MDAnalysis as mda
 from .exceptions import RepExistsError, NonzeroReturnError
 
 from . import utils
-from . import inout
 
 # Type hints
 from typing import Any, Tuple, Optional

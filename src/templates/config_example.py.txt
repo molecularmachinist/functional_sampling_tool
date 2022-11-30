@@ -10,9 +10,9 @@ import numpy as np
 
 ########################### Remote options #####################################
 # remote dir corresponding to dir of this project
-remote_dir = "/scratch/project_2004581/functional_sampling_tool/prod"
+remote_dir = "/path/on/remote/server"
 # remote name, either "host" or "user@host".
-remote_name = "mahti"
+remote_name = "remote_name"
 # Set dirs/files/patterns to exclude from rsync command
 rsync_excludes = ["fval_data.npz",
                   ".mdrun.xtc_offsets.lock", ".mdrun.xtc_offsets.npz"]
@@ -73,11 +73,15 @@ def function_val(positions):
     ind4 = m_res+ind3
 
     # distances between average position of res1 to average position of res3
-    dist1 = np.linalg.norm(np.mean(
-        positions[:, ind1, :], axis=-2)-np.mean(positions[:, ind3, :], axis=-2), axis=-1)
+    dist1 = np.linalg.norm(
+        np.mean(positions[:, ind1, :], axis=-2) -
+        np.mean(positions[:, ind3, :], axis=-2),
+        axis=-1)
     # same for res 2 and 4
-    dist2 = np.linalg.norm(np.mean(
-        positions[:, ind2, :], axis=-2)-np.mean(positions[:, ind4, :], axis=-2), axis=-1)
+    dist2 = np.linalg.norm(
+        np.mean(positions[:, ind2, :], axis=-2) -
+        np.mean(positions[:, ind4, :], axis=-2),
+        axis=-1)
 
     return np.minimum(dist1, dist2)
 

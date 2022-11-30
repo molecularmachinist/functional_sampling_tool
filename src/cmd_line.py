@@ -5,6 +5,8 @@ import pathlib
 import shutil
 import sys
 
+from . import __version__
+
 from . import inout
 from . import epoch_starting
 from . import clustering
@@ -90,6 +92,9 @@ def argP() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="fst", description=description, epilog=epilog)
 
+    # Option to print program version
+    parser.add_argument("-V", "--version", action="version",
+                        version=f"{__package__} {__version__}")
     # The only global option
     parser.add_argument("-c", "--config", metavar="<name>.py", default=pathlib.Path("config.py"),
                         type=pathlib.Path, help="Path to config file (default: %(default)s)")

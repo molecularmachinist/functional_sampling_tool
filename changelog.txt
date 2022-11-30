@@ -16,3 +16,4 @@ v0.0.3
 - The copied configs include the default values at the end. The "prelog" part also includes the command line call.
 - The rng seed can be given in config
 - Maximum number of grompp-processes is halved and can be changed with a command line option
+- Added option to print version

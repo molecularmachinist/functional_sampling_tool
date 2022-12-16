@@ -9,7 +9,7 @@ import inspect
 import hashlib
 import warnings
 
-from .exceptions import DeprecatedUsageWarning, NoSbatchLaunchError
+from .exceptions import DeprecatedUsageWarning, NoSbatchLaunchError, NonzeroReturnError
 
 from . import __version__ as fst_version
 
@@ -125,7 +125,8 @@ def rsync_down(cfg: Any) -> None:
     """
     rc = rsync_command("%s:%s/epoch*" % (cfg.remote_name,
                        cfg.remote_dir), ".", excludes=cfg.rsync_excludes)
-    print("Process returned %d" % rc)
+    if (rc):
+        raise NonzeroReturnError("rsync process returned %d" % rc)
 
 
 def rsync_up(cfg: Any) -> None:
@@ -135,7 +136,8 @@ def rsync_up(cfg: Any) -> None:
     send_dirs = [str(p) for p in pathlib.Path(".").glob("epoch*")]
     rc = rsync_command(send_dirs, "%s:%s" % (
         cfg.remote_name, cfg.remote_dir), excludes=cfg.rsync_excludes)
-    print("Process returned %d" % rc)
+    if (rc):
+        raise NonzeroReturnError("rsync process returned %d" % rc)
 
 
 def __depr_copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: Any) -> None:

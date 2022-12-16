@@ -309,6 +309,7 @@ class FrameChooser():
         plt.axvline(self.cfg.maxval, linestyle="-.", color="C2")
         # legend, on teh right side outside of plot
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.gcf().set_size_inches(9, 7)
         plt.tight_layout()
         # Make directory and save fig
         outfile = (
@@ -334,6 +335,8 @@ class FrameChooser():
         plt.plot(self.bin_centers[choices],
                  self.hist[choices], "g^", label="Choices")
         plt.legend()
+        plt.gcf().set_size_inches(8, 7)
+        plt.tight_layout()
         outfile = (
             self.cfg.fig_output_dir /
             ("epoch%02d" % self.u_epcs[-1]) /

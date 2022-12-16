@@ -224,6 +224,8 @@ class ClusterChooser(choosing.FrameChooser):
             plt.axvline(c, linestyle="-.", alpha=.1, color="k")
 
         plt.legend()
+        plt.gcf().set_size_inches(9, 7)
+        plt.tight_layout()
         outfile = (self.cfg.fig_output_dir /
                    ("epoch%02d" % self.u_epcs[-1]) /
                    "hist_clust.png")

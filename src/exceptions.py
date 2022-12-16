@@ -2,7 +2,7 @@
 
 import argparse
 import sys
-from typing import Callable
+from typing import Callable, Any
 
 
 class FSTException(Exception):
@@ -10,8 +10,10 @@ class FSTException(Exception):
     A base exception differnetiate between fst-internal exception,
     to be caught nicely, and some other code's exceptions, which should not be caught.
     """
-    code = 1
-    pass
+
+    def __init__(self, *args: Any, code=1) -> None:
+        super().__init__(*args)
+        self.code = code
 
 
 def handle_errors(func: Callable[[argparse.Namespace], None]) -> Callable[[argparse.Namespace], None]:

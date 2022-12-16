@@ -126,7 +126,7 @@ def rsync_down(cfg: Any) -> None:
     rc = rsync_command("%s:%s/epoch*" % (cfg.remote_name,
                        cfg.remote_dir), ".", excludes=cfg.rsync_excludes)
     if (rc):
-        raise NonzeroReturnError("rsync process returned %d" % rc)
+        raise NonzeroReturnError("rsync process returned %d" % rc, code=rc)
 
 
 def rsync_up(cfg: Any) -> None:
@@ -137,7 +137,7 @@ def rsync_up(cfg: Any) -> None:
     rc = rsync_command(send_dirs, "%s:%s" % (
         cfg.remote_name, cfg.remote_dir), excludes=cfg.rsync_excludes)
     if (rc):
-        raise NonzeroReturnError("rsync process returned %d" % rc)
+        raise NonzeroReturnError("rsync process returned %d" % rc, code=rc)
 
 
 def __depr_copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: Any) -> None:

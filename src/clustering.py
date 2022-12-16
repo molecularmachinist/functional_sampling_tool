@@ -213,25 +213,27 @@ class ClusterChooser(choosing.FrameChooser):
             clust_histx.append(np.mean(self.fval[ci == clust_hist_indexes]))
             clust_histy.append(cc)
 
-        plt.plot(clust_histx, clust_histy, color="C0")
-        plt.axvline(self.cfg.startval, linestyle="-.",
-                    color="C1", label="Start", alpha=0.5)
-        plt.axvline(self.cfg.minval, linestyle="-.",
-                    color="C2", label="Boundaries")
-        plt.axvline(self.cfg.maxval, linestyle="-.", color="C2")
+        fig, ax = plt.subplots(1)
+
+        ax.plot(clust_histx, clust_histy, color="C0")
+        ax.axvline(self.cfg.startval, linestyle="-.",
+                   color="C1", label="Start", alpha=0.5)
+        ax.axvline(self.cfg.minval, linestyle="-.",
+                   color="C2", label="Boundaries")
+        ax.axvline(self.cfg.maxval, linestyle="-.", color="C2")
 
         for c in self.bin_edges:
-            plt.axvline(c, linestyle="-.", alpha=.1, color="k")
+            ax.axvline(c, linestyle="-.", alpha=.1, color="k")
 
-        plt.legend()
-        plt.gcf().set_size_inches(9, 7)
-        plt.tight_layout()
+        ax.legend()
+        fig.set_size_inches(9, 7)
+        fig.tight_layout()
         outfile = (self.cfg.fig_output_dir /
                    ("epoch%02d" % self.u_epcs[-1]) /
                    "hist_clust.png")
         outfile.parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(outfile)
-        plt.clf()
+        fig.savefig(outfile)
+        plt.close(fig)
 
 
 def make_clusters(coords: NDArray[np.float_],

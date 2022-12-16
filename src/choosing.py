@@ -273,6 +273,8 @@ class FrameChooser():
         OR cumulative histograms after each epoch, with labels in legend only for
         maxepoch latest.
         """
+        fig, ax = plt.subplots(1)
+
         maxepochs = -self.cfg.histogram_max_epochs
         if (maxepochs == 1):
             maxepochs = 0
@@ -281,8 +283,8 @@ class FrameChooser():
             for i in self.u_epcs[:maxepochs]:
                 _ep_hist, _ = np.histogram(
                     self.fval[self.epcs <= i], bins=self.bin_edges)
-                plt.plot(self.bin_centers, _ep_hist,
-                         "--", color="C0", alpha=0.5)
+                ax.plot(self.bin_centers, _ep_hist,
+                        "--", color="C0", alpha=0.5)
 
         # Plot maxepochs latest epochs
         for i in self.u_epcs[maxepochs:]:
@@ -292,24 +294,24 @@ class FrameChooser():
             # histogram of masked values
             _ep_hist, _ = np.histogram(self.fval[_mask], bins=self.bin_edges)
             # Plot with label
-            plt.plot(self.bin_centers, _ep_hist, "--", color="C%d" %
-                     (i+2), label="Epoch %d" % i)
+            ax.plot(self.bin_centers, _ep_hist, "--", color="C%d" %
+                    (i+2), label="Epoch %d" % i)
 
         # Total histogram, with alpha=0.5 to make it lighter
-        plt.plot(self.bin_centers, self.hist, color="C0", alpha=0.5)
+        ax.plot(self.bin_centers, self.hist, color="C0", alpha=0.5)
         # Total histogram only within teh boundaries without alpha
-        plt.plot(self.bin_centers[self.hist_mask],
-                 self.hist[self.hist_mask], color="C0", label="Total")
+        ax.plot(self.bin_centers[self.hist_mask],
+                self.hist[self.hist_mask], color="C0", label="Total")
         # Show starting value and boundaries
-        plt.axvline(self.cfg.startval, linestyle="-.",
-                    color="C1", label="Start", alpha=0.5)
-        plt.axvline(self.cfg.minval, linestyle="-.",
-                    color="C2", label="Boundaries")
-        plt.axvline(self.cfg.maxval, linestyle="-.", color="C2")
+        ax.axvline(self.cfg.startval, linestyle="-.",
+                   color="C1", label="Start", alpha=0.5)
+        ax.axvline(self.cfg.minval, linestyle="-.",
+                   color="C2", label="Boundaries")
+        ax.axvline(self.cfg.maxval, linestyle="-.", color="C2")
         # legend, on teh right side outside of plot
-        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        plt.gcf().set_size_inches(9, 7)
-        plt.tight_layout()
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        fig.set_size_inches(9, 7)
+        fig.tight_layout()
         # Make directory and save fig
         outfile = (
             self.cfg.fig_output_dir /
@@ -317,30 +319,32 @@ class FrameChooser():
             "hist.png"
         )
         outfile.parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(outfile)
-        plt.clf()
+        fig.savefig(outfile)
+        plt.close(fig)
 
     def _plot_choices(self, crith, smoothed, choices, nanmask, maxims, minims) -> None:
-        plt.axhline(crith, linestyle="--", c="r", alpha=0.5,
-                    label="Max height for choices")
-        plt.plot(self.bin_centers, self.hist, color="C0", alpha=0.5)
-        plt.plot(self.bin_centers[self.hist_mask],
-                 self.hist[self.hist_mask], color="C0", label="data")
-        plt.plot(self.bin_centers, smoothed, color="C1", label="Smoothed")
-        plt.plot(self.bin_centers[nanmask][minims],
-                 smoothed[nanmask][minims], "rv", label="Minima")
-        plt.plot(self.bin_centers[nanmask][maxims],
-                 smoothed[nanmask][maxims], "bv", label="Maxima")
-        plt.plot(self.bin_centers[choices],
-                 self.hist[choices], "g^", label="Choices")
-        plt.legend()
-        plt.gcf().set_size_inches(8, 7)
-        plt.tight_layout()
+        fig, ax = plt.subplots(1)
+
+        ax.axhline(crith, linestyle="--", c="r", alpha=0.5,
+                   label="Max height for choices")
+        ax.plot(self.bin_centers, self.hist, color="C0", alpha=0.5)
+        ax.plot(self.bin_centers[self.hist_mask],
+                self.hist[self.hist_mask], color="C0", label="data")
+        ax.plot(self.bin_centers, smoothed, color="C1", label="Smoothed")
+        ax.plot(self.bin_centers[nanmask][minims],
+                smoothed[nanmask][minims], "rv", label="Minima")
+        ax.plot(self.bin_centers[nanmask][maxims],
+                smoothed[nanmask][maxims], "bv", label="Maxima")
+        ax.plot(self.bin_centers[choices],
+                self.hist[choices], "g^", label="Choices")
+        ax.legend()
+        fig.set_size_inches(8, 7)
+        fig.tight_layout()
         outfile = (
             self.cfg.fig_output_dir /
             ("epoch%02d" % self.u_epcs[-1]) /
             "choices.png"
         )
         outfile.parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(outfile)
-        plt.clf()
+        fig.savefig(outfile)
+        plt.close(fig)

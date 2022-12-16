@@ -221,7 +221,9 @@ def start_epoch(nextepoch: int, cfg: Any,
     for d, rc in res:
         if (rc.get()):
             raise NonzeroReturnError(
-                "Nonzero returncode from grompp, see %s/output_grompp.txt for more detail." % (d))
+                "Nonzero returncode from grompp, "
+                "see %s/output_grompp.txt for more detail." % (d),
+                code=rc.get())
 
     # copy sbatch template
     utils.copy_sbatch_template(cfg.sbatch, pathlib.Path(

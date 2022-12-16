@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 import math
 from scipy.signal import find_peaks
 

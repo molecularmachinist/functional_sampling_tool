@@ -40,6 +40,13 @@ NetworkX is only needed for ancestry graph building and is not installed by defa
 
 Whichever installation way you choose to use, start by copying the project to your computer.
 
+
+```
+git clone https://github.com/molecularmachinist/functional_sampling_tool.git
+cd functional_sampling_tool
+```
+for the latest, 
+or to download a specific version:
 ```
 wget https://github.com/molecularmachinist/functional_sampling_tool/archive/refs/tags/v0.0.2.tar.gz
 tar xvzf v0.0.2.tar.gz
@@ -258,6 +265,7 @@ In most cases you should not need these, but may be helpful in others.
 | `stride` | Only consider every N'th frame | 1 |
 | `data_per_bin` | On average, at least this much data should be in the histogram bins within the boundaries. | 100 |
 | `maxbins` | Maximum number of histogram bins within the boundaries. | 100 |
+| `smooth_window` | The rolling average window for smoothing the distribution. | 10 |
 | `minchoice` | Minimum number of frames, from which a choice will be made. If the chosen bin has less frames, this many of the closest frames in function value are used as the pool of frames to choose from. | 100 |
 | `peak_options` | A dictionary of keyword arguments for [scipy.signal.find_peaks](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html), which will be used for dfinding the local minima and maxima from the distributions. | `{"width":5, "distance":10}` |
 | `choice_crit` | Maximum height to choose from, as fraction from minimum found height to maximum. The final maximum height to allow choosing from will be `(maxh-minh)*choice_crit+minh`, where maxh and minh are the highest and lowest histogram bin heights. Default is halfway between. | 0.5 |
@@ -317,7 +325,7 @@ _mysel = univ.select_atoms("protein and resid 200-300 and backbone")
 
 Here we used a leading underscore, so that we do not accidentally overwrite any variables the program adds to the module, like `sel` and `struct`. We cannot yet use those variables, since they are of course not added yet when the config is imported, unlike the code within the function, which does not get called until later in the program.
 
-In the future multiple selection might be supprted and this will become easier to deal with.
+In the future multiple selections might be supprted and this will become easier to deal with.
 
 
 #### Running custom script for function calculation

@@ -7,6 +7,8 @@ from scipy.signal import find_peaks
 from . import utils
 from . import inout
 
+from .exceptions import NotEnoughDataError
+
 # Type hints
 from typing import Any, Tuple, List
 from numpy.typing import NDArray
@@ -100,29 +102,39 @@ class FrameChooser():
             (self.fval > minval) *
             (self.fval < maxval)
         )
+        print(f"{data_within_bounds} data points inside boundaries")
         maxbins_calc = data_within_bounds//data_per_bin
         maxbins = min(maxbins_calc, maxbins)
+        if (maxbins < 2):
+            raise NotEnoughDataError(
+                f"Would be using {maxbins} bins.\n"
+                "Either there is not enough data or "
+                f"data_per_bin is too large (is {data_per_bin}).\n"
+                "Also check that boundaries (minval and maxval) are "
+                f"set correctly, now using [{minval}, {maxval}].")
+
         self.binsize = (self.binmax-self.binmin)/maxbins
-        print(f"{data_within_bounds} data points inside boundaries")
         print(f"Using {maxbins} bins.")
         # Make bin edges
         if (hard_boundaries):
             self.bin_edges = np.linspace(self.binmin,
                                          self.binmax,
-                                         maxbins)
+                                         maxbins+1)
         else:
             self.bin_edges = np.arange(lowest_val,
-                                       largest_val+self.binsize,
+                                       largest_val+self.binsize/2,
                                        self.binsize)
-        print(f"Bin size is {self.bin_edges[1]-self.bin_edges[0]}.")
+        print("Bin size is {:.5g}.".format(
+            self.bin_edges[1]-self.bin_edges[0]
+        ))
         # Make the histogram
         self.hist, _ = np.histogram(self.fval, bins=self.bin_edges)
         # bin centers are halfway between edges
         self.bin_centers = (self.bin_edges[:-1]+self.bin_edges[1:])/2
         # Make a mask of which bins have higher edge larger than minval
         # AND lower edge lower than maxval
-        self.hist_mask = (self.bin_edges[1:] >
-                          minval)*(self.bin_edges[:-1] < maxval)
+        self.hist_mask = (self.bin_edges[1:] > minval) * \
+            (self.bin_edges[:-1] < maxval)
 
     def _make_hist(self) -> None:
         self._make_hist_no_cfg(

@@ -44,6 +44,13 @@ class FunctionDimensionError(FSTException, ValueError):
     pass
 
 
+class NotEnoughDataError(FSTException, ValueError):
+    """
+    An exception raised, there is not enough data to make histograms or choose new epoch.
+    """
+    pass
+
+
 class NoEpochsFoundError(FSTException, FileNotFoundError):
     """
     An exception raised, when no Epoch data is found, even though the command requires it.

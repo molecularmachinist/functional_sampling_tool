@@ -25,6 +25,12 @@ transform_type = Callable[[Timestep], Timestep]
 
 def rolling_mean(data: ArrayLike, window: int = 10,
                  center: bool = True, fill: float = np.nan) -> NDArray[np.float_]:
+    if (window < 1):
+        raise ValueError(
+            "rolling mean window smaller than 1 "
+            f"is nonsensical (is {window})")
+    if (window == 1):
+        return data
     if (center):
         start_offset = math.floor(window/2)
         end_offset = -math.ceil(window/2)+1
@@ -35,8 +41,6 @@ def rolling_mean(data: ArrayLike, window: int = 10,
         end_offset = None
 
     window -= 1
-    if (window == 0):
-        window = None
 
     cumsum = np.nancumsum(data, axis=0, dtype=float)
     mean = np.full_like(cumsum, fill)

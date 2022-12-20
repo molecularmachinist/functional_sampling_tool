@@ -114,7 +114,7 @@ class FrameChooser():
                 f"set correctly, now using [{minval}, {maxval}].")
 
         self.binsize = (self.binmax-self.binmin)/maxbins
-        print(f"Using {maxbins} bins.")
+        print(f"Making {maxbins} bins within boundaries.")
         # Make bin edges
         if (hard_boundaries):
             self.bin_edges = np.linspace(self.binmin,
@@ -136,6 +136,13 @@ class FrameChooser():
         self.hist_mask = (self.bin_edges[1:] > minval) * \
             (self.bin_edges[:-1] < maxval)
 
+        self.bins_in_bounds = np.sum(self.hist_mask)
+
+        if (not hard_boundaries):
+            print(f"Final histogram has {len(self.hist_mask)} bins. "
+                  f"{self.bins_in_bounds} of them have their centre "
+                  "within the boundaries.")
+
     def _make_hist(self) -> None:
         self._make_hist_no_cfg(
             self.cfg.maxbins,
@@ -151,8 +158,15 @@ class FrameChooser():
         prechoices is the number of choices already done.
         """
         # Smooth the distribution
+        if (self.bins_in_bounds < self.cfg.smooth_window*2):
+            raise NotEnoughDataError(
+                f"There are only {self.bins_in_bounds} bins within "
+                f"boundaries with a smoothing window of {self.cfg.smooth_window}. "
+                "For good results there should be at least twice as many bins.\n"
+                "Either make more data or set smooth_window in "
+                f"the config to at most {self.bins_in_bounds//2}.")
         smoothed = utils.rolling_mean(self.hist)
-        # Get a amask to ingore the nan-values in the smoothed distribution
+        # Get a mask to ingore the nan-values in the smoothed distribution
         nanmask = np.isfinite(smoothed)*self.hist_mask
         # Find maxima and minima
         maxims, max_crit = find_peaks(smoothed[nanmask],

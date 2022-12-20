@@ -75,6 +75,8 @@ stride = 1
 data_per_bin = 100
 # Maximum amount of bins between boundaries
 maxbins = 100
+# The window to use for histogram smoothing
+smooth_window = 10
 # Minimum amount to choose a frame from. If less frames are in the bin, this many closest frames in value will be used.
 # Must be higher or equal to N if allow_choice_duplicates=True
 minchoice = data_per_bin

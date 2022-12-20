@@ -37,6 +37,13 @@ class DeprecatedUsageWarning(UserWarning):
     pass
 
 
+class FunctionDimensionError(FSTException, ValueError):
+    """
+    An exception raised, when the function value is wrong length or dimensionality.
+    """
+    pass
+
+
 class NoEpochsFoundError(FSTException, FileNotFoundError):
     """
     An exception raised, when no Epoch data is found, even though the command requires it.

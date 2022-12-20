@@ -17,3 +17,4 @@ v0.0.3
 - The rng seed can be given in config
 - Maximum number of grompp-processes is halved and can be changed with a command line option
 - Added option to print version
+- The returned function values are checked to make sure they have a correct dimensionality

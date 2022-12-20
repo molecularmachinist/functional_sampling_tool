@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+from numpy.typing import ArrayLike, NDArray
+from MDAnalysis.coordinates.base import Timestep
+from MDAnalysis.core.groups import AtomGroup
+import MDAnalysis as mda
+from typing import Any, Callable, Union, Optional, List, Dict, Tuple
+from . import __version__ as fst_version
 import pathlib
 import subprocess as subp
 import numpy as np
@@ -9,16 +15,13 @@ import inspect
 import hashlib
 import warnings
 
-from .exceptions import DeprecatedUsageWarning, NoSbatchLaunchError, NonzeroReturnError
+from .exceptions import (DeprecatedUsageWarning,
+                         NoSbatchLaunchError,
+                         NonzeroReturnError,
+                         ExternalProgramMissingError)
 
-from . import __version__ as fst_version
 
 # Type hinting
-from typing import Any, Callable, Union, Optional, List, Dict, Tuple
-import MDAnalysis as mda
-from MDAnalysis.core.groups import AtomGroup
-from MDAnalysis.coordinates.base import Timestep
-from numpy.typing import ArrayLike, NDArray
 # Type aliases
 transform_type = Callable[[Timestep], Timestep]
 
@@ -95,8 +98,15 @@ def gromacs_command(gmx: str, cmd: str, *args: Any, directory: str = ".",
 
         print(f"Running: {' '.join(command)}")
         with open("output_%s.txt" % cmd, "w") as fout:
-            compProc = subp.run(command, stdout=fout,
-                                stderr=subp.STDOUT, input=input)
+            try:
+                compProc = subp.run(command, stdout=fout,
+                                    stderr=subp.STDOUT, input=input)
+            except FileNotFoundError as e:
+                raise ExternalProgramMissingError(
+                    f"GROMACS command at '{gmx}' not found.\n"
+                    "Original message:\n"
+                    f"{e.__class__.__name__}: {e}"
+                )
 
     finally:
         # Whatever happens, we go back to the original working dir
@@ -112,14 +122,24 @@ def rsync_command(send_from: Union[str, list], send_to: str, excludes: List[str]
         Prints stdout and sterr when program finishes and returns the return code.
     """
     if (type(send_from) == list):
-        command = ["rsync", "-avP", "--partial"]+["--exclude=%s" %
-                                                  e for e in excludes] + send_from + [send_to]
+        command = ["rsync", "-avP", "--partial"] +\
+            ["--exclude=%s" % e for e in excludes] + \
+            send_from + \
+            [send_to]
     else:
-        command = ["rsync", "-avP", "--partial"]+["--exclude=%s" %
-                                                  e for e in excludes] + [send_from, send_to]
+        command = ["rsync", "-avP", "--partial"] + \
+            ["--exclude=%s" % e for e in excludes] + \
+            [send_from, send_to]
 
     print(f"Running: {' '.join(command)}")
-    compProc = subp.run(command)
+    try:
+        compProc = subp.run(command)
+    except FileNotFoundError as e:
+        raise ExternalProgramMissingError(
+            f"rsync command not found.\n"
+            "Original message:\n"
+            f"{e.__class__.__name__}: {e}"
+        )
     return compProc.returncode
 
 

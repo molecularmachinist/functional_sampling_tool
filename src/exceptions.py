@@ -76,6 +76,15 @@ class RepExistsError(FSTException, FileExistsError):
     pass
 
 
+class ExternalProgramMissingError(FSTException, FileNotFoundError):
+    """
+    An exception raised, when a subprocess does not find the command.
+    """
+
+    def __init__(self, *args: Any) -> None:
+        super().__init__(*args, code=127)
+
+
 class NonzeroReturnError(FSTException, RuntimeError):
     """
     An exception raised, when a subprocess returns a nonzero return code.

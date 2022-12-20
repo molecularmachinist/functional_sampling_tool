@@ -21,12 +21,23 @@ def handle_errors(func: Callable[[argparse.Namespace], None]) -> Callable[[argpa
         try:
             return func(args)
         except FSTException as e:
-            print("--------------------------\n", file=sys.stderr)
+            print("\n------------------------------------------------------\n",
+                  file=sys.stderr)
             print(e.__class__.__name__, file=sys.stderr)
             print("", file=sys.stderr)
             print(e,  file=sys.stderr)
-            print("\n--------------------------", file=sys.stderr)
+            print("\n----------------------------------------------------",
+                  file=sys.stderr)
             sys.exit(e.code)
+        except KeyboardInterrupt as e:
+            print("\n------------------------------------------------------\n",
+                  file=sys.stderr)
+            print("KeyboardInterrupt")
+            print("", file=sys.stderr)
+            print("Stopping due to user interrupt",  file=sys.stderr)
+            print("\n----------------------------------------------------",
+                  file=sys.stderr)
+            sys.exit(130)
     return wrapped_func
 
 

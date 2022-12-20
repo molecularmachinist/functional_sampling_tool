@@ -12,7 +12,7 @@ from . import utils
 from . import transformations
 from . import default_config
 
-from .exceptions import NoConfigError, NoEpochsFoundError
+from .exceptions import NoConfigError, NoEpochsFoundError, FunctionDimensionError
 
 # Type hints
 from numpy.typing import NDArray
@@ -71,6 +71,11 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_]
         print("Function hash changed, recalculating fval")
         fval = cfg.function_val(dat["fval_crd"])
         dat["fval"] = fval
+        if (fval.shape != (dat["fval_crd"].shape[0],)):
+            raise FunctionDimensionError(
+                f"The function returned an array of shape{fval.shape} "
+                f"from coordinates of shape{dat['fval_crd'].shape}. The returned "
+                f"array should be shape{(dat['fval_crd'].shape[0],)}.")
         print("Saving modified fval to %s" % cfg.npz_file_name)
         dat["func_hash"] = utils.hash_func(cfg.function_val)
         np.savez_compressed(d/cfg.npz_file_name, **dat)
@@ -96,6 +101,11 @@ def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], ND
     print("Calculating fval")
     cfg.current_dir = d
     fval = cfg.function_val(fval_crd)
+    if (fval.shape != (trjlen,)):
+        raise FunctionDimensionError(
+            f"The function returned an array of shape{fval.shape} "
+            f"from coordinates of shape{fval_crd.shape}. The returned "
+            f"array should be shape{(trjlen,)}.")
     print("Saving %s" % cfg.npz_file_name)
     xtc_mod_t = (d/"mdrun.xtc").stat().st_mtime
     func_hash = utils.hash_func(cfg.function_val)

@@ -96,12 +96,15 @@ class FrameChooser():
         self.binmax = min(largest_val, maxval)
         self.binmin = max(lowest_val,  minval)
         # Calculate binsize
-        maxbins_calc = np.sum((self.fval > minval) *
-                              (self.fval < maxval))//data_per_bin
+        data_within_bounds = np.sum(
+            (self.fval > minval) *
+            (self.fval < maxval)
+        )
+        maxbins_calc = data_within_bounds//data_per_bin
         maxbins = min(maxbins_calc, maxbins)
         self.binsize = (self.binmax-self.binmin)/maxbins
-        print(f"Calculated maxbins {maxbins_calc}, final maxbins {maxbins}")
-        print(f"{np.sum((self.fval>minval)*(self.fval<maxval))} data inside boundaries")
+        print(f"{data_within_bounds} data points inside boundaries")
+        print(f"Using {maxbins} bins.")
         # Make bin edges
         if (hard_boundaries):
             self.bin_edges = np.linspace(self.binmin,
@@ -111,6 +114,7 @@ class FrameChooser():
             self.bin_edges = np.arange(lowest_val,
                                        largest_val+self.binsize,
                                        self.binsize)
+        print(f"Bin size is {self.bin_edges[1]-self.bin_edges[0]}.")
         # Make the histogram
         self.hist, _ = np.histogram(self.fval, bins=self.bin_edges)
         # bin centers are halfway between edges

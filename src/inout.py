@@ -68,7 +68,7 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_]
             d/cfg.npz_file_name))
 
     if (dat["func_hash"] != utils.hash_func(cfg.function_val)):
-        print("Function hash changed, recalculating fval")
+        print("Function hash changed, recalculating function value")
         fval = cfg.function_val(dat["fval_crd"])
         dat["fval"] = fval
         if (fval.shape != (dat["fval_crd"].shape[0],)):
@@ -76,7 +76,7 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_]
                 f"The function returned an array of shape{fval.shape} "
                 f"from coordinates of shape{dat['fval_crd'].shape}. The returned "
                 f"array should be shape{(dat['fval_crd'].shape[0],)}.")
-        print("Saving modified fval to %s" % cfg.npz_file_name)
+        print("Saving modified function value to %s" % cfg.npz_file_name)
         dat["func_hash"] = utils.hash_func(cfg.function_val)
         np.savez_compressed(d/cfg.npz_file_name, **dat)
     else:
@@ -92,13 +92,13 @@ def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], ND
     trjlen = len(cfg.struct.trajectory)
     fval_crd = np.empty([trjlen, len(cfg.sel), 3])
     crd = np.empty([trjlen, len(cfg.sel_clust), 3])
-    print("Copying crd")
+    print("Copying coordinates")
     for j, ts in enumerate(cfg.struct.trajectory):
         fval_crd[j] = cfg.sel.positions
         ts = cfg.clust_transform(ts)
         crd[j] = cfg.sel_clust.positions
 
-    print("Calculating fval")
+    print("Calculating function value")
     cfg.current_dir = d
     fval = cfg.function_val(fval_crd)
     if (fval.shape != (trjlen,)):

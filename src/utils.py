@@ -163,19 +163,6 @@ def rsync_up(cfg: Any) -> None:
         raise NonzeroReturnError("rsync process returned %d" % rc, code=rc)
 
 
-def __depr_copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: Any) -> None:
-    """
-    To be deprecated. Gets email and account from config.
-    """
-    warnings.warn("email and account for 'sbatch_launch.sh' should no longer come from config. " +
-                  "It will now be filled in as before, but this will be " +
-                  "deprecated in the future.", DeprecatedUsageWarning)
-    with fin.open() as f:
-        with fout.open("w") as fo:
-            fo.write(f.read().format(
-                i=enum, account=cfg.account, email=cfg.email))
-
-
 def copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: Any = None) -> None:
     """
     Copies the sbatch template from fin to fout.
@@ -185,10 +172,6 @@ def copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: 
     if (not fin.exists()):
         raise NoSbatchLaunchError(
             f"No file found at {fin}, make sure the launch script exists and the path is correct.")
-    templ = fin.read_text()
-    if ("{i}" in templ and "{account}" in templ and "{email}" in templ):
-        __depr_copy_sbatch_template(fin, fout, enum, cfg)
-        return
     with fin.open() as fi:
         with fout.open("w") as fo:
             for line in fi:

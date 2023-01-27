@@ -46,6 +46,8 @@ Just run
 pip install functional_sampling_tool
 ```
 
+If you run into any problem, please try the recommended way of installation before opening an issue.
+
 ### Recommended way
 
 In the recommended way we will use conda to make a new envirnonment. This way works independent of which Python version you use by default. If you do not already have it, [install conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).

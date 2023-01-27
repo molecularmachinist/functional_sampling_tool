@@ -206,7 +206,9 @@ def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Di
                 data["start_frm"][e][r] = 0
             else:
                 pe, pr = data["origin"][e][r]["epc"], data["origin"][e][r]["rep"]
-                if (not data["origin"][pe][pr]):
+                prev_ignore = (pe in cfg.ignore_epcs) or (
+                    (pe, pr) in cfg.ignore_reps)
+                if ((doignore and prev_ignore) or not data["origin"][pe][pr]):
                     data["start_frm"][e][r] = 0
                 else:
                     data["start_frm"][e][r] = data["start_frm"][pe][pr] + \

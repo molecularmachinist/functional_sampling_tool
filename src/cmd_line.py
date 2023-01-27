@@ -20,6 +20,8 @@ else:
 def init(args: argparse.Namespace) -> None:
     from .epoch_starting import start_epoch
     from .utils import rsync_up
+    from .inout import config_validation
+    config_validation(args.cfg)
     print("Initializing first epoch")
     start_epoch(1, args.cfg, numproc=args.num_proc)
     if (args.push):

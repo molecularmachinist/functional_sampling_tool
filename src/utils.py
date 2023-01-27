@@ -52,7 +52,7 @@ def rolling_mean(data: ArrayLike, window: int = 10,
     return mean
 
 
-def read_ndx(ndx: str) -> Dict[str, List[int]]:
+def read_ndx(ndx: pathlib.Path) -> Dict[str, List[int]]:
     # Return empty dictionary if ndx is None
     if (ndx is None):
         return {}
@@ -61,7 +61,7 @@ def read_ndx(ndx: str) -> Dict[str, List[int]]:
     groups = []
     current = None
 
-    with open(ndx) as f:
+    with ndx.open() as f:
         for line in f:
             line = line.strip()
             if (line.startswith("[") and line.endswith("]")):

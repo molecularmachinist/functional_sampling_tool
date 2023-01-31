@@ -99,6 +99,13 @@ class NoConfigError(FSTException, FileNotFoundError):
     pass
 
 
+class RequiredFileMissingError(FSTException, FileNotFoundError):
+    """
+    An exception raised, when a erquired file does not exists.
+    """
+    pass
+
+
 class NoNetworkxError(FSTException, ImportError):
     """
     An exception raised, when the config file does not exists.

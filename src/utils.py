@@ -52,7 +52,7 @@ def rolling_mean(data: ArrayLike, window: int = 10,
     return mean
 
 
-def read_ndx(ndx: str) -> Dict[str, List[int]]:
+def read_ndx(ndx: pathlib.Path) -> Dict[str, List[int]]:
     # Return empty dictionary if ndx is None
     if (ndx is None):
         return {}
@@ -61,7 +61,7 @@ def read_ndx(ndx: str) -> Dict[str, List[int]]:
     groups = []
     current = None
 
-    with open(ndx) as f:
+    with ndx.open() as f:
         for line in f:
             line = line.strip()
             if (line.startswith("[") and line.endswith("]")):
@@ -82,35 +82,34 @@ def read_ndx(ndx: str) -> Dict[str, List[int]]:
     return indexes
 
 
-def gromacs_command(gmx: str, cmd: str, *args: Any, directory: str = ".",
-                    input: Optional[bytes] = None, **kwargs: Any) -> int:
+def gromacs_command(gmx: str, cmd: str, *args: Any, directory: pathlib.Path = pathlib.Path("."),
+                    input: Optional[bytes] = None, nobackup=False, **kwargs: Any) -> int:
     """ Call the gromacs subcommand cmd in directory. Both args and keys of kwargs should be without the leading dash.
         output is redirected to output_<cmd>.txt. Returns the return code of the command.
     """
 
-    # Save original working dir to come back to
-    prevdir = os.getcwd()
-    try:
-        os.chdir(directory)
-        command = [gmx, cmd]+["-"+str(a) for a in args]
-        for k in kwargs:
-            command += ["-"+k, str(kwargs[k])]
+    command = [gmx]
+    if (nobackup):
+        command.append("-nobackup")
+    command.append(cmd)
+    command += ["-"+str(a) for a in args]
+    for k in kwargs:
+        command += ["-"+k, str(kwargs[k])]
 
-        print(f"Running: {' '.join(command)}")
-        with open("output_%s.txt" % cmd, "w") as fout:
-            try:
-                compProc = subp.run(command, stdout=fout,
-                                    stderr=subp.STDOUT, input=input)
-            except FileNotFoundError as e:
+    print(f"Running: {' '.join(command)}")
+    with (directory / ("output_%s.txt" % cmd)).open("w") as fout:
+        try:
+            compProc = subp.run(command, stdout=fout,
+                                stderr=subp.STDOUT, input=input,
+                                cwd=directory)
+        except FileNotFoundError as e:
+            if (e.filename == gmx):
                 raise ExternalProgramMissingError(
                     f"GROMACS command at '{gmx}' not found.\n"
                     "Original message:\n"
                     f"{e.__class__.__name__}: {e}"
                 )
-
-    finally:
-        # Whatever happens, we go back to the original working dir
-        os.chdir(prevdir)
+            raise
 
     return compProc.returncode
 
@@ -164,19 +163,6 @@ def rsync_up(cfg: Any) -> None:
         raise NonzeroReturnError("rsync process returned %d" % rc, code=rc)
 
 
-def __depr_copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: Any) -> None:
-    """
-    To be deprecated. Gets email and account from config.
-    """
-    warnings.warn("email and account for 'sbatch_launch.sh' should no longer come from config. " +
-                  "It will now be filled in as before, but this will be " +
-                  "deprecated in the future.", DeprecatedUsageWarning)
-    with fin.open() as f:
-        with fout.open("w") as fo:
-            fo.write(f.read().format(
-                i=enum, account=cfg.account, email=cfg.email))
-
-
 def copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: Any = None) -> None:
     """
     Copies the sbatch template from fin to fout.
@@ -186,10 +172,6 @@ def copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: 
     if (not fin.exists()):
         raise NoSbatchLaunchError(
             f"No file found at {fin}, make sure the launch script exists and the path is correct.")
-    templ = fin.read_text()
-    if ("{i}" in templ and "{account}" in templ and "{email}" in templ):
-        __depr_copy_sbatch_template(fin, fout, enum, cfg)
-        return
     with fin.open() as fi:
         with fout.open("w") as fo:
             for line in fi:

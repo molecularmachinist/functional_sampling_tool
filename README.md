@@ -16,7 +16,7 @@ These you will need to have preinstalled before installing the package.
 1. C++ compiler
 1. Optional: `rsync`
 
-GROMACS is only needed for grompping. This means that a [quck and dirty](https://manual.gromacs.org/current/install-guide/index.html#quick-and-dirty-installation) installation is enough. Do make sure it is the same major version that you plan on using for the simulation runs.
+GROMACS is only needed for grompping. This means that a [quick and dirty](https://manual.gromacs.org/current/install-guide/index.html#quick-and-dirty-installation) installation is enough. Do make sure it is the same major version that you plan on using for the simulation runs.
 
 The C++ compiler is needed to compile a few of the trajectory transformation modules, which allow making broken molecules whole over the PBC. The package build process has been tested with the open source GCC-compiler, but in theory any compiler should work.
 
@@ -38,28 +38,15 @@ NetworkX is only needed for ancestry graph building and is not installed by defa
 
 ## Installation
 
-Whichever installation way you choose to use, start by copying the project to your computer.
-
-
-```
-git clone https://github.com/molecularmachinist/functional_sampling_tool.git
-cd functional_sampling_tool
-```
-for the latest, 
-or to download a specific version:
-```
-wget https://github.com/molecularmachinist/functional_sampling_tool/archive/refs/tags/v0.0.2.tar.gz
-tar xvzf v0.0.2.tar.gz
-cd functional_sampling_tool-0.0.2
-```
 
 ### Quick and easy
 
 Just run
 ```sh
-pip install .
+pip install functional_sampling_tool
 ```
-in the project root. This will install all module dependencies and compile and install the package.
+
+If you run into any problem, please try the recommended way of installation before opening an issue.
 
 ### Recommended way
 
@@ -75,11 +62,10 @@ conda activate fst_env
 
 This will also install the needed dependencies, so that they are handled by conda rather than pip.
 
-Second, we run the command to install the package. 
-Here I assume that you have downloaded the project and are within its root folder. From there run
+Second, we run the command to install the package.
 
 ```sh
-pip install .
+pip install functional_sampling_tool
 ```
 
 When the command finishes, it should be all done and the tool usable as `fst`.

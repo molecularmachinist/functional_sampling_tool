@@ -12,7 +12,10 @@ from . import utils
 from . import transformations
 from . import default_config
 
-from .exceptions import NoConfigError, NoEpochsFoundError, FunctionDimensionError
+from .exceptions import (NoConfigError,
+                         RequiredFileMissingError,
+                         NoEpochsFoundError,
+                         FunctionDimensionError)
 
 # Type hints
 from numpy.typing import NDArray
@@ -206,7 +209,9 @@ def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Di
                 data["start_frm"][e][r] = 0
             else:
                 pe, pr = data["origin"][e][r]["epc"], data["origin"][e][r]["rep"]
-                if (not data["origin"][pe][pr]):
+                prev_ignore = (pe in cfg.ignore_epcs) or (
+                    (pe, pr) in cfg.ignore_reps)
+                if ((doignore and prev_ignore) or not data["origin"][pe][pr]):
                     data["start_frm"][e][r] = 0
                 else:
                     data["start_frm"][e][r] = data["start_frm"][pe][pr] + \
@@ -274,6 +279,29 @@ def load_data(cfg: Any, load_fval: bool):
     return fval, crds, frms, reps, epcs
 
 
+def config_validation(cfg: Any):
+    """ Rudimentary config validation.
+    """
+    for f in cfg.initial_struct:
+        if (not f.exists()):
+            raise RequiredFileMissingError(f"Structure file {f} does not exist. "
+                                           "Either change initial_struct in config, "
+                                           "or make the file.")
+
+    for pathvar in ("mdp", "topol", "ndx", "sbatch"):
+        p = getattr(cfg, pathvar)
+        if (not p.exists()):
+            raise RequiredFileMissingError(f"{pathvar} file {p} does not exist. "
+                                           "Either change it in config, "
+                                           "or make the file.")
+
+    if (not cfg.index_file is None):
+        if (not cfg.index_file.exists()):
+            raise RequiredFileMissingError(f"index file {cfg.index_file} does not exist. "
+                                           "Either change index_file in config, "
+                                           "or make the file.")
+
+
 def import_cfg(cfgpath: pathlib.Path) -> Any:
     """
     Only import the config, does not load structs or do anything with it.
@@ -311,6 +339,9 @@ def import_cfg(cfgpath: pathlib.Path) -> Any:
         aspath = pathlib.Path(getattr(cfg, pathvar))
         setattr(cfg, pathvar, aspath)
 
+    if (not cfg.index_file is None):
+        cfg.index_file = pathlib.Path(cfg.index_file)
+
     return cfg
 
 
@@ -319,6 +350,7 @@ def load_options(cfgpath: pathlib.Path) -> Any:
     Imports the config, and loads the structs and selections
     """
     cfg = import_cfg(cfgpath)
+    config_validation(cfg)
     print("Loading structure")
     cfg.struct = mda.Universe(str(cfg.initial_struct[0]))
     cfg.indexes = utils.read_ndx(cfg.index_file)

@@ -1,4 +1,4 @@
-v0.0.4.dev0
+v0.0.5.dev0
 - BIG CHANGE: clustering will be done if at least epochs_pre_clust epochs have been run (used to be strictly more than)
 
 v0.0.4
@@ -13,7 +13,11 @@ v0.0.4
 - Added option to print version
 - The returned function values are checked to make sure they have a correct dimensionality
 
+
 v0.0.3
+- This version was skipped due to human error
+
+v0.0.2
 
 - fval and cluster coordinates are saved to data npz archive as a whole, and the ignoring
   from start and stride are only applied after reading. This means the archive files made with

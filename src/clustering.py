@@ -75,7 +75,7 @@ class ClusterChooser(choosing.FrameChooser):
 
     def make_choices(self, prechoices: int = 0, plot: bool = True) -> Tuple[
             NDArray[np.float_], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
-        if (len(self.u_epcs) <= self.cfg.epochs_pre_clust):
+        if (len(self.u_epcs) < self.cfg.epochs_pre_clust):
             return self.plain_chooser.make_choices(prechoices, plot)
 
         # Allocate array for labels, default value -1 for non labeled frames.
@@ -202,7 +202,7 @@ class ClusterChooser(choosing.FrameChooser):
 
     def plot_hist(self) -> None:
         self.plain_chooser.plot_hist()
-        if (len(self.u_epcs) <= self.cfg.epochs_pre_clust):
+        if (len(self.u_epcs) < self.cfg.epochs_pre_clust):
             return
         clust_hist_indexes = np.digitize(self.fval, bins=self.bin_edges)
         clust_unique_bins, clust_unique_bin_counts = np.unique(

@@ -1,5 +1,5 @@
 v0.0.4.dev0
-
+- BIG CHANGE: clustering will be done if at least epochs_pre_clust epochs have been run (used to be strictly more than)
 
 v0.0.4
 

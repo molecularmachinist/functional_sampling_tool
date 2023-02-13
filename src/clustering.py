@@ -48,7 +48,7 @@ class ClusterChooser(choosing.FrameChooser):
 
         self.nextepoch = self.u_epcs[-1]+1
 
-        if (len(self.u_epcs) > self.cfg.epochs_pre_clust):
+        if (len(self.u_epcs) >= self.cfg.epochs_pre_clust):
             self._make_hist()
 
         self.plain_chooser = choosing.FrameChooser(cfg, fval, frms, reps, epcs)

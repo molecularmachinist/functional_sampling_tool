@@ -72,6 +72,7 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_]
 
     if (dat["func_hash"] != utils.hash_func(cfg.function_val)):
         print("Function hash changed, recalculating function value")
+        cfg.current_dir = d
         fval = cfg.function_val(dat["fval_crd"])
         dat["fval"] = fval
         if (fval.shape != (dat["fval_crd"].shape[0],)):

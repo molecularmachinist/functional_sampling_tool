@@ -1,13 +1,8 @@
-v0.0.2
+v0.0.5
+- BIG CHANGE: clustering will be done if at least epochs_pre_clust epochs have been run (used to be strictly more than)
+- bugfix: current_dir behaviour fixed when the function changed, but xtc was not reread.
 
-- fval and cluster coordinates are saved to data npz archive as a whole, and the ignoring
-  from start and stride are only applied after reading. This means the archive files made with
-  v0.0.1 must be reloaded.
-  Before this change the extraction was broken when the starting frame or stride were not the defaults.
-- beginning and stride in extraction are taken from config by default.
-- max height for choices can be given in config
-
-v0.0.3
+v0.0.4
 
 - Command line options now use dashes instead of underscores as spaces
 - Changed the way multiple starting structures are handled. Now they can be given as a list in config.
@@ -18,3 +13,16 @@ v0.0.3
 - Maximum number of grompp-processes is halved and can be changed with a command line option
 - Added option to print version
 - The returned function values are checked to make sure they have a correct dimensionality
+
+
+v0.0.3
+- This version was skipped due to human error
+
+v0.0.2
+
+- fval and cluster coordinates are saved to data npz archive as a whole, and the ignoring
+  from start and stride are only applied after reading. This means the archive files made with
+  v0.0.1 must be reloaded.
+  Before this change the extraction was broken when the starting frame or stride were not the defaults.
+- beginning and stride in extraction are taken from config by default.
+- max height for choices can be given in config

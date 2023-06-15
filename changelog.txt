@@ -1,5 +1,6 @@
 v0.0.5.dev0
 - BIG CHANGE: clustering will be done if at least epochs_pre_clust epochs have been run (used to be strictly more than)
+- bugfix: current_dir behaviour fixed when the function changed, but xtc was not reread.
 
 v0.0.4
 

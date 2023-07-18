@@ -31,9 +31,8 @@ These you can either preinstall, or let either pip or conda install for you in t
 1. importlib_resources (only with with python<3.10) 
 1. [MDAnalysis](https://docs.mdanalysis.org/stable/index.html)
 1. [scikit-learn](https://scikit-learn.org/stable/)
-1. Optional: [NetworkX](https://networkx.org/)
-
-NetworkX is only needed for ancestry graph building and is not installed by default. You can run the tool just fine, until you use the `fst analysis ancestry` command, which will throw an error. You can then just install the package any time and ancestry graphing will start working.
+1. [NetworkX](https://networkx.org/)
+1. [pygraphviz](https://networkx.org/)
 
 
 ## Installation
@@ -56,7 +55,7 @@ In the recommended way we will use conda to make a new envirnonment. This way wo
 First, we will make a new conda environment dedicated just for the tool and activate it (if you have [mamba](https://mamba.readthedocs.io/en/latest/) installed, use it for the first command to speed up the process):
 
 ```sh
-conda create -c conda-forge -n fst_env python=3.10 numpy matplotlib mdanalysis scikit-learn networkx
+conda create -c conda-forge -n fst_env python=3.10 numpy matplotlib mdanalysis scikit-learn networkx pygraphviz
 conda activate fst_env
 ```
 

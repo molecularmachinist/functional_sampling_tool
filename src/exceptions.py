@@ -7,8 +7,8 @@ from typing import Callable, Any
 
 class FSTException(Exception):
     """
-    A base exception differnetiate between fst-internal exception,
-    to be caught nicely, and some other code's exceptions, which should not be caught.
+    A base exception to differentiate between fst-internal exception (to be caught
+    nicely) and some other code's exceptions (which should not be caught).
     """
 
     def __init__(self, *args: Any, code=1) -> None:
@@ -17,6 +17,18 @@ class FSTException(Exception):
 
 
 def handle_errors(func: Callable[[argparse.Namespace], None]) -> Callable[[argparse.Namespace], None]:
+    """
+    A function decorator that will handle FSTException and KeyboardInterrupt nicely
+    while not catching any other Exceptions.
+
+    parameters:
+        func: Callable(Namespace) -> None
+            The function to wrap with the error handling.
+
+    return:
+        wrapped_func: Callable(Namespace) -> None
+            The wrapped function.
+    """
     def wrapped_func(args: argparse.Namespace) -> None:
         try:
             return func(args)

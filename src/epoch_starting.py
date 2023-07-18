@@ -32,7 +32,7 @@ def init_rep(i: int,
             f"{d} already exists, will not try to overwrite. Try running \"fst clean\" to remove the latest epoch directory.")
     d.mkdir()
 
-    atoms.write(str(d / "start.gro"))
+    atoms.write(d / "start.gro")
 
     # Make a note of the origin
     with (d / "origin.txt").open("w") as f:
@@ -91,10 +91,10 @@ def next_rep(i: int,
     d_old = pathlib.Path("epoch%02d" % oldepoch) / ("rep%02d" % rep)
     next_xtc = d_old / "mdrun.xtc"
     if (next_xtc != cfg.struct.filename):
-        cfg.struct.load_new(str(next_xtc))
+        cfg.struct.load_new(next_xtc)
     cfg.struct.trajectory[frm]
 
-    cfg.struct.atoms.write(str(d / "start.gro"))
+    cfg.struct.atoms.write(d / "start.gro")
     print("Wrote structure to %s, starting to grompp..." % (d / "start.gro"))
 
     # Make a note of the origin
@@ -159,7 +159,7 @@ def start_epoch(nextepoch: int, cfg: Any,
         res = []
         if (nextepoch == 1):
             # Initial structures and first epoch
-            struct = mda.Universe(*[str(f) for f in cfg.initial_struct])
+            struct = mda.Universe(*cfg.initial_struct)
             num_frames = len(struct.trajectory)
             print("Found %d starting structures" % num_frames)
             if (num_frames > cfg.N):

@@ -38,7 +38,7 @@ def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List
         args.unwrap_starters = args.cfg.unwrap_starters
 
     print("Loading structure")
-    u = mda.Universe(str(args.cfg.initial_struct[0]))
+    u = mda.Universe(args.cfg.initial_struct[0])
     sel = utils.load_sel(args.selection, u, indexes)
     print("Selected %d atoms for extraction" % len(sel))
     sel_superpos = utils.load_sel(args.sel_superpos, u, indexes)
@@ -46,7 +46,9 @@ def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List
     if (args.unwrap or args.wrap):
         # Preparing molecule unwrapper
         bonded_struct = mda.Universe(
-            "epoch01/rep01/mdrun.tpr", str(args.cfg.initial_struct[0]))
+            "epoch01/rep01/mdrun.tpr",
+            args.cfg.initial_struct[0]
+        )
         unwrap_sel = utils.load_sel(args.sel_unwrap, u, indexes)
         unwrap_sel = bonded_struct.atoms[unwrap_sel.indices]
         print("Selected %d atoms for unwrapping" % len(unwrap_sel))

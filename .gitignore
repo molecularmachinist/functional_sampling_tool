@@ -92,3 +92,7 @@ dump
 /example/after_e1/epoch01/rep*/.mdrun.xtc_offsets.lock
 /example/after_e1/initial/start.pdb
 /example/after_e1/initial/output_trjconv.txt
+
+# Test data
+/tests/data/epoch_examples/epoch01/rep*/.mdrun.xtc_offsets.npz
+/tests/data/epoch_examples/epoch01/rep*/.mdrun.xtc_offsets.lock

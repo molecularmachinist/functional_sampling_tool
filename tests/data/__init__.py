@@ -1,5 +1,6 @@
 import numpy as np
 import pathlib
+import shutil
 import os
 import sys
 
@@ -75,3 +76,24 @@ def make_whole_data():
 def load_cfg():
     from functional_sampling_tool.inout import load_options
     return load_options(epoch_example_dir / "config.py")
+
+
+def temp_example_dir():
+    tmp_dir = datadir / "epoch_example_tmp"
+    if (tmp_dir.is_dir()):
+        shutil.rmtree(tmp_dir)
+    shutil.copytree(epoch_example_dir, tmp_dir / "all_present")
+    shutil.copytree(epoch_example_dir, tmp_dir / "none_present1",
+                    ignore=shutil.ignore_patterns("*.xtc"))
+    shutil.copytree(epoch_example_dir, tmp_dir / "none_present2",
+                    ignore=shutil.ignore_patterns("*.xtc"))
+    shutil.copytree(epoch_example_dir, tmp_dir / "one_present1",
+                    ignore=shutil.ignore_patterns("*.xtc"))
+    shutil.copytree(epoch_example_dir, tmp_dir / "one_present2",
+                    ignore=shutil.ignore_patterns("*.xtc"))
+    shutil.copy(epoch_example_dir / "epoch01" / "rep08" / "mdrun.xtc",
+                tmp_dir / "one_present1" / "epoch01" / "rep08" / "mdrun.xtc")
+    shutil.copy(epoch_example_dir / "epoch01" / "rep08" / "mdrun.xtc",
+                tmp_dir / "one_present2" / "epoch01" / "rep08" / "mdrun.xtc")
+
+    return tmp_dir

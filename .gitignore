@@ -97,3 +97,4 @@ dump
 /tests/data/epoch_examples/epoch01/rep*/.mdrun.xtc_offsets.npz
 /tests/data/epoch_examples/epoch01/rep*/.mdrun.xtc_offsets.lock
 /tests/data/epoch_example_tmp
+/fst_test_run

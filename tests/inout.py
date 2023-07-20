@@ -76,17 +76,19 @@ class TestCase_get_data_from_archive(unittest.TestCase):
         """
         Test that LoadError is raised when xtc modtime does not match
         """
-        self.assertRaises(inout.LoadError,
-                          inout.get_data_from_archive,
-                          epoch_example_dir / "epoch01" / "rep02", self.cfg)
+        self.assertRaisesRegex(inout.LoadError,
+                               "Modification time of .* does not match",
+                               inout.get_data_from_archive,
+                               epoch_example_dir / "epoch01" / "rep02", self.cfg)
 
     def test_missing_archive(self):
         """
         Test that FileNotFoundError is raised when archive is missing
         """
-        self.assertRaises(FileNotFoundError,
-                          inout.get_data_from_archive,
-                          epoch_example_dir / "epoch01" / "rep01", self.cfg)
+        self.assertRaisesRegex(FileNotFoundError,
+                               "No such file or directory: '.*fval_data.npz'",
+                               inout.get_data_from_archive,
+                               epoch_example_dir / "epoch01" / "rep01", self.cfg)
 
     def test_changed_sel(self):
         """
@@ -94,16 +96,18 @@ class TestCase_get_data_from_archive(unittest.TestCase):
         """
         sel = self.cfg.sel
         self.cfg.sel = self.cfg.sel.universe.select_atoms("resid 3")
-        self.assertRaises(inout.LoadError,
-                          inout.get_data_from_archive,
-                          epoch_example_dir / "epoch01" / "rep10", self.cfg)
+        self.assertRaisesRegex(inout.LoadError,
+                               "Selections in .* do not match",
+                               inout.get_data_from_archive,
+                               epoch_example_dir / "epoch01" / "rep10", self.cfg)
         self.cfg.sel = sel
 
         sel = self.cfg.sel_clust
         self.cfg.sel_clust = self.cfg.sel.universe.select_atoms("resid 3")
-        self.assertRaises(inout.LoadError,
-                          inout.get_data_from_archive,
-                          epoch_example_dir / "epoch01" / "rep10", self.cfg)
+        self.assertRaisesRegex(inout.LoadError,
+                               "Selections in .* do not match",
+                               inout.get_data_from_archive,
+                               epoch_example_dir / "epoch01" / "rep10", self.cfg)
         self.cfg.sel_clust = sel
 
     def test_changed_transforms(self):
@@ -111,15 +115,17 @@ class TestCase_get_data_from_archive(unittest.TestCase):
         Test that LoadError is raised if transformations are turned off
         """
         self.cfg.unwrap_mols = False
-        self.assertRaises(inout.LoadError,
-                          inout.get_data_from_archive,
-                          epoch_example_dir / "epoch01" / "rep10", self.cfg)
+        self.assertRaisesRegex(inout.LoadError,
+                               "Trajectory transformations changed",
+                               inout.get_data_from_archive,
+                               epoch_example_dir / "epoch01" / "rep10", self.cfg)
         self.cfg.unwrap_mols = True
 
         self.cfg.mols_in_box = False
-        self.assertRaises(inout.LoadError,
-                          inout.get_data_from_archive,
-                          epoch_example_dir / "epoch01" / "rep10", self.cfg)
+        self.assertRaisesRegex(inout.LoadError,
+                               "Trajectory transformations changed",
+                               inout.get_data_from_archive,
+                               epoch_example_dir / "epoch01" / "rep10", self.cfg)
         self.cfg.mols_in_box = True
 
 

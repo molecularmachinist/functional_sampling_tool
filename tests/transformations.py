@@ -40,7 +40,7 @@ class MakeWholeData:
                                      u.atoms.indices).positions
 
 
-class TestCase_make_whole(unittest.TestCase):
+class MakeWhole(unittest.TestCase):
     """
     TestCase for the make_whole function
     """
@@ -55,7 +55,7 @@ class TestCase_make_whole(unittest.TestCase):
         self.systems = systems
 
     @_wrap_in_subtests
-    def test_shape(self, dat: MakeWholeData):
+    def test_0_shape(self, dat: MakeWholeData):
         """
         Test that the shape is unchanged 
         """
@@ -65,7 +65,7 @@ class TestCase_make_whole(unittest.TestCase):
         )
 
     @_wrap_in_subtests
-    def test_values(self, dat: MakeWholeData):
+    def test_1_values(self, dat: MakeWholeData):
         """
         Test that the output matches
         """
@@ -79,4 +79,6 @@ class TestCase_make_whole(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(
+        argv=["transformation_tests", "-v"]
+    )

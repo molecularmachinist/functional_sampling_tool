@@ -18,7 +18,7 @@ def capture_output_wrapper(func, *args, **kwargs):
     return f.getvalue()
 
 
-class TestCase_check_num(unittest.TestCase):
+class CheckNum(unittest.TestCase):
     """
     TestCase for the inout.check_num function
     """
@@ -51,7 +51,7 @@ class TestCase_check_num(unittest.TestCase):
         )
 
 
-class TestCase_get_data_from_archive(unittest.TestCase):
+class GetDataFromArchive(unittest.TestCase):
     """
     TestCase for the get_data_from_archive function
     """
@@ -138,7 +138,7 @@ class TestCase_get_data_from_archive(unittest.TestCase):
         self.cfg.mols_in_box = True
 
 
-class TestCase_clean_latest_epoch(unittest.TestCase):
+class CleanLatestEpoch(unittest.TestCase):
     """
     Test case for testing clean_latest_epoch
     """
@@ -231,5 +231,5 @@ class TestCase_clean_latest_epoch(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(
-        defaultTest=["TestCase_clean_latest_epoch"], argv=["tests", "-v"]
+        argv=["inout_tests", "-v"]
     )

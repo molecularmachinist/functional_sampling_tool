@@ -2,6 +2,7 @@
 import sys
 import shutil
 import time
+import warnings
 import numpy as np
 import re
 import MDAnalysis as mda
@@ -12,7 +13,8 @@ from . import utils
 from . import transformations
 from . import default_config
 
-from .exceptions import (NoConfigError,
+from .exceptions import (DeprecatedUsageWarning,
+                         NoConfigError,
                          RequiredFileMissingError,
                          NoEpochsFoundError,
                          FunctionDimensionError,
@@ -56,12 +58,19 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_]
             f"Selections in {d/cfg.npz_file_name} do not match, reloading"
         )
 
-    transform_opt = [cfg.unwrap_mols, cfg.unwrap_mols and cfg.mols_in_box,
+    transform_opt = [cfg.precenter, cfg.unwrap_mols, cfg.mols_in_box,
                      cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos]
     if (not np.array_equal(transform_opt, dat["transform_opt"])):
-        raise LoadError(
-            f"Trajectory transformations changed from {d/cfg.npz_file_name}, reloading"
-        )
+        if ((not cfg.precenter) and np.array_equal(transform_opt[1:], dat["transform_opt"])):
+            print(f"NPZ file {d/cfg.npz_file_name} has been made with functional_sampling_tool<0.0.6 and "
+                  "is missing the flag for precentering.")
+            print("The archive will be saved with the new flag.")
+            dat["transform_opt"] = transform_opt
+            np.savez_compressed(d/cfg.npz_file_name, **dat)
+        else:
+            raise LoadError(
+                f"Trajectory transformations changed from {d/cfg.npz_file_name}, reloading"
+            )
 
     # if "stride" is found in dat, it was made with v0.0.1, so data might be missing
     if ("stride" in dat):
@@ -124,7 +133,7 @@ def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], ND
     func_hash = utils.hash_func(cfg.function_val)
     unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(
         0, dtype=int)
-    transform_opt = [cfg.unwrap_mols, cfg.unwrap_mols and cfg.mols_in_box,
+    transform_opt = [cfg.precenter, cfg.unwrap_mols, cfg.mols_in_box,
                      cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos]
     np.savez_compressed(d/cfg.npz_file_name,
                         fval=fval,

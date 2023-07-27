@@ -192,7 +192,7 @@ class Precentering:
         ag:             Atom group of atoms to move, from the reference universe
         centre_atom:    The Atom to centre. If None the closest atom to box centre
                         is used. [default: None]
-        subselection:   The atom group to move and/or rotate, None to use ag. [default: None]
+        subselection:   The atom group to move, None to use ag. [default: None]
 
     returns:
         transformation function
@@ -221,4 +221,4 @@ class Precentering:
         box_center = (box/2).sum(axis=0)
         diff = box_center-ts.positions[self.centre_atom]
         ts.positions[self.sel] = ts.positions[self.sel]+diff
-        return self.func(ts)
+        return ts

@@ -61,6 +61,20 @@ def flatten_dict(dic):
     return newdict
 
 
+def set_xtc_mtimes():
+    for rep in (epoch_example_dir / "epoch01").iterdir():
+        if ((not rep.is_dir()) or (not rep.name.startswith("rep"))):
+            continue
+        if (not (rep / "fval_data.npz").is_file()):
+            continue
+        with np.load(rep / "fval_data.npz") as npz:
+            mtime = npz["xtc_mod_t"].item()
+        if (rep.name == "rep02"):
+            mtime += 10
+        # Sets both access and modtime, though we only care about the latter
+        os.utime(rep/"mdrun.xtc", (mtime, mtime))
+
+
 def _load_data_npz(filename):
     with np.load(datadir / filename) as npz:
         data = unflatten_dict(npz)

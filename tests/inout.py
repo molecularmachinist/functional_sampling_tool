@@ -8,7 +8,7 @@ from functional_sampling_tool import exceptions
 
 import numpy as np
 
-from data import epoch_example_dir, load_cfg, temp_example_dir, run_in_dir, silence_function
+from data import epoch_example_dir, set_xtc_mtimes, load_cfg, temp_example_dir, run_in_dir, silence_function
 
 
 def capture_output_wrapper(func, *args, **kwargs):
@@ -57,6 +57,7 @@ class GetDataFromArchive(unittest.TestCase):
     """
 
     def setUp(self):
+        set_xtc_mtimes()
         self.cfg = load_cfg()
 
     def test_all_good(self):

@@ -375,23 +375,23 @@ def load_options(cfgpath: pathlib.Path) -> Any:
 
     cfg.traj_transforms = []
 
-    if (cfg.unwrap_mols or cfg.mols_in_box or cfg.precentering):
+    if (cfg.unwrap_mols or cfg.mols_in_box or cfg.precenter):
         unwrap_sel = utils.load_sel(cfg.unwrap_sel, cfg.struct, cfg.indexes)
         print("Selected %d atoms for transformations" % len(unwrap_sel))
 
-    if (cfg.precentering):
-        if (cfg.precentering_atom is not None):
-            centre_atom_group = utils.load_sel(cfg.precentering_atom,
+    if (cfg.precenter):
+        if (cfg.precenter_atom is not None):
+            centre_atom_group = utils.load_sel(cfg.precenter_atom,
                                                cfg.struct,
                                                cfg.indexes)
             if (len(centre_atom_group) != 1):
-                raise WrongSelectionSizeError(f"Selection precentering_atom={repr(cfg.precentering_atom)} resulted "
+                raise WrongSelectionSizeError(f"Selection precenter_atom={repr(cfg.precenter_atom)} resulted "
                                               f"in {len(centre_atom_group)} atoms. Should be exactly 1!")
             centre_atom = centre_atom_group[0]
         else:
             centre_atom = None
         cfg.traj_transforms.append(
-            transformations.Precentering(unwrap_sel, centre_atom=centre_atom)
+            transformations.Precenter(unwrap_sel, centre_atom=centre_atom)
         )
         ca = cfg.struct.atoms[cfg.traj_transforms[-1].centre_atom]
         print(f"Precentering using atom index {ca.index}",

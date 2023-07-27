@@ -184,7 +184,7 @@ class Superpos:
         return ts
 
 
-class Precentering:
+class Precenter:
     """
     Center a single atom before putting molecules back in box 
 

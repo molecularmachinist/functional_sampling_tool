@@ -34,9 +34,9 @@ index_file = None
 ############################## Trajectrory transformations #####################
 
 # whether to centre by a single atom before making anything whole
-precentering = False
+precenter = False
 # The atom to use for precentering. By default use the one closest to box centre.
-precentering_atom = None
+precenter_atom = None
 # whether to make molecules whole from being broken over pbc
 unwrap_mols = False
 # The selection to make whole

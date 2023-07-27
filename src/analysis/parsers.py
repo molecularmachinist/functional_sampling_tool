@@ -1,18 +1,13 @@
 import argparse
 import pathlib
 
-from ..exceptions import NoNetworkxError, handle_errors
+from ..exceptions import handle_errors
 from ..cmd_line import config_importer
 
 
 @handle_errors
 def ancestry_graphing(args: argparse.Namespace):
-    try:
-        from .ancestry import ancestry
-    except ImportError as e:
-        raise NoNetworkxError("Failed to import functional_sampling_tool.analysis.extract.\n"
-                              "Make sure you have networkx installed before making ancestry graphs.\n"
-                              f"Original error message: {e}")
+    from .ancestry import ancestry
     ancestry(args)
 
 

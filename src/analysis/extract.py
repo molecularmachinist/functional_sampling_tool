@@ -29,10 +29,11 @@ def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List
         args.index = args.cfg.index_file
     indexes = utils.read_ndx(args.index)
 
-    args.selection = get_cfg_sel(args.selection,    args.cfg)
-    args.sel_unwrap = get_cfg_sel(args.sel_unwrap,   args.cfg, args.selection)
-    args.sel_superpos = get_cfg_sel(
-        args.sel_superpos, args.cfg, args.selection)
+    args.selection = get_cfg_sel(args.selection, args.cfg)
+    args.sel_unwrap = get_cfg_sel(args.sel_unwrap, args.cfg, args.selection)
+    args.sel_superpos = get_cfg_sel(args.sel_superpos, args.cfg,
+                                    args.selection)
+    args.precentering_atom = get_cfg_sel(args.precentering_atom, args.cfg)
 
     if (args.unwrap_starters == "unwrap_starters"):
         args.unwrap_starters = args.cfg.unwrap_starters
@@ -43,14 +44,34 @@ def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List
     print("Selected %d atoms for extraction" % len(sel))
     sel_superpos = utils.load_sel(args.sel_superpos, u, indexes)
 
+    if (args.unwrap or args.wrap or args.precentering):
+        unwrap_sel = utils.load_sel(args.sel_unwrap, u, indexes)
     if (args.unwrap or args.wrap):
         # Preparing molecule unwrapper
         bonded_struct = mda.Universe(
             "epoch01/rep01/mdrun.tpr",
             args.cfg.initial_struct[0]
         )
-        unwrap_sel = utils.load_sel(args.sel_unwrap, u, indexes)
         unwrap_sel = bonded_struct.atoms[unwrap_sel.indices]
+
+    traj_transforms = []
+    if (args.precentering):
+        if (args.precentering_atom is not None):
+            centre_atom_group = utils.load_sel(args.precentering_atom,
+                                               u, indexes)
+            if (len(centre_atom_group) != 1):
+                raise ValueError(f"Selection precentering_atom={repr(args.precentering_atom)} resulted "
+                                 f"in {len(centre_atom_group)} atoms. Should be exactly 1!")
+            centre_atom = centre_atom_group[0]
+        else:
+            centre_atom = None
+        traj_transforms.append(
+            transformations.Precentering(unwrap_sel, centre_atom))
+        ca = u.atoms[traj_transforms[-1].centre_atom]
+        print(f"Precentering using atom index {ca.index}",
+              f"({ca.name} of {ca.resname}:{ca.resid})")
+
+    if (args.unwrap):
         print("Selected %d atoms for unwrapping" % len(unwrap_sel))
         if (args.unwrap_starters is None):
             unwrap_starters = []
@@ -59,9 +80,6 @@ def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List
                 args.unwrap_starters, unwrap_sel, indexes)
             print("Selected %d atoms as unwrap starters" %
                   len(unwrap_starters))
-
-    traj_transforms = []
-    if (args.unwrap):
         traj_transforms.append(
             transformations.Unwrapper(unwrap_sel, unwrap_starters))
 

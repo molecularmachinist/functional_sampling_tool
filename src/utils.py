@@ -3,20 +3,17 @@ from numpy.typing import ArrayLike, NDArray
 from MDAnalysis.coordinates.base import Timestep
 from MDAnalysis.core.groups import AtomGroup
 import MDAnalysis as mda
-from typing import Any, Callable, Union, Optional, List, Dict, Tuple
+from typing import Any, Callable, Union, Optional, List, Dict
 from . import __version__ as fst_version
 import pathlib
 import subprocess as subp
 import numpy as np
 import math
-import os
 import sys
 import inspect
 import hashlib
-import warnings
 
-from .exceptions import (DeprecatedUsageWarning,
-                         NoSbatchLaunchError,
+from .exceptions import (NoSbatchLaunchError,
                          NonzeroReturnError,
                          ExternalProgramMissingError)
 

@@ -1,18 +1,13 @@
 import argparse
 import pathlib
 
-from ..exceptions import NoNetworkxError, handle_errors
+from ..exceptions import handle_errors
 from ..cmd_line import config_importer
 
 
 @handle_errors
 def ancestry_graphing(args: argparse.Namespace):
-    try:
-        from .ancestry import ancestry
-    except ImportError as e:
-        raise NoNetworkxError("Failed to import functional_sampling_tool.analysis.extract.\n"
-                              "Make sure you have networkx installed before making ancestry graphs.\n"
-                              f"Original error message: {e}")
+    from .ancestry import ancestry
     ancestry(args)
 
 
@@ -62,6 +57,12 @@ def extract_subparser(subparsers: "argparse._SubParsersAction[argparse.ArgumentP
     extr_parser.add_argument("--beginning", "-b", metavar="N",
                              help="Ignore this many frames from the beginning of each simulation. By default \"ignore_from_start\" from config.",
                              default=None,  type=int)
+    extr_parser.add_argument("--precenter",   action="store_true",
+                             help="Precenter the --sel-unwrap by shifting it such that --precenter-atom is in the centre of the box  (default: No)")
+    extr_parser.add_argument("--precenter-atom", metavar="str",
+                             help="The selection to unwrap. Same syntax as --selection, but should result in a single atom being selected. "
+                             "By default None, which results in using whichever atom in --sel-unwrap is closest to box center initially.",
+                             default=None)
     extr_parser.add_argument("--unwrap",   action="store_true",
                              help="Unwrap molecules (default: No)")
     extr_parser.add_argument("--sel-unwrap", metavar="str",

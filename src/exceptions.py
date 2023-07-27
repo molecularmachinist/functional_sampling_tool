@@ -7,8 +7,8 @@ from typing import Callable, Any
 
 class FSTException(Exception):
     """
-    A base exception differnetiate between fst-internal exception,
-    to be caught nicely, and some other code's exceptions, which should not be caught.
+    A base exception to differentiate between fst-internal exception (to be caught
+    nicely) and some other code's exceptions (which should not be caught).
     """
 
     def __init__(self, *args: Any, code=1) -> None:
@@ -17,6 +17,18 @@ class FSTException(Exception):
 
 
 def handle_errors(func: Callable[[argparse.Namespace], None]) -> Callable[[argparse.Namespace], None]:
+    """
+    A function decorator that will handle FSTException and KeyboardInterrupt nicely
+    while not catching any other Exceptions.
+
+    parameters:
+        func: Callable(Namespace) -> None
+            The function to wrap with the error handling.
+
+    return:
+        wrapped_func: Callable(Namespace) -> None
+            The wrapped function.
+    """
     def wrapped_func(args: argparse.Namespace) -> None:
         try:
             return func(args)
@@ -62,6 +74,13 @@ class NotEnoughDataError(FSTException, ValueError):
     pass
 
 
+class WrongSelectionSizeError(FSTException, ValueError):
+    """
+    An exception raised, when a selection should be a certain size, but is not.
+    """
+    pass
+
+
 class NoEpochsFoundError(FSTException, FileNotFoundError):
     """
     An exception raised, when no Epoch data is found, even though the command requires it.
@@ -92,29 +111,22 @@ class NonzeroReturnError(FSTException, RuntimeError):
     pass
 
 
-class NoConfigError(FSTException, FileNotFoundError):
-    """
-    An exception raised, when the config file does not exists.
-    """
-    pass
-
-
 class RequiredFileMissingError(FSTException, FileNotFoundError):
     """
-    An exception raised, when a erquired file does not exists.
+    An exception raised, when a required file does not exists.
     """
     pass
 
 
-class NoNetworkxError(FSTException, ImportError):
+class NoConfigError(RequiredFileMissingError):
     """
     An exception raised, when the config file does not exists.
     """
     pass
 
 
-class NoSbatchLaunchError(FSTException, FileNotFoundError):
+class NoSbatchLaunchError(RequiredFileMissingError):
     """
-    An exception raised, when the config file does not exists.
+    An exception raised, when the sbatch file does not exists.
     """
     pass

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from MDAnalysis.analysis import align
+from MDAnalysis.lib.mdamath import triclinic_vectors
 import warnings
 
 from numpy.typing import NDArray
@@ -35,12 +36,14 @@ class Unwrapper:
         They will be put into the box if they are outside and each consecutive
         bonded atom will be moved by a box vector if it is more than half the
         length of the box.
+
         parameters:
             ag:        Atom group of molecules to make whole
             starters:  Atom goup (or list) of atoms that are guaranteed to stay
                        in box. If multiple atoms are part of same molecule, only
                        first is guaranteed.
             initsetup: If True, setup is run when initializing object.
+
         returns:
             transformation function
     """
@@ -77,9 +80,11 @@ class Unwrapper:
 class MolWrapper:
     """
     Put centre of mass of molecules in selection to box
+
     parameters:
         ag:        Atom group of molecules to put in box
         initsetup: If True, setup is run when initializing object.
+
     returns:
         transformation function
     """
@@ -123,11 +128,13 @@ class MolWrapper:
 class Superpos:
     """
     Superposition for optimal mass weighted rmsd
+
     parameters:
         ag:            Atom group of atoms to fit, from the reference universe
         centre:        Boolean of whether to centre the selection
         superposition: Boolean of whether to centre the selection and fit rotationally
         subselection:  The atom group to move and/or rotate, None to use ag. [default: None]
+
     returns:
         transformation function
     """
@@ -174,4 +181,44 @@ class Superpos:
         return ts
 
     def nothing(self, ts: Timestep) -> Timestep:
+        return ts
+
+
+class Precenter:
+    """
+    Center a single atom before putting molecules back in box 
+
+    parameters:
+        ag:             Atom group of atoms to move, from the reference universe
+        centre_atom:    The Atom to centre. If None the closest atom to box centre
+                        is used. [default: None]
+        subselection:   The atom group to move, None to use ag. [default: None]
+
+    returns:
+        transformation function
+    """
+
+    def __init__(self,
+                 ag: AtomGroup,
+                 centre_atom: Optional[Atom] = None,
+                 subselection: Optional[AtomGroup] = None):
+        self.seli = ag.indices.copy()
+        if (centre_atom is None):
+            box = triclinic_vectors(ag.universe.dimensions)
+            box_center = (box/2).sum(axis=0)
+            dists = np.linalg.norm(ag.positions-box_center, axis=-1)
+            self.centre_atom = ag[dists.argmin()].index
+        else:
+            self.centre_atom = centre_atom.index
+
+        if (subselection is None):
+            self.sel = ag.indices
+        else:
+            self.sel = subselection.indices
+
+    def __call__(self, ts: Timestep) -> Timestep:
+        box = ts.triclinic_dimensions
+        box_center = (box/2).sum(axis=0)
+        diff = box_center-ts.positions[self.centre_atom]
+        ts.positions[self.sel] = ts.positions[self.sel]+diff
         return ts

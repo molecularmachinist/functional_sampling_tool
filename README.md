@@ -31,9 +31,8 @@ These you can either preinstall, or let either pip or conda install for you in t
 1. importlib_resources (only with with python<3.10) 
 1. [MDAnalysis](https://docs.mdanalysis.org/stable/index.html)
 1. [scikit-learn](https://scikit-learn.org/stable/)
-1. Optional: [NetworkX](https://networkx.org/)
-
-NetworkX is only needed for ancestry graph building and is not installed by default. You can run the tool just fine, until you use the `fst analysis ancestry` command, which will throw an error. You can then just install the package any time and ancestry graphing will start working.
+1. [NetworkX](https://networkx.org/)
+1. [pygraphviz](https://networkx.org/)
 
 
 ## Installation
@@ -56,7 +55,7 @@ In the recommended way we will use conda to make a new envirnonment. This way wo
 First, we will make a new conda environment dedicated just for the tool and activate it (if you have [mamba](https://mamba.readthedocs.io/en/latest/) installed, use it for the first command to speed up the process):
 
 ```sh
-conda create -c conda-forge -n fst_env python=3.10 numpy matplotlib mdanalysis scikit-learn networkx
+conda create -c conda-forge -n fst_env python=3.10 numpy matplotlib mdanalysis scikit-learn networkx pygraphviz
 conda activate fst_env
 ```
 
@@ -224,10 +223,12 @@ These options change the on-the-fly transformations that are done to the traject
 
 | Variable | Description | Default value |
 | --- | - | - |
+| `precenter` | Shift the atoms in before unwrapping or putting mols in box, such that a single atom (defined by `precenter_atom`) is centered. If you need to stop multichain system from being split into separate periodic images when unwrapping and wrapping, you can precentre an atom close to the centre of the structure, such that the complex will be away from the edges and the subunits will always be put next to each other. | `False` |
+| `precenter_atom` | The selection string (or index group) which defined a selection of one atom to use for precentering. By default it is None, in which case the atom that is closest to the box centre in the starting structure will be used. | `None` |
 | `unwrap_mols` | Whether to unwrap molecules (make them whole if broken over the PBC). | `False` |
 | `unwrap_sel` | The selection string (or index group) used for unwrapping. Only atoms within this selection will be considered, so if parts of a chain are missing, only those parts that have unbroken bonded graphs will be made whole, each of them separately. In general you should make a selection with at least the backbone connecting whichever parts you want whole. This should be fast enough even with large proteins, but including the water can effect performance badly. The default selection of "protein" should work in most cases.| `"protein"` |
 | `unwrap_starters` | `None` or the selection string (or index group) used as "starters". These atoms will be the starting points of making the molecules whole. In effect, they are guaranteed to be inside the box after the process. If `None`, or if a molecule does not have any atoms in the group, the atom with the smallest index will be used. | `None` |
-| `mols_in_box` | Whether to put centre of mass of molecules back in box after unwrapping. Only the coordinates in `unwrap_sel` are moved and considered for the centre of mass, **however**, unlike for unwrapping, molecules are moved as a whole, even if they are missing parts in between. This option is ignored if `unwrap_mols=False`.| `False` |
+| `mols_in_box` | Whether to put centre of mass of molecules back in box after unwrapping. Only the coordinates in `unwrap_sel` are moved and considered for the centre of mass, **however**, unlike for unwrapping, molecules are moved as a whole, even if they are missing parts in between. In such a case it is best to include at least the backbone of the whole protein in `unwrap_sel`. | `False` |
 
 ##### Clustering
 

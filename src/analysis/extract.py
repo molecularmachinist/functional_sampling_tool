@@ -6,6 +6,7 @@ import warnings
 from .. import inout
 from .. import utils
 from .. import transformations
+from ..exceptions import WrongSelectionSizeError
 
 # Type hints
 from typing import Any, Tuple, Optional, List, Dict
@@ -60,8 +61,8 @@ def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List
             centre_atom_group = utils.load_sel(args.precentering_atom,
                                                u, indexes)
             if (len(centre_atom_group) != 1):
-                raise ValueError(f"Selection precentering_atom={repr(args.precentering_atom)} resulted "
-                                 f"in {len(centre_atom_group)} atoms. Should be exactly 1!")
+                raise WrongSelectionSizeError(f"Selection precentering_atom={repr(args.precentering_atom)} resulted "
+                                              f"in {len(centre_atom_group)} atoms. Should be exactly 1!")
             centre_atom = centre_atom_group[0]
         else:
             centre_atom = None

@@ -15,7 +15,8 @@ from . import default_config
 from .exceptions import (NoConfigError,
                          RequiredFileMissingError,
                          NoEpochsFoundError,
-                         FunctionDimensionError)
+                         FunctionDimensionError,
+                         WrongSelectionSizeError)
 
 # Type hints
 from numpy.typing import NDArray
@@ -384,8 +385,8 @@ def load_options(cfgpath: pathlib.Path) -> Any:
                                                cfg.struct,
                                                cfg.indexes)
             if (len(centre_atom_group) != 1):
-                raise ValueError(f"Selection precentering_atom={repr(cfg.precentering_atom)} resulted "
-                                 f"in {len(centre_atom_group)} atoms. Should be exactly 1!")
+                raise WrongSelectionSizeError(f"Selection precentering_atom={repr(cfg.precentering_atom)} resulted "
+                                              f"in {len(centre_atom_group)} atoms. Should be exactly 1!")
             centre_atom = centre_atom_group[0]
         else:
             centre_atom = None

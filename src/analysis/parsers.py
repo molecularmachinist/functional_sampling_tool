@@ -98,7 +98,8 @@ def ancestry_subparser(subparsers: "argparse._SubParsersAction[argparse.Argument
                                        description=ancestry_description)
     anc_parser.add_argument("-o", "--output", metavar="<name>.pdf", dest="output",
                             help="Output file for the graph. The parent directory will be created if it does not yet exist (default: %(default)s)",
-                            default=pathlib.Path("analysis/figs/ancestry.pdf"))
+                            default=pathlib.Path("analysis/figs/ancestry.pdf"),
+                            type=pathlib.Path)
     anc_parser.add_argument("--include-start",     action="store_true",
                             help="Add the starting structure(s) also to the graph. (default: do not include)")
     anc_parser.add_argument("--doignore",     action="store_true", dest="doignore",

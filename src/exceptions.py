@@ -74,6 +74,13 @@ class NotEnoughDataError(FSTException, ValueError):
     pass
 
 
+class WrongSelectionSizeError(FSTException, ValueError):
+    """
+    An exception raised, when a selection should be a certain size, but is not.
+    """
+    pass
+
+
 class NoEpochsFoundError(FSTException, FileNotFoundError):
     """
     An exception raised, when no Epoch data is found, even though the command requires it.

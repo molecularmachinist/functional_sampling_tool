@@ -2,6 +2,7 @@
 import sys
 import shutil
 import time
+import warnings
 import numpy as np
 import re
 import MDAnalysis as mda
@@ -12,10 +13,12 @@ from . import utils
 from . import transformations
 from . import default_config
 
-from .exceptions import (NoConfigError,
+from .exceptions import (DeprecatedUsageWarning,
+                         NoConfigError,
                          RequiredFileMissingError,
                          NoEpochsFoundError,
-                         FunctionDimensionError)
+                         FunctionDimensionError,
+                         WrongSelectionSizeError)
 
 # Type hints
 from numpy.typing import NDArray
@@ -55,12 +58,19 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_]
             f"Selections in {d/cfg.npz_file_name} do not match, reloading"
         )
 
-    transform_opt = [cfg.unwrap_mols, cfg.unwrap_mols and cfg.mols_in_box,
+    transform_opt = [cfg.precenter, cfg.unwrap_mols, cfg.mols_in_box,
                      cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos]
     if (not np.array_equal(transform_opt, dat["transform_opt"])):
-        raise LoadError(
-            f"Trajectory transformations changed from {d/cfg.npz_file_name}, reloading"
-        )
+        if ((not cfg.precenter) and np.array_equal(transform_opt[1:], dat["transform_opt"])):
+            print(f"NPZ file {d/cfg.npz_file_name} has been made with functional_sampling_tool<0.0.6 and "
+                  "is missing the flag for precentering.")
+            print("The archive will be saved with the new flag.")
+            dat["transform_opt"] = transform_opt
+            np.savez_compressed(d/cfg.npz_file_name, **dat)
+        else:
+            raise LoadError(
+                f"Trajectory transformations changed from {d/cfg.npz_file_name}, reloading"
+            )
 
     # if "stride" is found in dat, it was made with v0.0.1, so data might be missing
     if ("stride" in dat):
@@ -123,7 +133,7 @@ def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], ND
     func_hash = utils.hash_func(cfg.function_val)
     unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(
         0, dtype=int)
-    transform_opt = [cfg.unwrap_mols, cfg.unwrap_mols and cfg.mols_in_box,
+    transform_opt = [cfg.precenter, cfg.unwrap_mols, cfg.mols_in_box,
                      cfg.clust_centre and not cfg.clust_superpos, cfg.clust_superpos]
     np.savez_compressed(d/cfg.npz_file_name,
                         fval=fval,
@@ -372,29 +382,53 @@ def load_options(cfgpath: pathlib.Path) -> Any:
     print("Selected %d atoms" % len(cfg.sel))
     print("Selected %d atoms for clustering" % len(cfg.sel_clust))
 
-    if (cfg.unwrap_mols):
+    cfg.traj_transforms = []
+
+    if (cfg.unwrap_mols or cfg.mols_in_box or cfg.precenter):
+        unwrap_sel = utils.load_sel(cfg.unwrap_sel, cfg.struct, cfg.indexes)
+        print("Selected %d atoms for transformations" % len(unwrap_sel))
+
+    if (cfg.precenter):
+        if (cfg.precenter_atom is not None):
+            centre_atom_group = utils.load_sel(cfg.precenter_atom,
+                                               cfg.struct,
+                                               cfg.indexes)
+            if (len(centre_atom_group) != 1):
+                raise WrongSelectionSizeError(f"Selection precenter_atom={repr(cfg.precenter_atom)} resulted "
+                                              f"in {len(centre_atom_group)} atoms. Should be exactly 1!")
+            centre_atom = centre_atom_group[0]
+        else:
+            centre_atom = None
+        cfg.traj_transforms.append(
+            transformations.Precenter(unwrap_sel, centre_atom=centre_atom)
+        )
+        ca = cfg.struct.atoms[cfg.traj_transforms[-1].centre_atom]
+        print(f"Precentering using atom index {ca.index}",
+              f"({ca.name} of {ca.resname}:{ca.resid})")
+
+    if (cfg.unwrap_mols or cfg.mols_in_box):
         # Preparing molecule unwrapper
         mdrunpath = pathlib.Path("epoch01")/"rep01"/"mdrun.tpr"
         bonded_struct = mda.Universe(mdrunpath,
                                      cfg.initial_struct[0])
-        unwrap_sel = utils.load_sel(cfg.unwrap_sel, cfg.struct, cfg.indexes)
         unwrap_sel = bonded_struct.atoms[unwrap_sel.indices]
+
+    if (cfg.unwrap_mols):
+        print("Unwrapping molecules")
         if (cfg.unwrap_starters is None):
             unwrap_starters = []
         else:
             unwrap_starters = utils.load_sel(cfg.unwrap_starters,
                                              unwrap_sel,
                                              cfg.indexes)
-        cfg.traj_transforms = [
+        cfg.traj_transforms.append(
             transformations.Unwrapper(unwrap_sel, unwrap_starters)
-        ]
-        print("Selected %d atoms for unwrapping" % len(unwrap_sel))
-        if (cfg.mols_in_box):
-            print("Also putting mol COMs back in box")
-            cfg.traj_transforms.append(transformations.MolWrapper(unwrap_sel))
+        )
 
-    else:
-        cfg.traj_transforms = []
+    if (cfg.mols_in_box):
+        print("Putting mol COMs back in box")
+        cfg.traj_transforms.append(transformations.MolWrapper(unwrap_sel))
+
     cfg.startval = cfg.function_val(np.array([cfg.sel.positions]))[0]
     print("Initial function value %g" % cfg.startval)
 

@@ -74,6 +74,13 @@ class NotEnoughDataError(FSTException, ValueError):
     pass
 
 
+class WrongSelectionSizeError(FSTException, ValueError):
+    """
+    An exception raised, when a selection should be a certain size, but is not.
+    """
+    pass
+
+
 class NoEpochsFoundError(FSTException, FileNotFoundError):
     """
     An exception raised, when no Epoch data is found, even though the command requires it.
@@ -104,29 +111,22 @@ class NonzeroReturnError(FSTException, RuntimeError):
     pass
 
 
-class NoConfigError(FSTException, FileNotFoundError):
-    """
-    An exception raised, when the config file does not exists.
-    """
-    pass
-
-
 class RequiredFileMissingError(FSTException, FileNotFoundError):
     """
-    An exception raised, when a erquired file does not exists.
+    An exception raised, when a required file does not exists.
     """
     pass
 
 
-class NoNetworkxError(FSTException, ImportError):
+class NoConfigError(RequiredFileMissingError):
     """
     An exception raised, when the config file does not exists.
     """
     pass
 
 
-class NoSbatchLaunchError(FSTException, FileNotFoundError):
+class NoSbatchLaunchError(RequiredFileMissingError):
     """
-    An exception raised, when the config file does not exists.
+    An exception raised, when the sbatch file does not exists.
     """
     pass

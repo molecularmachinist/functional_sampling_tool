@@ -1,4 +1,10 @@
+v0.0.6.dev1
+- Change in behaviour: Wrapping can be done without unwrapping
+- New feature: Added precentering cordinates with a single atom before unwrapping
+
 v0.0.6.dev0
+- Updated requirements
+- Small refactoring, e.g. unused imports
 
 v0.0.5
 - BIG CHANGE: clustering will be done if at least epochs_pre_clust epochs have been run (used to be strictly more than)

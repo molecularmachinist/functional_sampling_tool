@@ -59,6 +59,9 @@ fi
 
 cd fst_test_run
 
+echo fst is $(which fst) 2>&1 | tee -a test_output.log
+python -c "import functional_sampling_tool as fst; print(fst.__file__)" 2>&1 | tee -a test_output.log
+
 echo "----------------- Running tests -----------------------" 2>&1 | tee -a test_output.log
 coverage run --source functional_sampling_tool ../tests/main.py -v 2>&1 | tee -a test_output.log
 

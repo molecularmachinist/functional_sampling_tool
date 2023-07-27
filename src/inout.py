@@ -372,29 +372,53 @@ def load_options(cfgpath: pathlib.Path) -> Any:
     print("Selected %d atoms" % len(cfg.sel))
     print("Selected %d atoms for clustering" % len(cfg.sel_clust))
 
-    if (cfg.unwrap_mols):
+    cfg.traj_transforms = []
+
+    if (cfg.unwrap_mols or cfg.mols_in_box or cfg.precentering):
+        unwrap_sel = utils.load_sel(cfg.unwrap_sel, cfg.struct, cfg.indexes)
+        print("Selected %d atoms for transformations" % len(unwrap_sel))
+
+    if (cfg.precentering):
+        if (cfg.precentering_atom is not None):
+            centre_atom_group = utils.load_sel(cfg.precentering_atom,
+                                               cfg.struct,
+                                               cfg.indexes)
+            if (len(centre_atom_group) != 1):
+                raise ValueError(f"Selection precentering_atom={repr(cfg.precentering_atom)} resulted "
+                                 f"in {len(centre_atom_group)} atoms. Should be exactly 1!")
+            centre_atom = centre_atom_group[0]
+        else:
+            centre_atom = None
+        cfg.traj_transforms.append(
+            transformations.Precentering(unwrap_sel, centre_atom=centre_atom)
+        )
+        ca = cfg.struct.atoms[cfg.traj_transforms[-1].centre_atom]
+        print(f"Precentering using atom index {ca.index}",
+              f"({ca.name} of {ca.resname}:{ca.resid})")
+
+    if (cfg.unwrap_mols or cfg.mols_in_box):
         # Preparing molecule unwrapper
         mdrunpath = pathlib.Path("epoch01")/"rep01"/"mdrun.tpr"
         bonded_struct = mda.Universe(mdrunpath,
                                      cfg.initial_struct[0])
-        unwrap_sel = utils.load_sel(cfg.unwrap_sel, cfg.struct, cfg.indexes)
         unwrap_sel = bonded_struct.atoms[unwrap_sel.indices]
+
+    if (cfg.unwrap_mols):
+        print("Unwrapping molecules")
         if (cfg.unwrap_starters is None):
             unwrap_starters = []
         else:
             unwrap_starters = utils.load_sel(cfg.unwrap_starters,
                                              unwrap_sel,
                                              cfg.indexes)
-        cfg.traj_transforms = [
+        cfg.traj_transforms.append(
             transformations.Unwrapper(unwrap_sel, unwrap_starters)
-        ]
-        print("Selected %d atoms for unwrapping" % len(unwrap_sel))
-        if (cfg.mols_in_box):
-            print("Also putting mol COMs back in box")
-            cfg.traj_transforms.append(transformations.MolWrapper(unwrap_sel))
+        )
 
-    else:
-        cfg.traj_transforms = []
+    if (cfg.mols_in_box):
+        print("Putting mol COMs back in box")
+        cfg.traj_transforms.append(transformations.MolWrapper(unwrap_sel))
+
     cfg.startval = cfg.function_val(np.array([cfg.sel.positions]))[0]
     print("Initial function value %g" % cfg.startval)
 

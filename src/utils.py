@@ -10,6 +10,7 @@ import subprocess as subp
 import numpy as np
 import math
 import sys
+import re
 import inspect
 import hashlib
 
@@ -47,6 +48,21 @@ def rolling_mean(data: ArrayLike, window: int = 10,
     mean[start_offset:end_offset] = (cumsum[window:]-cumsum[:-window])/window
 
     return mean
+
+
+def check_num(prefix: pathlib.Path) -> List[int]:
+    """
+    Checks filenames prefix01, prefix02, etc and returns a list of integers that were found.
+    """
+    prog = re.compile("%s(?P<num>[0-9]+)$" % prefix.name)
+    nums = []
+    for f in prefix.parent.iterdir():
+        m = prog.match(f.name)
+        if (m):
+            nums.append(int(m.group("num")))
+
+    nums.sort()
+    return nums
 
 
 def read_ndx(ndx: pathlib.Path) -> Dict[str, List[int]]:
@@ -139,23 +155,36 @@ def rsync_command(send_from: Union[str, list], send_to: str, excludes: List[str]
     return compProc.returncode
 
 
-def rsync_down(cfg: Any) -> None:
+def rsync_down(cfg: Any, all=False) -> None:
     """ Wrapper function for rsync_command, to sync the local dir to the remote,
         ie. "pull down"
     """
-    rc = rsync_command("%s:%s/epoch*" % (cfg.remote_name,
-                       cfg.remote_dir), ".", excludes=cfg.rsync_excludes)
+    if (all):
+        epoch = "epoch*"
+        local_target = "."
+    else:
+        epoch_nums = check_num(pathlib.Path("epoch"))
+        epoch = "epoch%02d/" % epoch_nums[-1]
+        local_target = epoch
+    rc = rsync_command(f"{cfg.remote_name}:{cfg.remote_dir}/{epoch}",
+                       local_target,
+                       excludes=cfg.rsync_excludes)
     if (rc):
         raise NonzeroReturnError("rsync process returned %d" % rc, code=rc)
 
 
-def rsync_up(cfg: Any) -> None:
+def rsync_up(cfg: Any, all=False) -> None:
     """ Wrapper function for rsync_command, to sync the remote dir to the local,
         ie. "push up"
     """
-    send_dirs = [str(p) for p in pathlib.Path(".").glob("epoch*")]
-    rc = rsync_command(send_dirs, "%s:%s" % (
-        cfg.remote_name, cfg.remote_dir), excludes=cfg.rsync_excludes)
+    epoch_nums = check_num(pathlib.Path("epoch"))
+    if (all):
+        send_dirs = ["epoch%02d" % e for e in epoch_nums]
+    else:
+        send_dirs = ["epoch%02d" % epoch_nums[-1]]
+    rc = rsync_command(send_dirs,
+                       f"{cfg.remote_name}:{cfg.remote_dir}",
+                       excludes=cfg.rsync_excludes)
     if (rc):
         raise NonzeroReturnError("rsync process returned %d" % rc, code=rc)
 

@@ -20,7 +20,7 @@ GROMACS is only needed for grompping. This means that a [quick and dirty](https:
 
 The C++ compiler is needed to compile a few of the trajectory transformation modules, which allow making broken molecules whole over the PBC. The package build process has been tested with the open source GCC-compiler, but in theory any compiler should work.
 
-`rsync` is needed to move the data between your local computer and the remote. It should be preinstalled at least on most linux distributions. If you run the tool on the machine you plan on running the simulations, it is not needed. Also you can work around it by manually moving the files with your chosen method. in that case simply do not use the push and pull methods of the tool.
+`rsync` is needed to move the data between your local computer and the remote. It should be preinstalled at least on most linux distributions. If you run the tool on the machine you plan on running the simulations, it is not needed. Also you can work around it by manually moving the files with your chosen method. In that case simply do not use the push and pull methods of the tool.
 
 ### Python modules
 
@@ -245,7 +245,7 @@ In most cases you should not need these, but may be helpful in others.
 
 | Variable | Description | Default value |
 | --- | - | - |
-| `rng_seed` | Random number generator seed. Can be anything that `numpy.random.default_rng()` takes as a seed, usually an int or sequence of ints. `None` means to pull genearte the state randomly, i.e. the run will be unreproducible. If the seed is not `None`, you can rerun the tool (as long as the data or etting havenot changed) with the same seed to reproduce the exact same choices. | `None` |
+| `rng_seed` | Random number generator seed. Can be anything that `numpy.random.default_rng()` takes as a seed, usually an int or sequence of ints. `None` means to generate the state randomly, i.e. the run will be unreproducible. If the seed is not `None`, you can rerun the tool (as long as the data or setting have not changed) with the same seed to reproduce the exact same choices. | `None` |
 | `ignore_reps` | List of repetitions (as tuples of epoch number and repetiton number, as ints) to ignore. E.g. `[(1,3),(4,5)]` to ignore repetition 3 of epoch 1 and repetition 5 of epoch 4. | `[]` |
 | `ignore_epcs` | List of epoch numbers (as ints) to ignore. E.g. `[1,3]` to ignore epochs 1 and 3. | `[]` |
 | `ignore_from_start` | Number of frames to ignore from the start. | 0 |
@@ -311,8 +311,6 @@ _mysel = univ.select_atoms("protein and resid 200-300 and backbone")
 ```
 
 Here we used a leading underscore, so that we do not accidentally overwrite any variables the program adds to the module, like `sel` and `struct`. We cannot yet use those variables, since they are of course not added yet when the config is imported, unlike the code within the function, which does not get called until later in the program.
-
-In the future multiple selections might be supprted and this will become easier to deal with.
 
 
 #### Running custom script for function calculation

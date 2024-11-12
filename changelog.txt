@@ -1,3 +1,10 @@
+v0.0.8.dev0
+- bugfix: -o option in ancestry graph building did not work, only default value could be used.
+- push and pull only move the latest epoch by default
+
+v0.0.7
+- This is the same as 0.0.6
+
 v0.0.6
 - Change in behaviour: Wrapping can be done without unwrapping
 - New feature: Added precentering cordinates with a single atom before unwrapping

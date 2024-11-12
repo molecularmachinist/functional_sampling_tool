@@ -2,9 +2,7 @@
 import sys
 import shutil
 import time
-import warnings
 import numpy as np
-import re
 import MDAnalysis as mda
 import importlib
 import pathlib
@@ -13,8 +11,7 @@ from . import utils
 from . import transformations
 from . import default_config
 
-from .exceptions import (DeprecatedUsageWarning,
-                         NoConfigError,
+from .exceptions import (NoConfigError,
                          RequiredFileMissingError,
                          NoEpochsFoundError,
                          FunctionDimensionError,

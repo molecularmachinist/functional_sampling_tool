@@ -10,6 +10,7 @@ import subprocess as subp
 import numpy as np
 import math
 import sys
+import re
 import inspect
 import hashlib
 
@@ -47,6 +48,21 @@ def rolling_mean(data: ArrayLike, window: int = 10,
     mean[start_offset:end_offset] = (cumsum[window:]-cumsum[:-window])/window
 
     return mean
+
+
+def check_num(prefix: pathlib.Path) -> List[int]:
+    """
+    Checks filenames prefix01, prefix02, etc and returns a list of integers that were found.
+    """
+    prog = re.compile("%s(?P<num>[0-9]+)$" % prefix.name)
+    nums = []
+    for f in prefix.parent.iterdir():
+        m = prog.match(f.name)
+        if (m):
+            nums.append(int(m.group("num")))
+
+    nums.sort()
+    return nums
 
 
 def read_ndx(ndx: pathlib.Path) -> Dict[str, List[int]]:

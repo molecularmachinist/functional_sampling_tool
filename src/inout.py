@@ -29,21 +29,6 @@ class LoadError(ValueError):
     pass
 
 
-def check_num(prefix: pathlib.Path) -> List[int]:
-    """
-    Checks filenames prefix01, prefix02, etc and returns a list of integers that were found.
-    """
-    prog = re.compile("%s(?P<num>[0-9]+)$" % prefix.name)
-    nums = []
-    for f in prefix.parent.iterdir():
-        m = prog.match(f.name)
-        if (m):
-            nums.append(int(m.group("num")))
-
-    nums.sort()
-    return nums
-
-
 def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], NDArray[np.float_]]:
     with np.load(d/cfg.npz_file_name) as npz:
         dat = dict(npz)
@@ -172,7 +157,7 @@ def load_from_dir(d: pathlib.Path, cfg: Any, load_fval: bool) -> Tuple[NDArray[n
 def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[
         NDArray[np.int_], NDArray[np.float_], NDArray[np.int_], NDArray[np.float_]]:
     edir = pathlib.Path("epoch%02d" % epoch)
-    rep_nums = check_num(edir / "rep")
+    rep_nums = utils.check_num(edir / "rep")
     fval = []
     crd = []
     reps = []
@@ -205,7 +190,7 @@ def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[
 
 
 def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Dict[int, Any]]]:
-    epochs = check_num(pathlib.Path("epoch"))
+    epochs = utils.check_num(pathlib.Path("epoch"))
     data = {"fval": {}, "fnames": {}, "origin": {}, "start_frm": {}}
     for e in epochs:
         if (doignore and (e in cfg.ignore_epcs)):
@@ -215,7 +200,7 @@ def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Di
             data[key][e] = {}
 
         edir = pathlib.Path("epoch%02d" % e)
-        rep_nums = check_num(edir / "rep")
+        rep_nums = utils.check_num(edir / "rep")
 
         for r in rep_nums:
             if (doignore and ((e, r) in cfg.ignore_reps)):
@@ -266,7 +251,7 @@ def load_flat_extract_data(cfg: Any, doignore: bool = True) -> Tuple[
 
 
 def load_data(cfg: Any, load_fval: bool):
-    epochs = check_num(pathlib.Path("epoch"))
+    epochs = utils.check_num(pathlib.Path("epoch"))
     if (not epochs):
         raise FileNotFoundError(
             "No epochs found, cannot load data. Are you sure you are in the correct folder?")
@@ -459,7 +444,7 @@ def load_options(cfgpath: pathlib.Path) -> Any:
 
 
 def clean_latest_epoch(force: bool = False) -> None:
-    epochs = check_num(pathlib.Path("epoch"))
+    epochs = utils.check_num(pathlib.Path("epoch"))
     if (not epochs):
         raise NoEpochsFoundError(
             "No epochs found, are you sure you are in the correct folder?")
@@ -467,7 +452,7 @@ def clean_latest_epoch(force: bool = False) -> None:
 
     # First, make sure no rep is already simulated
     edir = pathlib.Path("epoch%02d" % epoch)
-    for r in check_num(edir / "rep"):
+    for r in utils.check_num(edir / "rep"):
         mdrun_path = edir / ("rep%02d" % r) / "mdrun.xtc"
         if (mdrun_path.is_file()):
             if (not force):

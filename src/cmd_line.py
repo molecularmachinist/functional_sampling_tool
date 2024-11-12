@@ -32,9 +32,9 @@ def init(args: argparse.Namespace) -> None:
 def pushpull(args: argparse.Namespace) -> None:
     from .utils import rsync_up, rsync_down
     if (args.pull):
-        rsync_down(args.cfg)
+        rsync_down(args.cfg, args.sync_all)
     else:
-        rsync_up(args.cfg)
+        rsync_up(args.cfg, args.sync_all)
 
 
 @handle_errors
@@ -169,10 +169,14 @@ def argP() -> argparse.Namespace:
     # Push and pull commands
     push_parser = subparsers.add_parser(
         "push", help="rsync from local to remote")
+    push_parser.add_argument("--sync-all", action="store_true",
+                             help="Push all epochs, not just latest (default: %(default)s)")
     push_parser.set_defaults(
         func=pushpull, config_func=config_importer, pull=False)
     pull_parser = subparsers.add_parser(
         "pull", help="rsync from remote to local")
+    pull_parser.add_argument("--sync-all", action="store_true",
+                             help="Pull all epochs, not just latest (default: %(default)s)")
     pull_parser.set_defaults(
         func=pushpull, config_func=config_importer, pull=True)
 

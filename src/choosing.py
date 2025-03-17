@@ -205,6 +205,13 @@ class FrameChooser():
             if (maxims.size == 0 or minims.size == 0 or maxims[0] < minims[0]):
                 choices.append(indexes[0])
 
+        if (not choices):
+            print(f"{minims=}")
+            print(f"{maxims=}")
+            print(f"{crith=}")
+            print(f"{self.hist[self.hist_mask][0]=}")
+            print(f"{self.hist[self.hist_mask][-1]=}")
+
         # weights go linearily from 1 at no data 0 at at crith
         weights = [(crith-self.hist[c]) for c in choices]
         weights /= np.sum(weights)

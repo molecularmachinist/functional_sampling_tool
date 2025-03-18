@@ -1,4 +1,10 @@
-v0.0.8.dev0
+v0.0.9.dev1
+- Bugfix to the change in choosing: Would fail if no inima found.
+
+v0.0.9.dev0
+- Choosing from the histogram edges changed: If the closest minima is over crith, the edge can be chosen even if thjere is a maxima between them.
+
+v0.0.8
 - bugfix: -o option in ancestry graph building did not work, only default value could be used.
 - push and pull only move the latest epoch by default
 

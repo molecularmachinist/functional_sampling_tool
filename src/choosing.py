@@ -201,8 +201,8 @@ class FrameChooser():
         max_first = maxims[0] < minims[0]
         max_last = maxims[-1] > minims[-1]
         # Is the  first/last minima over crith
-        first_min_ignored = self.hist[nanmask][minims[0]] >= crith
-        last_min_ignored = self.hist[nanmask][minims[-1]] >= crith
+        first_min_ignored = minims.size > 0 and self.hist[nanmask][minims[0]] >= crith
+        last_min_ignored = minims.size > 0 and self.hist[nanmask][minims[-1]] >= crith
 
         # If the right edge is low enough, check if we add it to choices
         if (self.hist[self.hist_mask][-1] < crith):

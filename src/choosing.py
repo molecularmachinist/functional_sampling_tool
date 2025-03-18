@@ -194,15 +194,25 @@ class FrameChooser():
         zero_mask = self.hist_mask*(self.hist != 0)
         indexes = np.arange(len(self.hist))[zero_mask]
 
+        # Helper booleans
+        # is either extrema array empty
+        empty_extr = maxims.size == 0 or minims.size == 0
+        # Is the  first/last extrema a minima or maxima
+        max_first = maxims[0] < minims[0]
+        max_last = maxims[-1] > minims[-1]
+        # Is the  first/last minima over crith
+        first_min_ignored = self.hist[nanmask][minims[0]] >= crith
+        last_min_ignored = self.hist[nanmask][minims[-1]] >= crith
+
         # If the right edge is low enough, check if we add it to choices
         if (self.hist[self.hist_mask][-1] < crith):
-            # if   no maxima     or    no minima     or last maximum is closer than last minimum
-            if (maxims.size == 0 or minims.size == 0 or maxims[-1] > minims[-1]):
+            # if   no maxima or minima     or last extr is max        or last min ignored
+            if (empty_extr or max_last or last_min_ignored):
                 choices.append(indexes[-1])
         # Now same for left edge
         if (self.hist[self.hist_mask][0] < crith):
-            # if   no maxima     or    no minima     or first maximum is closer than first minimum
-            if (maxims.size == 0 or minims.size == 0 or maxims[0] < minims[0]):
+            # if   no maxima or minima     or first extr is max        or first min ignored
+            if (empty_extr or max_first or first_min_ignored):
                 choices.append(indexes[0])
 
         # weights go linearily from 1 at no data 0 at at crith

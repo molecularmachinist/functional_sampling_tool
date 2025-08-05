@@ -196,11 +196,14 @@ class FrameChooser():
 
         # Helper booleans
         # is either extrema array empty
-        empty_extr = maxims.size == 0 or minims.size == 0
-        # Is the  first/last extrema a minima or maxima
-        max_first = maxims[0] < minims[0]
-        max_last = maxims[-1] > minims[-1]
-        # Is the  first/last minima over crith
+        have_maxims = maxims.size > 0
+        have_minims = minims.size > 0
+        empty_extr = (not have_maxims) or (not have_minims)
+        # Is the first/last extrema a minima or maxima
+        # Adding guards in case no maxima or minima found
+        max_first = have_maxims and (not have_minims or maxims[0] < minims[0])
+        max_last = have_maxims and (not have_minims or maxims[-1] > minims[-1])
+        # Is the first/last minima over crith
         first_min_ignored = minims.size > 0 and self.hist[nanmask][minims[0]] >= crith
         last_min_ignored = minims.size > 0 and self.hist[nanmask][minims[-1]] >= crith
 

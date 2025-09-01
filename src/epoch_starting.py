@@ -3,6 +3,7 @@ import os
 import time
 import numpy as np
 import warnings
+from multiprocessing.pool import Pool as PoolClass
 from multiprocessing import Pool
 import pathlib
 import MDAnalysis as mda
@@ -22,7 +23,7 @@ def init_rep(i: int,
              cfg: Any,
              atoms: AtomGroup,
              origin: Tuple[int, int],
-             pool: Pool,
+             pool: PoolClass,
              d: str = "epoch01") -> Tuple[pathlib.Path, AsyncResult]:
     """ Initializes rep i from atom group atoms
     """
@@ -77,7 +78,7 @@ def next_rep(i: int,
              rep: int,
              frm: int,
              val: float,
-             pool: Pool) -> Tuple[pathlib.Path, AsyncResult]:
+             pool: PoolClass) -> Tuple[pathlib.Path, AsyncResult]:
     """ Initializes rep i of newepoch, taking the frame frm from rep of oldepoch
     """
     d = pathlib.Path("epoch%02d" % newepoch) / ("rep%02d" % i)

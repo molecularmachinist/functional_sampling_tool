@@ -129,7 +129,7 @@ def next_rep(i: int,
 
 
 def start_epoch(nextepoch: int, cfg: Any,
-                val: Optional[NDArray[np.float_]] = None,
+                val: Optional[NDArray[np.float64]] = None,
                 epc: Optional[NDArray[np.int_]] = None,
                 rep: Optional[NDArray[np.int_]] = None,
                 frm: Optional[NDArray[np.int_]] = None,

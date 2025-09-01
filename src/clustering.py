@@ -24,8 +24,8 @@ class ClusterChooser(choosing.FrameChooser):
 
     def __init__(self,
                  cfg: Any,
-                 fval: NDArray[np.float_],
-                 coords: NDArray[np.float_],
+                 fval: NDArray[np.float64],
+                 coords: NDArray[np.float64],
                  frms: NDArray[np.int_],
                  reps: NDArray[np.int_],
                  epcs: NDArray[np.int_]):
@@ -74,7 +74,7 @@ class ClusterChooser(choosing.FrameChooser):
             self.clust_hist_indexes, return_counts=True)
 
     def make_choices(self, prechoices: int = 0, plot: bool = True) -> Tuple[
-            NDArray[np.float_], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
+            NDArray[np.float64], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
         if (len(self.u_epcs) < self.cfg.epochs_pre_clust):
             return self.plain_chooser.make_choices(prechoices, plot)
 
@@ -168,7 +168,7 @@ class ClusterChooser(choosing.FrameChooser):
         return fval, epcs, reps, frms
 
     def choose_frames(self, chosen_clusts: List[int], clusters: NDArray[np.int_]) -> Tuple[
-            NDArray[np.float_], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
+            NDArray[np.float64], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
         """ Input parameters:
                 - chosen_clusts : Length N list of the labels of the clusters that have been chosen.
                                   Duplicates (starting from the same bin) are simply many times in the list.
@@ -236,7 +236,7 @@ class ClusterChooser(choosing.FrameChooser):
         plt.close(fig)
 
 
-def make_clusters(coords: NDArray[np.float_],
+def make_clusters(coords: NDArray[np.float64],
                   maxclust: int,
                   tol: float,
                   rng: np.random.Generator) -> Dict[str, NDArray]:

@@ -26,7 +26,7 @@ class LoadError(ValueError):
     pass
 
 
-def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], NDArray[np.float_]]:
+def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     with np.load(d/cfg.npz_file_name) as npz:
         dat = dict(npz)
 
@@ -90,7 +90,7 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_]
     return fval, crd
 
 
-def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], NDArray[np.float_]]:
+def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     cfg.struct.load_new(d / "mdrun.xtc")
     cfg.struct.trajectory.add_transformations(*cfg.traj_transforms)
     trjlen = len(cfg.struct.trajectory)
@@ -131,7 +131,7 @@ def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], ND
     return fval, crd
 
 
-def load_from_dir(d: pathlib.Path, cfg: Any, load_fval: bool) -> Tuple[NDArray[np.float_], NDArray[np.float_]]:
+def load_from_dir(d: pathlib.Path, cfg: Any, load_fval: bool) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     if (not load_fval):
         try:
             fval, crd = get_data_from_archive(d, cfg)
@@ -152,7 +152,7 @@ def load_from_dir(d: pathlib.Path, cfg: Any, load_fval: bool) -> Tuple[NDArray[n
 
 
 def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[
-        NDArray[np.int_], NDArray[np.float_], NDArray[np.int_], NDArray[np.float_]]:
+        NDArray[np.int_], NDArray[np.float64], NDArray[np.int_], NDArray[np.float64]]:
     edir = pathlib.Path("epoch%02d" % epoch)
     rep_nums = utils.check_num(edir / "rep")
     fval = []
@@ -229,7 +229,7 @@ def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Di
 
 
 def load_flat_extract_data(cfg: Any, doignore: bool = True) -> Tuple[
-        Dict[str, NDArray[Union[np.float_, np.int_]]], Dict[int, Dict[int, str]]]:
+        Dict[str, NDArray[Union[np.float64, np.int_]]], Dict[int, Dict[int, str]]]:
     data = load_extract_data(cfg, doignore)
 
     flat_data = {"fval": [], "frms": [], "reps": [], "epcs": []}

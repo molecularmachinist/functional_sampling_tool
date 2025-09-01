@@ -25,7 +25,7 @@ transform_type = Callable[[Timestep], Timestep]
 
 
 def rolling_mean(data: ArrayLike, window: int = 10,
-                 center: bool = True, fill: float = np.nan) -> NDArray[np.float_]:
+                 center: bool = True, fill: float = np.nan) -> NDArray[np.float64]:
     if (window < 1):
         raise ValueError(
             "rolling mean window smaller than 1 "

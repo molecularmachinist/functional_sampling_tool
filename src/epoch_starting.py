@@ -13,7 +13,7 @@ from .exceptions import RepExistsError, NonzeroReturnError
 from . import utils
 
 # Type hints
-from typing import Any, Tuple, Optional
+from typing import Any, Optional
 from MDAnalysis.core.groups import AtomGroup
 from multiprocessing.pool import AsyncResult
 from numpy.typing import NDArray
@@ -22,9 +22,9 @@ from numpy.typing import NDArray
 def init_rep(i: int,
              cfg: Any,
              atoms: AtomGroup,
-             origin: Tuple[int, int],
+             origin: tuple[int, int],
              pool: PoolClass,
-             d: str = "epoch01") -> Tuple[pathlib.Path, AsyncResult]:
+             d: str = "epoch01") -> tuple[pathlib.Path, AsyncResult]:
     """ Initializes rep i from atom group atoms
     """
     d = pathlib.Path(d) / ("rep%02d" % i)
@@ -78,7 +78,7 @@ def next_rep(i: int,
              rep: int,
              frm: int,
              val: float,
-             pool: PoolClass) -> Tuple[pathlib.Path, AsyncResult]:
+             pool: PoolClass) -> tuple[pathlib.Path, AsyncResult]:
     """ Initializes rep i of newepoch, taking the frame frm from rep of oldepoch
     """
     d = pathlib.Path("epoch%02d" % newepoch) / ("rep%02d" % i)

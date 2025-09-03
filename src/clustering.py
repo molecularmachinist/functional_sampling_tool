@@ -10,7 +10,7 @@ from . import choosing
 from . import inout
 
 # Type hints
-from typing import Any, Tuple, List, Dict
+from typing import Any
 from numpy.typing import NDArray
 
 colors = ['r', 'b', 'g', 'orange', 'cyan', 'indigo',
@@ -73,7 +73,7 @@ class ClusterChooser(choosing.FrameChooser):
         self.clust_unique_bins, self.clust_unique_bin_counts = np.unique(
             self.clust_hist_indexes, return_counts=True)
 
-    def make_choices(self, prechoices: int = 0, plot: bool = True) -> Tuple[
+    def make_choices(self, prechoices: int = 0, plot: bool = True) -> tuple[
             NDArray[np.float64], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
         if (len(self.u_epcs) < self.cfg.epochs_pre_clust):
             return self.plain_chooser.make_choices(prechoices, plot)
@@ -167,7 +167,7 @@ class ClusterChooser(choosing.FrameChooser):
 
         return fval, epcs, reps, frms
 
-    def choose_frames(self, chosen_clusts: List[int], clusters: NDArray[np.int_]) -> Tuple[
+    def choose_frames(self, chosen_clusts: list[int], clusters: NDArray[np.int_]) -> tuple[
             NDArray[np.float64], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
         """ Input parameters:
                 - chosen_clusts : Length N list of the labels of the clusters that have been chosen.
@@ -239,7 +239,7 @@ class ClusterChooser(choosing.FrameChooser):
 def make_clusters(coords: NDArray[np.float64],
                   maxclust: int,
                   tol: float,
-                  rng: np.random.Generator) -> Dict[str, NDArray]:
+                  rng: np.random.Generator) -> dict[str, NDArray]:
     """
     Takes a shape(n,m) array of coordinates and return shape(n) labels of clusters.
     The labels should be integers between 0 and maxclust-1.
@@ -312,7 +312,7 @@ def make_clusters(coords: NDArray[np.float64],
     return results
 
 
-def plot_clust(results: Dict[str, NDArray], choices: Dict[int, int], fval_range: Tuple[float, float], plotname: pathlib.Path):
+def plot_clust(results: dict[str, NDArray], choices: dict[int, int], fval_range: tuple[float, float], plotname: pathlib.Path):
     """
     Takes a shape(n,m) array of coordinates and return shape(n) labels of clusters.
     The labels should be integers between 0 and maxclust.

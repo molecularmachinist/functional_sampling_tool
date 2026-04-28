@@ -11,12 +11,12 @@ As prequisite knowledge you will need to know how to get around using the comman
 
 These you will need to have preinstalled before installing the package.
 
-1. Python 3.7 or higher (3.10 recommended)
+1. Python 3.10 or higher (Tested up to 3.14)
 1. [GROMACS](https://www.gromacs.org)
 1. C++ compiler
 1. Optional: `rsync`
 
-GROMACS is only needed for grompping. This means that a [quick and dirty](https://manual.gromacs.org/current/install-guide/index.html#quick-and-dirty-installation) installation is enough. Do make sure it is the same major version that you plan on using for the simulation runs.
+Locally GROMACS is only needed for grompping. This means that a [quick and dirty](https://manual.gromacs.org/current/install-guide/index.html#quick-and-dirty-installation) installation is enough. Do make sure it is the same major version that you plan on using for the simulation runs.
 
 The C++ compiler is needed to compile a few of the trajectory transformation modules, which allow making broken molecules whole over the PBC. The package build process has been tested with the open source GCC-compiler, but in theory any compiler should work.
 
@@ -55,7 +55,7 @@ In the recommended way we will use conda to make a new envirnonment. This way wo
 First, we will make a new conda environment dedicated just for the tool and activate it (if you have [mamba](https://mamba.readthedocs.io/en/latest/) installed, use it for the first command to speed up the process):
 
 ```sh
-conda create -c conda-forge -n fst_env python=3.10 numpy matplotlib mdanalysis scikit-learn networkx pygraphviz
+conda create -c conda-forge -n fst_env python=3.14 numpy matplotlib mdanalysis scikit-learn networkx pygraphviz
 conda activate fst_env
 ```
 
@@ -69,7 +69,7 @@ pip install functional_sampling_tool
 
 When the command finishes, it should be all done and the tool usable as `fst`.
 
-**Remember** that in this way you need to run `conda activate fst_env` once in every new terminal before using the tool. If you want to use this environment by default, add `conda activate fst_env` at the end of your `.bashrc`
+**Remember** that in this way you need to run `conda activate fst_env` once in every new terminal before using the tool. If you want to use this environment by default, add `conda activate fst_env` at the end of your `.bashrc`.
 
 
 ## Uninstalling
@@ -123,7 +123,7 @@ The files marked with an asterisk can be copied and modified from templates with
 
 Run `fst -h` for help or `fst <cmd> -h` for help on specific command.
 
-Almost all configuration should be done in the `config.py` file. The tool does have a few command line tools, but in principle these should only affect *what* is being done, not *how* it is being done (e.g. whether data should be pulled from the remote is a command line argument, but the remote name, excludes and such are in config).
+Almost all configuration should be done in the `config.py` file. The tool does have a few command line flags, but in principle these should only affect *what* is being done, not *how* it is being done (e.g. whether data should be pulled from the remote is a command line argument, but the remote name, excludes and such are in config).
 
 If you have the configuration file in the same directory, named as `config.py`, just run as below. Otherwise add `fst -c <path/to/config>.py <cmd>`.
 

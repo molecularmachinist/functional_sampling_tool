@@ -212,7 +212,7 @@ def copy_config(fin: pathlib.Path, fout: pathlib.Path, default_values: Dict[str,
     Copy the config file to the specified location.
     """
     with fout.open("w")as fo:
-        fo.write(f"# Copy of {fout}\n")
+        fo.write(f"# Copy of {fin.resolve()}\n")
         fo.write("# Made with functional_sampling_tool "
                  f"version {fst_version}\n")
         fo.write("# Command line call:\n")

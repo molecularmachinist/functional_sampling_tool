@@ -10,7 +10,7 @@ from . import inout
 from .exceptions import NotEnoughDataError
 
 # Type hints
-from typing import Any, Tuple, List
+from typing import Any
 from numpy.typing import NDArray
 
 """
@@ -151,7 +151,7 @@ class FrameChooser():
             self.cfg.maxval
         )
 
-    def make_choices(self, prechoices: int = 0, plot: bool = True) -> Tuple[
+    def make_choices(self, prechoices: int = 0, plot: bool = True) -> tuple[
             NDArray[np.float64], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
         """
         Uses the histogram to choose bins and returns the bin indices of the choices.
@@ -247,7 +247,7 @@ class FrameChooser():
                                nanmask, maxims, minims)
         return self.choose_frames(choices)
 
-    def choose_frames(self, chosen_bins: List[int]) -> Tuple[
+    def choose_frames(self, chosen_bins: list[int]) -> tuple[
             NDArray[np.float64], NDArray[np.int_], NDArray[np.int_], NDArray[np.int_]]:
         """ Input parameters:
                 - chosen_bins : Length N list of the indices of the bins that have been chosen.

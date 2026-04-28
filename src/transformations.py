@@ -10,7 +10,7 @@ from numpy.typing import NDArray
 from . import _ctransformations
 
 # Type hints
-from typing import Union, Optional, List
+from typing import Optional
 from MDAnalysis.core.groups import AtomGroup, Atom
 from MDAnalysis.coordinates.base import Timestep
 
@@ -50,7 +50,7 @@ class Unwrapper:
 
     def __init__(self,
                  ag: AtomGroup,
-                 starters: Union[List[Atom], AtomGroup] = [],
+                 starters: list[Atom] | AtomGroup = [],
                  initsetup: bool = False):
         self.starters = starters
         self.ag = ag

@@ -3,17 +3,11 @@
 import argparse
 import pathlib
 import shutil
-import sys
+from importlib.resources import files as import_files
 
 from . import __version__
 
 from .exceptions import handle_errors
-
-# For python 3.10 (or higher) import from standard lib, older releases use importlib_resources.
-if (sys.version_info >= (3, 10)):
-    from importlib.resources import files as import_files
-else:
-    from importlib_resources import files as import_files
 
 
 @handle_errors

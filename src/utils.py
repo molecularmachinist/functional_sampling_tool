@@ -3,7 +3,7 @@ from numpy.typing import ArrayLike, NDArray
 from MDAnalysis.coordinates.base import Timestep
 from MDAnalysis.core.groups import AtomGroup
 import MDAnalysis as mda
-from typing import Any, Callable, Union, Optional, List, Dict
+from typing import Any, Callable, Optional
 from . import __version__ as fst_version
 import pathlib
 import subprocess as subp
@@ -25,7 +25,7 @@ transform_type = Callable[[Timestep], Timestep]
 
 
 def rolling_mean(data: ArrayLike, window: int = 10,
-                 center: bool = True, fill: float = np.nan) -> NDArray[np.float_]:
+                 center: bool = True, fill: float = np.nan) -> NDArray[np.float64]:
     if (window < 1):
         raise ValueError(
             "rolling mean window smaller than 1 "
@@ -50,7 +50,7 @@ def rolling_mean(data: ArrayLike, window: int = 10,
     return mean
 
 
-def check_num(prefix: pathlib.Path) -> List[int]:
+def check_num(prefix: pathlib.Path) -> list[int]:
     """
     Checks filenames prefix01, prefix02, etc and returns a list of integers that were found.
     """
@@ -65,7 +65,7 @@ def check_num(prefix: pathlib.Path) -> List[int]:
     return nums
 
 
-def read_ndx(ndx: pathlib.Path) -> Dict[str, List[int]]:
+def read_ndx(ndx: pathlib.Path) -> dict[str, list[int]]:
     # Return empty dictionary if ndx is None
     if (ndx is None):
         return {}
@@ -127,7 +127,7 @@ def gromacs_command(gmx: str, cmd: str, *args: Any, directory: pathlib.Path = pa
     return compProc.returncode
 
 
-def rsync_command(send_from: Union[str, list], send_to: str, excludes: List[str] = []) -> int:
+def rsync_command(send_from: str | list, send_to: str, excludes: list[str] = []) -> int:
     """ A utility function for keeping the remote dir in sync.
         Basically run rsync with given source and target, and given excludes.
         Uses -ravP by default.
@@ -207,12 +207,12 @@ def copy_sbatch_template(fin: pathlib.Path, fout: pathlib.Path, enum: int, cfg: 
                 fo.write(line.replace("{epoch_num}", str(enum)))
 
 
-def copy_config(fin: pathlib.Path, fout: pathlib.Path, default_values: Dict[str, Any] = {}):
+def copy_config(fin: pathlib.Path, fout: pathlib.Path, default_values: dict[str, Any] = {}):
     """
     Copy the config file to the specified location.
     """
     with fout.open("w")as fo:
-        fo.write(f"# Copy of {fout}\n")
+        fo.write(f"# Copy of {fin.resolve()}\n")
         fo.write("# Made with functional_sampling_tool "
                  f"version {fst_version}\n")
         fo.write("# Command line call:\n")
@@ -235,8 +235,8 @@ def hash_func(f: Callable) -> str:
 
 
 def load_sel(sel_str: str,
-             struct: Union[mda.Universe, AtomGroup],
-             ndx: Dict[str, List[int]]) -> AtomGroup:
+             struct: mda.Universe | AtomGroup,
+             ndx: dict[str, list[int]]) -> AtomGroup:
     if (sel_str in ndx):
         sel = struct.atoms[np.array(ndx[sel_str])-1]
     else:
@@ -244,7 +244,7 @@ def load_sel(sel_str: str,
     return sel
 
 
-def load_origin_data(filename: pathlib.Path, e: int) -> Dict[str, Union[int, float]]:
+def load_origin_data(filename: pathlib.Path, e: int) -> dict[str, int | float]:
     """
     Load the reps origin data from the given filename. If the file is not found, but the
     epoch is the first one, the info is guessed. If the epoch is not the first one a message

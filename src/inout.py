@@ -19,14 +19,14 @@ from .exceptions import (NoConfigError,
 
 # Type hints
 from numpy.typing import NDArray
-from typing import Any, Tuple, Union, List, Dict
+from typing import Any
 
 
 class LoadError(ValueError):
     pass
 
 
-def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], NDArray[np.float_]]:
+def get_data_from_archive(d: pathlib.Path, cfg: Any) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     with np.load(d/cfg.npz_file_name) as npz:
         dat = dict(npz)
 
@@ -90,7 +90,7 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_]
     return fval, crd
 
 
-def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], NDArray[np.float_]]:
+def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     cfg.struct.load_new(d / "mdrun.xtc")
     cfg.struct.trajectory.add_transformations(*cfg.traj_transforms)
     trjlen = len(cfg.struct.trajectory)
@@ -131,7 +131,7 @@ def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> Tuple[NDArray[np.float_], ND
     return fval, crd
 
 
-def load_from_dir(d: pathlib.Path, cfg: Any, load_fval: bool) -> Tuple[NDArray[np.float_], NDArray[np.float_]]:
+def load_from_dir(d: pathlib.Path, cfg: Any, load_fval: bool) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     if (not load_fval):
         try:
             fval, crd = get_data_from_archive(d, cfg)
@@ -151,8 +151,8 @@ def load_from_dir(d: pathlib.Path, cfg: Any, load_fval: bool) -> Tuple[NDArray[n
     return get_data_from_xtc(d, cfg)
 
 
-def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[
-        NDArray[np.int_], NDArray[np.float_], NDArray[np.int_], NDArray[np.float_]]:
+def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> tuple[
+        NDArray[np.int_], NDArray[np.float64], NDArray[np.int_], NDArray[np.float64]]:
     edir = pathlib.Path("epoch%02d" % epoch)
     rep_nums = utils.check_num(edir / "rep")
     fval = []
@@ -186,7 +186,7 @@ def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> Tuple[
     return np.concatenate(reps), np.concatenate(fval), np.concatenate(frms), np.concatenate(crd)
 
 
-def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Dict[int, Any]]]:
+def load_extract_data(cfg: Any, doignore: bool = True) -> dict[str, dict[int, dict[int, Any]]]:
     epochs = utils.check_num(pathlib.Path("epoch"))
     data = {"fval": {}, "fnames": {}, "origin": {}, "start_frm": {}}
     for e in epochs:
@@ -228,8 +228,8 @@ def load_extract_data(cfg: Any, doignore: bool = True) -> Dict[str, Dict[int, Di
     return data
 
 
-def load_flat_extract_data(cfg: Any, doignore: bool = True) -> Tuple[
-        Dict[str, NDArray[Union[np.float_, np.int_]]], Dict[int, Dict[int, str]]]:
+def load_flat_extract_data(cfg: Any, doignore: bool = True) -> tuple[
+        dict[str, NDArray[np.float64 | np.int_]], dict[int, dict[int, str]]]:
     data = load_extract_data(cfg, doignore)
 
     flat_data = {"fval": [], "frms": [], "reps": [], "epcs": []}

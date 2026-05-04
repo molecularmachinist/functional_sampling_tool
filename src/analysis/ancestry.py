@@ -7,13 +7,12 @@ import matplotlib.pyplot as plt
 from .. import inout
 
 # Type hints
-from typing import Tuple, Dict
 import argparse
 
 
 def leaf_depths(G: nx.DiGraph,
-                node: Tuple[int, int] = (0, 0),
-                leafs: Dict[Tuple[int, int], int] = {},
+                node: tuple[int, int] = (0, 0),
+                leafs: dict[tuple[int, int], int] = {},
                 depth=0):
     """
     Recurse on the directed graph G starting from node, returning a dictionary of all the found leafs,

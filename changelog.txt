@@ -1,3 +1,6 @@
+v0.0.11.dev
+- Copies of config.py will write absolute path of input file instead of relative path of output.
+
 v0.0.10
 - Bugfix: Due to the previous change the histogram edge choosing failed if there were not minima or maxima.
 

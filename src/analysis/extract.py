@@ -9,7 +9,7 @@ from .. import transformations
 from ..exceptions import WrongSelectionSizeError
 
 # Type hints
-from typing import Any, Tuple, Optional, List, Dict
+from typing import Any, Optional
 from numpy.typing import ArrayLike
 from MDAnalysis.core.groups import AtomGroup
 from ..utils import transform_type
@@ -25,7 +25,7 @@ def get_cfg_sel(sel: str, cfg: Any, default: Optional[str] = None) -> str:
     return sel
 
 
-def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List[transform_type]]:
+def load_struct(args: argparse.Namespace) -> tuple[mda.Universe, AtomGroup, list[transform_type]]:
     if (args.index is None):
         args.index = args.cfg.index_file
     indexes = utils.read_ndx(args.index)
@@ -102,7 +102,7 @@ def load_struct(args: argparse.Namespace) -> Tuple[mda.Universe, AtomGroup, List
     return u, sel, traj_transforms
 
 
-def extract_around(u: mda.Universe, sel: AtomGroup, transforms: List[transform_type], args: argparse.Namespace) -> Dict[str, ArrayLike]:
+def extract_around(u: mda.Universe, sel: AtomGroup, transforms: list[transform_type], args: argparse.Namespace) -> dict[str, ArrayLike]:
     data, files = inout.load_flat_extract_data(args.cfg, args.doignore)
     mask = (data["frms"] >= args.beginning)*(data["frms"] % args.stride == 0)
 
@@ -133,7 +133,7 @@ def extract_around(u: mda.Universe, sel: AtomGroup, transforms: List[transform_t
     return data
 
 
-def extract_all(u: mda.Universe, sel: AtomGroup, transforms: List[transform_type], args: argparse.Namespace) -> Dict[str, ArrayLike]:
+def extract_all(u: mda.Universe, sel: AtomGroup, transforms: list[transform_type], args: argparse.Namespace) -> dict[str, ArrayLike]:
     data = inout.load_extract_data(args.cfg, args.doignore)
     data_out = {"frame": [], "time": [], "epoch": [], "rep": [], "fval": []}
     ntrajs = np.sum([len(data["fnames"][e]) for e in data["fnames"]])

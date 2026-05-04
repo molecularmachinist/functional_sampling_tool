@@ -1,5 +1,8 @@
-v0.0.11.dev
+v0.0.12
+
+v0.0.11
 - Copies of config.py will write absolute path of input file instead of relative path of output.
+- Fixed numpy type hints since deprecation of np.float_
 
 v0.0.10
 - Bugfix: Due to the previous change the histogram edge choosing failed if there were not minima or maxima.

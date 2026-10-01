@@ -270,6 +270,10 @@ In most cases you should not need these, but may be helpful in others.
 
 ### Specific use cases and tips
 
+#### Running the tool automatically
+
+If you need to run multiple systems and you are confident that everything works fine, you can use the `run_tool.sh` script from this folder. Download it with 
+
 #### Multiple starting structure
 
 If you want to have multiple different starting points, you can specify `initial_struct` in the config as a list of filenames. The first one will be used only as a topology and a reference structure, while the rest will only be used as starting points for the initial epoch. The repetitions will be started in the order the files are listed, iterating over all frames in each one. If more frames than repetitons are found, a warning will be raised. If there are less frames than repetitions, the iteration is simply started from beginning as many times as needed.

@@ -1,4 +1,5 @@
 v0.0.12
+- If xtc file is missing but npz file exists, trajectory is assumed to be unmodified.
 
 v0.0.11
 - Copies of config.py will write absolute path of input file instead of relative path of output.

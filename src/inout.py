@@ -30,10 +30,13 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> tuple[NDArray[np.float64
     with np.load(d/cfg.npz_file_name) as npz:
         dat = dict(npz)
 
-    if (dat["xtc_mod_t"] != (d/"mdrun.xtc").stat().st_mtime):
-        raise LoadError(
-            f"Modification time of {d/'mdrun.xtc'} does not match, reloading"
-        )
+    if ((d/"mdrun.xtc").is_file()):
+        if (dat["xtc_mod_t"] != (d/"mdrun.xtc").stat().st_mtime):
+            raise LoadError(
+                f"Modification time of {d/'mdrun.xtc'} does not match, reloading"
+            )
+    else:
+        print((d/"mdrun.xtc"), "not found, assuming no modification.")
 
     if ((not np.array_equal(cfg.sel.indices, dat["sel"])) or (not np.array_equal(cfg.sel_clust.indices, dat["sel_clust"]))):
         raise LoadError(

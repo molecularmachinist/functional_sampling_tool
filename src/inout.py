@@ -94,12 +94,8 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> tuple[NDArray[np.float64
     return fval, crd
 
 
-def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    if (not next_xtc.is_file() and hasattr(cfg, "get_missing_file")):
-        with tempfile.gettempdir() as tmp:
-            tmp_dir = pathlib.Path(tmp)
-            next_xtc = cfg.get_missing_file(next_xtc, tmp_dir)
-    cfg.struct.load_new(d / "mdrun.xtc")
+def get_data_from_xtc(d: pathlib.Path, next_xtc, cfg: Any) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    cfg.struct.load_new(next_xtc)
     cfg.struct.trajectory.add_transformations(*cfg.traj_transforms)
     trjlen = len(cfg.struct.trajectory)
     fval_crd = np.empty([trjlen, len(cfg.sel), 3])
@@ -119,7 +115,7 @@ def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> tuple[NDArray[np.float64], N
             f"from coordinates of shape{fval_crd.shape}. The returned "
             f"array should be shape{(trjlen,)}.")
     print("Saving %s" % cfg.npz_file_name)
-    xtc_mod_t = (d/"mdrun.xtc").stat().st_mtime
+    xtc_mod_t = (next_xtc).stat().st_mtime
     func_hash = utils.hash_func(cfg.function_val)
     unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(
         0, dtype=int)
@@ -156,7 +152,15 @@ def load_from_dir(d: pathlib.Path, cfg: Any, load_fval: bool) -> tuple[NDArray[n
 
     print("Loading trajectory", d / "mdrun.xtc")
 
-    return get_data_from_xtc(d, cfg)
+    next_xtc = d / "mdrun.xtc"
+    if (not next_xtc.is_file() and hasattr(cfg, "get_missing_file")):
+        with tempfile.TemporaryDirectory(prefix="FST-") as tmp:
+            tmp_dir = pathlib.Path(tmp)
+            next_xtc = cfg.get_missing_file(next_xtc, tmp_dir)
+            res = get_data_from_xtc(d, next_xtc, cfg)
+    else:
+        res = get_data_from_xtc(d, next_xtc, cfg)
+    return res
 
 
 def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> tuple[

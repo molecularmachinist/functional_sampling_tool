@@ -207,7 +207,7 @@ def start_epoch(nextepoch: int, cfg: Any,
                 "val, epc, rep or frm cannot be None if nextepoch!=1")
         else:
 
-            with tempfile.gettempdir() as tmp:
+            with tempfile.TemporaryDirectory(prefix="FST-") as tmp:
                 tmp_dir = pathlib.Path(tmp)
                 for i, (v, e, r, f) in enumerate(zip(val, epc, rep, frm)):
                     dostop = False

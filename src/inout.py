@@ -170,7 +170,7 @@ def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> tuple[
         if ((epoch, i) in cfg.ignore_reps):
             continue
         d = edir / ("rep%02d" % i)
-        if ((d/"mdrun.xtc").exists()):
+        if ((d/"mdrun.xtc").exists() or (d/"fval_data.npz").exists() or hasattr(cfg, "get_missing_file")):
             fv, cr = load_from_dir(d, cfg, load_fval)
             if (cfg.ignore_from_start != 0 or cfg.stride != 1):
                 # If we are ignoring data, we'll make a copy so as to not drag the ignored data in memory

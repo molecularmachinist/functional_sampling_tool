@@ -276,7 +276,7 @@ If you are running out of space on the machine that FST is run, but have the dat
 
 You need to add a function `get_missing_file` in the config that takes in the missing xtc filename, copies it to a temporary file, and returns the temporary filename.
 ```python
-def get_remote_file(xtc_name: pathlib.Path, tmp_dir: pathlib.Path):
+def get_missing_file(xtc_name: pathlib.Path, tmp_dir: pathlib.Path):
     tmp_copy = tmp_dir/xtc_name
     # If we've already downloaded it, no need to redownload
     if (tmp_copy.is_file()):

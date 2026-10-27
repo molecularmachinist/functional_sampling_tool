@@ -270,11 +270,38 @@ In most cases you should not need these, but may be helpful in others.
 
 ### Specific use cases and tips
 
+#### Removing local copies of mdrun.xtc files
+
+If you are running out of space on the machine that FST is run, but have the data saved elsewhere, you can remove the local copies and only download the necessary ones for epoch starting.
+
+You need to add a function `get_missing_file` in the config that takes in the missing xtc filename, copies it to a temporary file, and returns the temporary filename.
+```python
+def get_remote_file(xtc_name: pathlib.Path, tmp_dir: pathlib.Path):
+    tmp_copy = tmp_dir/xtc_name
+    # If we've already downloaded it, no need to redownload
+    if (tmp_copy.is_file()):
+        # return the path to the existing file
+        return tmp_copy
+    # make the epochNN/repMM folder
+    tmp_copy.parent.parent.mkdir(exist_ok=True)
+    tmp_copy.parent.mkdir(exist_ok=True)
+
+    # Download the remote file to tmp_copy
+    ...
+
+    # return the path tot the downloaded file
+    return tmp_copy
+```
+
+`xtc_name` is a pathlib Path of the form `epochNN/repMM/mdrun.xtc` and `tmp_dir` is a temporary folder (initially empty) that will be cleaned up before FST finishes. You can, but do not need to download the file under it.
+
+When loading data, if the npz archive exists, the trajectory will always be assumed to be unchanged. If it is missing the remote file will be downloaded. When changing the function or selections, the tool will have to redownload all xtc files one by one, which can be slow, but the temporary folder is cleaned between each download so you do not need to have enough local space for the whole dataset.
+
 #### Running the tool automatically
 
 If you need to run multiple systems and you are confident that everything works fine, you can use the `run_tool.sh` script from this folder. Download it with 
 
-#### Multiple starting structure
+#### Multiple starting structures
 
 If you want to have multiple different starting points, you can specify `initial_struct` in the config as a list of filenames. The first one will be used only as a topology and a reference structure, while the rest will only be used as starting points for the initial epoch. The repetitions will be started in the order the files are listed, iterating over all frames in each one. If more frames than repetitons are found, a warning will be raised. If there are less frames than repetitions, the iteration is simply started from beginning as many times as needed.
 

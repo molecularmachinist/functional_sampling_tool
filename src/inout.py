@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import shutil
+import tempfile
 import time
 import numpy as np
 import MDAnalysis as mda
@@ -94,6 +95,10 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> tuple[NDArray[np.float64
 
 
 def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    if (not next_xtc.is_file() and hasattr(cfg, "get_missing_file")):
+        with tempfile.gettempdir() as tmp:
+            tmp_dir = pathlib.Path(tmp)
+            next_xtc = cfg.get_missing_file(next_xtc, tmp_dir)
     cfg.struct.load_new(d / "mdrun.xtc")
     cfg.struct.trajectory.add_transformations(*cfg.traj_transforms)
     trjlen = len(cfg.struct.trajectory)

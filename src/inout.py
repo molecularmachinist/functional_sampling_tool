@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import shutil
+import tempfile
 import time
 import numpy as np
 import MDAnalysis as mda
@@ -30,10 +31,13 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> tuple[NDArray[np.float64
     with np.load(d/cfg.npz_file_name) as npz:
         dat = dict(npz)
 
-    if (dat["xtc_mod_t"] != (d/"mdrun.xtc").stat().st_mtime):
-        raise LoadError(
-            f"Modification time of {d/'mdrun.xtc'} does not match, reloading"
-        )
+    if ((d/"mdrun.xtc").is_file()):
+        if (dat["xtc_mod_t"] != (d/"mdrun.xtc").stat().st_mtime):
+            raise LoadError(
+                f"Modification time of {d/'mdrun.xtc'} does not match, reloading"
+            )
+    else:
+        print((d/"mdrun.xtc"), "not found, assuming no modification.")
 
     if ((not np.array_equal(cfg.sel.indices, dat["sel"])) or (not np.array_equal(cfg.sel_clust.indices, dat["sel_clust"]))):
         raise LoadError(
@@ -90,8 +94,8 @@ def get_data_from_archive(d: pathlib.Path, cfg: Any) -> tuple[NDArray[np.float64
     return fval, crd
 
 
-def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    cfg.struct.load_new(d / "mdrun.xtc")
+def get_data_from_xtc(d: pathlib.Path, next_xtc, cfg: Any) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    cfg.struct.load_new(next_xtc)
     cfg.struct.trajectory.add_transformations(*cfg.traj_transforms)
     trjlen = len(cfg.struct.trajectory)
     fval_crd = np.empty([trjlen, len(cfg.sel), 3])
@@ -111,7 +115,7 @@ def get_data_from_xtc(d: pathlib.Path, cfg: Any) -> tuple[NDArray[np.float64], N
             f"from coordinates of shape{fval_crd.shape}. The returned "
             f"array should be shape{(trjlen,)}.")
     print("Saving %s" % cfg.npz_file_name)
-    xtc_mod_t = (d/"mdrun.xtc").stat().st_mtime
+    xtc_mod_t = (next_xtc).stat().st_mtime
     func_hash = utils.hash_func(cfg.function_val)
     unwrap_sel = cfg.traj_transforms[0].sel if cfg.unwrap_mols else np.zeros(
         0, dtype=int)
@@ -148,7 +152,15 @@ def load_from_dir(d: pathlib.Path, cfg: Any, load_fval: bool) -> tuple[NDArray[n
 
     print("Loading trajectory", d / "mdrun.xtc")
 
-    return get_data_from_xtc(d, cfg)
+    next_xtc = d / "mdrun.xtc"
+    if (not next_xtc.is_file() and hasattr(cfg, "get_missing_file")):
+        with tempfile.TemporaryDirectory(prefix="FST-") as tmp:
+            tmp_dir = pathlib.Path(tmp)
+            next_xtc = cfg.get_missing_file(next_xtc, tmp_dir)
+            res = get_data_from_xtc(d, next_xtc, cfg)
+    else:
+        res = get_data_from_xtc(d, next_xtc, cfg)
+    return res
 
 
 def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> tuple[
@@ -162,7 +174,7 @@ def load_epoch_data(epoch: int, cfg: Any, load_fval: bool) -> tuple[
         if ((epoch, i) in cfg.ignore_reps):
             continue
         d = edir / ("rep%02d" % i)
-        if ((d/"mdrun.xtc").exists()):
+        if ((d/"mdrun.xtc").exists() or (d/"fval_data.npz").exists() or hasattr(cfg, "get_missing_file")):
             fv, cr = load_from_dir(d, cfg, load_fval)
             if (cfg.ignore_from_start != 0 or cfg.stride != 1):
                 # If we are ignoring data, we'll make a copy so as to not drag the ignored data in memory
@@ -450,19 +462,21 @@ def clean_latest_epoch(force: bool = False) -> None:
     # First, make sure no rep is already simulated
     edir = pathlib.Path("epoch%02d" % epoch)
     for r in utils.check_num(edir / "rep"):
-        mdrun_path = edir / ("rep%02d" % r) / "mdrun.xtc"
-        if (mdrun_path.is_file()):
-            if (not force):
-                print(f"Found {mdrun_path}, will not clean up epoch {epoch}")
-                print("If you do want it cleaned, use the --force option")
-                return
+        files = ["mdrun.xtc", "mdrun.edr", "mdrun.log", "fval_data.npz"]
+        for f in files:
+            fpath = edir / ("rep%02d" % r) / f
+            if (fpath.is_file()):
+                if (not force):
+                    print(f"Found {fpath}, will not clean up epoch {epoch}")
+                    print("If you do want it cleaned, use the --force option")
+                    return
 
-            print(f"Found {mdrun_path}, but will still force clean")
-            print("Data in epoch%02d will be lost forever" % epoch)
-            print("You have 5 seconds to cancel with ctrl-C")
-            time.sleep(5)
-            print("Continuing, data in epoch%02d will now be lost forever" % epoch)
-            break
+                print(f"Found {fpath}, but will still force clean")
+                print("Data in epoch%02d will be lost forever" % epoch)
+                print("You have 5 seconds to cancel with ctrl-C")
+                time.sleep(5)
+                print("Continuing, data in epoch%02d will now be lost forever" % epoch)
+                break
 
     print(f"Cleaning up epoch {epoch}")
     # If nothing was found (or force=True), we can just do it

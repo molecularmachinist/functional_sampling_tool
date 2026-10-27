@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import tempfile
 import time
 import numpy as np
 import warnings
@@ -78,7 +79,8 @@ def next_rep(i: int,
              rep: int,
              frm: int,
              val: float,
-             pool: PoolClass) -> tuple[pathlib.Path, AsyncResult]:
+             pool: PoolClass,
+             tmp_dir: pathlib.Path) -> tuple[pathlib.Path, AsyncResult]:
     """ Initializes rep i of newepoch, taking the frame frm from rep of oldepoch
     """
     d = pathlib.Path("epoch%02d" % newepoch) / ("rep%02d" % i)
@@ -92,6 +94,8 @@ def next_rep(i: int,
     d_old = pathlib.Path("epoch%02d" % oldepoch) / ("rep%02d" % rep)
     next_xtc = d_old / "mdrun.xtc"
     if (next_xtc != cfg.struct.filename):
+        if (not next_xtc.is_file() and hasattr(cfg, "get_missing_file")):
+            next_xtc = cfg.get_missing_file(next_xtc, tmp_dir)
         cfg.struct.load_new(next_xtc)
     cfg.struct.trajectory[frm]
 
@@ -203,17 +207,19 @@ def start_epoch(nextepoch: int, cfg: Any,
                 "val, epc, rep or frm cannot be None if nextepoch!=1")
         else:
 
-            for i, (v, e, r, f) in enumerate(zip(val, epc, rep, frm)):
-                dostop = False
-                for d, rc in res:
-                    if (rc.ready() and rc.get() != 0):
-                        dostop = True
-                        break
+            with tempfile.TemporaryDirectory(prefix="FST-") as tmp:
+                tmp_dir = pathlib.Path(tmp)
+                for i, (v, e, r, f) in enumerate(zip(val, epc, rep, frm)):
+                    dostop = False
+                    for d, rc in res:
+                        if (rc.ready() and rc.get() != 0):
+                            dostop = True
+                            break
 
-                if (dostop):
-                    break
-                res.append(next_rep(cfg.first_rep_num + i,
-                           cfg, nextepoch, e, r, f, v, p))
+                    if (dostop):
+                        break
+                    res.append(next_rep(cfg.first_rep_num + i,
+                                        cfg, nextepoch, e, r, f, v, p, tmp_dir))
 
         print("Waiting for grompping to finish")
         p.close()

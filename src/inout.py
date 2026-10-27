@@ -458,19 +458,21 @@ def clean_latest_epoch(force: bool = False) -> None:
     # First, make sure no rep is already simulated
     edir = pathlib.Path("epoch%02d" % epoch)
     for r in utils.check_num(edir / "rep"):
-        mdrun_path = edir / ("rep%02d" % r) / "mdrun.xtc"
-        if (mdrun_path.is_file()):
-            if (not force):
-                print(f"Found {mdrun_path}, will not clean up epoch {epoch}")
-                print("If you do want it cleaned, use the --force option")
-                return
+        files = ["mdrun.xtc", "mdrun.edr", "mdrun.log", "fval_data.npz"]
+        for f in files:
+            fpath = edir / ("rep%02d" % r) / f
+            if (fpath.is_file()):
+                if (not force):
+                    print(f"Found {fpath}, will not clean up epoch {epoch}")
+                    print("If you do want it cleaned, use the --force option")
+                    return
 
-            print(f"Found {mdrun_path}, but will still force clean")
-            print("Data in epoch%02d will be lost forever" % epoch)
-            print("You have 5 seconds to cancel with ctrl-C")
-            time.sleep(5)
-            print("Continuing, data in epoch%02d will now be lost forever" % epoch)
-            break
+                print(f"Found {fpath}, but will still force clean")
+                print("Data in epoch%02d will be lost forever" % epoch)
+                print("You have 5 seconds to cancel with ctrl-C")
+                time.sleep(5)
+                print("Continuing, data in epoch%02d will now be lost forever" % epoch)
+                break
 
     print(f"Cleaning up epoch {epoch}")
     # If nothing was found (or force=True), we can just do it
